@@ -39,6 +39,8 @@ jobs:
         env:
             VITE_CHAT_WS_URL: ${{ secrets.VITE_CHAT_WS_URL }}
             VITE_CHAT_ENABLED: ${{ secrets.VITE_CHAT_ENABLED }}
+            VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+            VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: pnpm build
       
       - name: Setup Pages
