@@ -2,6 +2,7 @@ import { FormEvent, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Bird, Copy, Loader2, LogOut, Plus, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { AuthPanel } from '@/components/AuthPanel'
 import { GameMode } from '@/game/types'
 import { CreateRoomInput, ThemeId } from '@/lib/multiplayer-types'
 import { createRoom, getRoomInviteUrl, joinRoom } from '@/lib/rooms'
@@ -26,10 +27,8 @@ export function RoomsHome() {
   const navigate = useNavigate()
   const location = useLocation()
   const auth = useSupabaseAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [nickname, setNickname] = useState('')
   const [joinCode, setJoinCode] = useState('')
+  const [nickname, setNickname] = useState('')
   const [createdCode, setCreatedCode] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -47,21 +46,6 @@ export function RoomsHome() {
   }))
 
   const inviteUrl = useMemo(() => createdCode ? getRoomInviteUrl(createdCode) : '', [createdCode])
-
-  const handlePasswordLogin = async (event: FormEvent) => {
-    event.preventDefault()
-    setIsSubmitting(true)
-    const ok = await auth.signInWithPassword(email, password)
-    setIsSubmitting(false)
-    if (ok) setMessage('Login realizado.')
-  }
-
-  const handlePasswordSignUp = async () => {
-    setIsSubmitting(true)
-    const ok = await auth.signUpWithPassword(email, password, nickname || email.split('@')[0] || 'Estagiario')
-    setIsSubmitting(false)
-    if (ok) setMessage('Conta criada e login realizado.')
-  }
 
   const handleNicknameSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -139,11 +123,7 @@ export function RoomsHome() {
             </div>
           </div>
 
-          {auth.loading ? (
-            <div className="flex items-center gap-2 text-slate-300">
-              <Loader2 className="h-4 w-4 animate-spin" /> Carregando...
-            </div>
-          ) : auth.user ? (
+          {auth.user ? (
             <div className="space-y-4">
               <div className="rounded-xl bg-[#0F1A2E]/80 p-4">
                 <p className="text-sm text-slate-400">logado como</p>
@@ -171,42 +151,12 @@ export function RoomsHome() {
               </Button>
             </div>
           ) : (
-            <form onSubmit={handlePasswordLogin} className="space-y-3">
-              <label className="text-sm font-medium text-slate-300 font-mono" htmlFor="email">e-mail</label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="voce@email.com"
-                className="w-full rounded-lg border border-[#2A4060] bg-[#0F1A2E] px-3 py-2 font-mono text-white outline-none focus:border-[#00B2A9]"
-              />
-              <label className="text-sm font-medium text-slate-300 font-mono" htmlFor="password">senha</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="minimo 6 caracteres"
-                className="w-full rounded-lg border border-[#2A4060] bg-[#0F1A2E] px-3 py-2 font-mono text-white outline-none focus:border-[#00B2A9]"
-              />
-              <label className="text-sm font-medium text-slate-300 font-mono" htmlFor="signup-nickname">apelido pra cadastro</label>
-              <input
-                id="signup-nickname"
-                value={nickname}
-                onChange={(event) => setNickname(event.target.value)}
-                placeholder="Seu apelido"
-                maxLength={20}
-                className="w-full rounded-lg border border-[#2A4060] bg-[#0F1A2E] px-3 py-2 font-mono text-white outline-none focus:border-[#00B2A9]"
-              />
-              <Button type="submit" disabled={isSubmitting || password.length < 6} className="w-full font-mono text-xs">
-                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                entrar
-              </Button>
-              <Button type="button" onClick={handlePasswordSignUp} disabled={isSubmitting || password.length < 6 || !email.trim()} variant="outline" className="w-full border-[#2A4060] bg-transparent text-slate-300 font-mono text-xs">
-                criar conta
-              </Button>
-            </form>
+            <AuthPanel
+              auth={auth}
+              isSubmitting={isSubmitting}
+              onSubmittingChange={setIsSubmitting}
+              onMessage={setMessage}
+            />
           )}
 
           {(auth.error || message) && (
