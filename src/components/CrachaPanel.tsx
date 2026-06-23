@@ -3,8 +3,8 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { Loader2, LogOut, Save, UserCircle2 } from 'lucide-react'
 import { Button } from './ui/button'
-import { AvatarDisplay } from './AvatarDisplay'
-import { AvatarConfig, AvatarPicker } from './AvatarPicker'
+import { AvatarDisplay, AvatarConfig } from './AvatarDisplay'
+import { AvatarPicker } from './AvatarPicker'
 import { Profile } from '@/lib/multiplayer-types'
 
 interface CrachaPanelProps {
@@ -18,15 +18,17 @@ interface CrachaPanelProps {
   onMessage: (message: string | null) => void
 }
 
-function isAvatarConfig(value: unknown): value is AvatarConfig {
-  if (!value || typeof value !== 'object') return false
-  const v = value as Record<string, unknown>
-  return (
-    typeof v.bodyColor === 'string' ||
-    typeof v.eyeStyle === 'string' ||
-    typeof v.accessory === 'string' ||
-    Object.keys(v).length === 0
-  )
+function normalizeAvatarConfig(value: unknown, nickname: string | null, email: string | null): AvatarConfig {
+  if (value && typeof value === 'object') {
+    const v = value as Record<string, unknown>
+    const style = typeof v.style === 'string' ? v.style : undefined
+    const seed = typeof v.seed === 'string' && v.seed.trim() ? v.seed : undefined
+    if (style || seed) {
+      return { style, seed }
+    }
+  }
+  const fallbackSeed = nickname || (email ? email.split('@')[0] : null) || 'Pitaco'
+  return { style: 'avataaars', seed: fallbackSeed }
 }
 
 export function CrachaPanel({
@@ -41,39 +43,33 @@ export function CrachaPanel({
 }: CrachaPanelProps) {
   const [nickname, setNickname] = useState(profile?.nickname ?? '')
   const [showAvatar, setShowAvatar] = useState(false)
-  const [avatarDraft, setAvatarDraft] = useState<AvatarConfig>(() => {
-    if (isAvatarConfig(profile?.avatar_config)) {
-      const cfg = profile!.avatar_config as unknown as Partial<AvatarConfig>
-      return {
-        bodyColor: cfg.bodyColor ?? '#6B4F35',
-        eyeStyle: cfg.eyeStyle ?? 'serio',
-        accessory: cfg.accessory ?? 'none',
-      }
-    }
-    return { bodyColor: '#6B4F35', eyeStyle: 'serio', accessory: 'none' }
-  })
+  const [avatarDraft, setAvatarDraft] = useState<AvatarConfig>(() =>
+    normalizeAvatarConfig(profile?.avatar_config, profile?.nickname ?? null, email ?? null)
+  )
 
   useEffect(() => {
     setNickname(profile?.nickname ?? '')
   }, [profile?.nickname])
 
   useEffect(() => {
-    if (isAvatarConfig(profile?.avatar_config)) {
-      const cfg = profile!.avatar_config as unknown as Partial<AvatarConfig>
-      setAvatarDraft({
-        bodyColor: cfg.bodyColor ?? '#6B4F35',
-        eyeStyle: cfg.eyeStyle ?? 'serio',
-        accessory: cfg.accessory ?? 'none',
-      })
-    }
-  }, [profile?.avatar_config])
+    setAvatarDraft(
+      normalizeAvatarConfig(profile?.avatar_config, profile?.nickname ?? null, email ?? null)
+    )
+  }, [profile?.avatar_config, profile?.nickname, email])
 
-  const currentAvatar = useMemo<AvatarConfig>(() => {
-    if (isAvatarConfig(profile?.avatar_config)) {
-      return profile!.avatar_config as AvatarConfig
-    }
-    return avatarDraft
-  }, [profile?.avatar_config, avatarDraft])
+  const currentAvatar = useMemo<AvatarConfig>(
+    () => normalizeAvatarConfig(profile?.avatar_config, profile?.nickname ?? null, email ?? null),
+    [profile?.avatar_config, profile?.nickname, email]
+  )
+
+  const hasCustomAvatar = useMemo(() => {
+    if (!profile?.avatar_config || typeof profile.avatar_config !== 'object') return false
+    const v = profile.avatar_config as Record<string, unknown>
+    if (typeof v.style === 'string' && v.style) return true
+    if (typeof v.seed === 'string' && v.seed.trim()) return true
+    if (typeof v.bodyColor === 'string' || typeof v.eyeStyle === 'string' || typeof v.accessory === 'string') return true
+    return false
+  }, [profile?.avatar_config])
 
   const handleNicknameSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -87,24 +83,21 @@ export function CrachaPanel({
     if (ok) onMessage('Cracha atualizado.')
   }
 
-  const handleSaveAvatar = async () => {
+  const handleSaveAvatar = async (config: AvatarConfig) => {
     onSubmittingChange(true)
-    const ok = await onSaveAvatar(avatarDraft)
+    const ok = await onSaveAvatar(config)
     onSubmittingChange(false)
-    if (ok) {
-      setShowAvatar(false)
-      onMessage('Avatar salvo.')
-    }
+    return ok
   }
 
   return (
     <div className="rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-5 shadow-2xl">
       <div className="mb-5 flex items-center gap-3">
-              <AvatarDisplay
-                config={(profile?.avatar_config as unknown as Partial<AvatarConfig> | undefined) ?? null}
-                name={profile?.nickname ?? email ?? null}
-                size="lg"
-              />
+        <AvatarDisplay
+          config={currentAvatar}
+          name={profile?.nickname ?? email ?? null}
+          size="lg"
+        />
         <div className="min-w-0 flex-1">
           <p className="text-xs font-mono uppercase tracking-wider text-slate-500">cracha</p>
           <p className="truncate font-mono text-lg font-bold" style={{ color: '#00B2A9' }}>
@@ -148,9 +141,9 @@ export function CrachaPanel({
         <div className="flex items-center gap-3 rounded-lg border border-[#2A4060] bg-[#0F1A2E]/60 p-3">
           <AvatarDisplay config={currentAvatar} name={profile?.nickname ?? email ?? null} size="md" />
           <div className="min-w-0 flex-1 text-xs text-slate-400 font-mono">
-            {isAvatarConfig(profile?.avatar_config) && Object.keys(profile!.avatar_config as object).length > 0
+            {hasCustomAvatar
               ? 'Avatar customizado salvo.'
-              : 'Sem avatar customizado. Escolha cor, olhar e acessorio.'}
+              : 'Sem avatar customizado. Escolha estilo e seed.'}
           </div>
           <Button
             type="button"
@@ -164,11 +157,15 @@ export function CrachaPanel({
 
         {showAvatar && (
           <div className="rounded-lg border border-[#2A4060] bg-[#0F1A2E]/60 p-3">
-            <AvatarPicker config={avatarDraft} onChange={setAvatarDraft} />
-            <Button type="button" onClick={handleSaveAvatar} disabled={isSubmitting} className="mt-3 w-full font-mono text-xs">
-              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              salvar avatar
-            </Button>
+            <AvatarPicker
+              config={avatarDraft}
+              nickname={profile?.nickname ?? null}
+              email={email ?? null}
+              isSubmitting={isSubmitting}
+              onChange={setAvatarDraft}
+              onSave={handleSaveAvatar}
+              onMessage={onMessage}
+            />
           </div>
         )}
       </div>

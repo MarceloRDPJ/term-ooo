@@ -10,11 +10,13 @@ export type MessageScope = 'global' | 'room'
 export type RoomMessageType = 'message' | 'system' | 'join' | 'leave' | 'guess' | 'vote' | 'error'
 export type SuggestionStatus = 'active' | 'submitted' | 'rejected' | 'expired'
 
+export type AvatarConfig = { style?: string; seed?: string }
+
 export interface Profile {
   id: string
   nickname: string
   avatar_url: string | null
-  avatar_config: Record<string, unknown>
+  avatar_config: AvatarConfig | Record<string, unknown> | null
   created_at: string
   updated_at: string
 }

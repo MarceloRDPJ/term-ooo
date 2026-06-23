@@ -1,105 +1,103 @@
 // src/components/AvatarDisplay.tsx
 
-import { Bird } from 'lucide-react'
+import { useMemo } from 'react'
+import { createAvatar } from '@dicebear/core'
+import { avataaars, bottts, lorelei, micah } from '@dicebear/collection'
 
-const DEFAULT_AVATAR = {
-  bodyColor: '#6B4F35',
-  eyeStyle: 'serio',
-  accessory: 'none',
-}
+export type AvatarStyle = 'avataaars' | 'bottts' | 'lorelei' | 'micah'
+
+export const AVATAR_STYLES: readonly AvatarStyle[] = ['avataaars', 'bottts', 'lorelei', 'micah']
 
 export interface AvatarConfig {
-  bodyColor?: string
-  eyeStyle?: string
-  accessory?: string
+  style?: string
+  seed?: string
 }
 
 export interface AvatarDisplayProps {
-  config: AvatarConfig | null | undefined
+  config?: AvatarConfig | Record<string, unknown> | null
   name?: string | null
   size?: 'sm' | 'md' | 'lg'
   className?: string
 }
 
-const SIZE_MAP: Record<NonNullable<AvatarDisplayProps['size']>, { box: number; bird: number; font: string }> = {
-  sm: { box: 32, bird: 20, font: 'text-xs' },
-  md: { box: 44, bird: 28, font: 'text-sm' },
-  lg: { box: 64, bird: 40, font: 'text-base' },
+const SIZE_MAP: Record<NonNullable<AvatarDisplayProps['size']>, number> = {
+  sm: 32,
+  md: 44,
+  lg: 64,
 }
 
-function pickColor(name?: string | null): string {
-  if (!name) return DEFAULT_AVATAR.bodyColor
-  const colors = ['#00B2A9', '#E3C275', '#E25F38', '#6B4F35', '#243447']
-  const code = name.charCodeAt(0) + (name.charCodeAt(name.length - 1) || 0)
-  return colors[code % colors.length]
+const LEGACY_STYLE: AvatarStyle = 'avataaars'
+
+function isLegacyConfig(value: unknown): boolean {
+  if (!value || typeof value !== 'object') return false
+  const v = value as Record<string, unknown>
+  return (
+    typeof v.bodyColor === 'string' ||
+    typeof v.eyeStyle === 'string' ||
+    typeof v.accessory === 'string'
+  )
 }
 
-function initials(name?: string | null): string {
-  if (!name) return '??'
-  const cleaned = name.trim()
-  if (!cleaned) return '??'
-  const parts = cleaned.split(/\s+/)
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+function resolveStyle(style: string | undefined | null): AvatarStyle {
+  if (style && (AVATAR_STYLES as readonly string[]).includes(style)) {
+    return style as AvatarStyle
+  }
+  return 'avataaars'
+}
+
+function resolveSeed(seed: string | undefined | null, name: string | null): string {
+  if (seed && seed.trim()) return seed.trim()
+  if (name && name.trim()) return name.trim()
+  return 'Pitaco'
+}
+
+function resolveConfig(
+  config: AvatarConfig | Record<string, unknown> | null | undefined,
+  name: string | null
+): { style: AvatarStyle; seed: string } {
+  if (isLegacyConfig(config)) {
+    return { style: LEGACY_STYLE, seed: resolveSeed(null, name) }
+  }
+  const c = config && typeof config === 'object' ? (config as Record<string, unknown>) : null
+  return {
+    style: resolveStyle(typeof c?.style === 'string' ? c.style : null),
+    seed: resolveSeed(typeof c?.seed === 'string' ? c.seed : null, name),
+  }
+}
+
+function buildSvg(style: AvatarStyle, seed: string, size: number): string {
+  const options = { seed, size, radius: 50 }
+  switch (style) {
+    case 'avataaars':
+      return createAvatar(avataaars, options).toString()
+    case 'bottts':
+      return createAvatar(bottts, options).toString()
+    case 'lorelei':
+      return createAvatar(lorelei, options).toString()
+    case 'micah':
+      return createAvatar(micah, options).toString()
+    default:
+      return createAvatar(avataaars, options).toString()
+  }
 }
 
 export function AvatarDisplay({ config, name, size = 'md', className }: AvatarDisplayProps) {
-  const { box, bird, font } = SIZE_MAP[size]
-  const bodyColor = config?.bodyColor || pickColor(name)
-  const accessory = config?.accessory || 'none'
-  const fallbackInitials = initials(name)
+  const box = SIZE_MAP[size]
+  const { style, seed } = resolveConfig(config ?? null, name ?? null)
+
+  const svg = useMemo(() => buildSvg(style, seed, box * 2), [style, seed, box])
 
   return (
     <div
-      className={`relative flex items-center justify-center overflow-hidden rounded-full font-mono font-bold ${className ?? ''}`}
+      className={`relative flex items-center justify-center overflow-hidden rounded-full ${className ?? ''}`}
       style={{
         width: box,
         height: box,
-        background: `radial-gradient(circle at 30% 30%, ${bodyColor}99, ${bodyColor} 70%)`,
+        background: 'rgba(15, 26, 46, 0.6)',
         border: '2px solid rgba(0, 178, 169, 0.35)',
-        color: '#0F1A2E',
       }}
       aria-label={name ? `Avatar de ${name}` : 'Avatar'}
-    >
-      {config?.bodyColor ? (
-        <>
-          <Bird
-            style={{ width: bird, height: bird, color: bodyColor, filter: 'brightness(1.15)' }}
-            aria-hidden="true"
-          />
-          {accessory === 'tie' && (
-            <span
-              className="absolute"
-              style={{
-                bottom: box * 0.12,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: box * 0.08,
-                height: box * 0.18,
-                background: '#00B2A9',
-                borderRadius: 2,
-              }}
-            />
-          )}
-          {accessory === 'glasses' && (
-            <span
-              className="absolute"
-              style={{
-                top: box * 0.32,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                display: 'flex',
-                gap: 2,
-              }}
-            >
-              <span style={{ width: box * 0.14, height: box * 0.14, borderRadius: '50%', border: '1.5px solid #1A2C40' }} />
-              <span style={{ width: box * 0.14, height: box * 0.14, borderRadius: '50%', border: '1.5px solid #1A2C40' }} />
-            </span>
-          )}
-        </>
-      ) : (
-        <span className={font}>{fallbackInitials}</span>
-      )}
-    </div>
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
   )
 }

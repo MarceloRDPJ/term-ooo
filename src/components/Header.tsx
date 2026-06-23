@@ -73,7 +73,8 @@ export function Header({
               src={LOGO_SRC}
               alt="PITACO"
               onError={() => setLogoFailed(true)}
-              className="h-7 sm:h-8 w-auto md:hidden object-contain"
+              className="h-10 sm:h-11 w-auto max-h-16 md:hidden object-contain"
+              style={{ filter: 'invert(1) hue-rotate(180deg)' }}
             />
           )}
 
@@ -110,7 +111,8 @@ export function Header({
               src={LOGO_SRC}
               alt="PITACO"
               onError={() => setLogoFailed(true)}
-              className="h-8 md:h-9 lg:h-10 w-auto max-w-[180px] object-contain"
+              className="h-12 lg:h-14 w-auto max-w-[220px] max-h-16 object-contain"
+              style={{ filter: 'invert(1) hue-rotate(180deg)' }}
             />
           )}
           {isArchive && archiveDayNumber && (
