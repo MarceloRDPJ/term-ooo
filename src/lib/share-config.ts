@@ -21,7 +21,7 @@ export const SHARE_CONFIG = {
   IMAGE_MIN_HEIGHT: 800,
   
   /** Cor de fundo da imagem (hex) */
-  IMAGE_BG_COLOR: '#0f172a',
+  IMAGE_BG_COLOR: '#1A2C40',
   
   /** Nome do arquivo ao fazer download */
   getFileName: (mode: string, dayNumber: number) => {

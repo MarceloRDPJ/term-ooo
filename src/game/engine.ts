@@ -271,13 +271,13 @@ export function getResultMessage(state: GameState): string {
 
   if (state.isWin) {
     const attempts = state.currentRow
-    if (attempts <= minAttempts.first) return '🥇 Fenomenal!'
-    if (attempts <= minAttempts.second) return '🥈 Excelente!'
-    if (attempts <= minAttempts.third) return '🥉 Bom!'
-    return '🎉 Conseguiu!'
+    if (attempts <= minAttempts.first) return '🥇 HOMOLOGADO de primeira. O RH não estava preparado.'
+    if (attempts <= minAttempts.second) return '🥈 HOMOLOGADO. Pitaco protocolado com sucesso.'
+    if (attempts <= minAttempts.third) return '🥉 HOMOLOGADO. O estagiário pode respirar.'
+    return '🎉 HOMOLOGADO no sufoco. Mas homologado.'
   }
 
-  return '💀 Tente novamente amanhã!'
+  return '💀 PAUTA SEM CONSENSO. Reabrimos amanhã.'
 }
 
 export function generateShareText(state: GameState, isArchive: boolean = false): string {

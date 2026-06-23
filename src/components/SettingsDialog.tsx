@@ -38,10 +38,10 @@ export function SettingsDialog({
     <DialogShell
       open={open}
       onOpenChange={onOpenChange}
-      title="Configurações"
-      description="Configurações do jogo incluindo modo difícil e alto contraste"
-      borderColor="border-purple-600"
-      titleGradientClassName="bg-gradient-to-r from-purple-400 to-pink-500"
+      title="Configurações da Pauta"
+      description="Ajuste sua mesa antes de protocolar mais um pitaco."
+      borderColor="border-[#00B2A9]"
+      titleGradientClassName="bg-gradient-to-r from-[#00B2A9] to-[#E3C275]"
       maxHeight="none"
     >
       <ContentWrapper>
@@ -105,9 +105,9 @@ export function SettingsDialog({
                 </motion.div>
                 
                 <motion.div variants={itemVariants} className="text-xs text-gray-400 text-center py-2 space-y-2">
-                  <p>Jogo inspirado em Term.ooo / Wordle</p>
-                  <p>Clone educativo sem fins comerciais</p>
-                  
+                  <p>PITACO é um jogo de palavras com humor corporativo,</p>
+                  <p>pautas e pitacos em equipe.</p>
+
                   {/* Konami Code Hint */}
                   <div className="pt-2 border-t border-gray-800">
                     <p className="text-[10px] text-gray-600 flex items-center justify-center gap-1">

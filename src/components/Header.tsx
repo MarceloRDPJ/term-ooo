@@ -1,5 +1,4 @@
 // src/components/Header.tsx
-import { useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   Menu,
@@ -25,38 +24,19 @@ interface HeaderProps {
   archiveDayNumber?: number
 }
 
-export function Header({ 
-  title, 
-  onHelp, 
-  onStats, 
-  onSettings, 
-  onAbout, 
-  onArchive, 
-  onToggleTabs, 
-  isArchive, 
-  archiveDayNumber 
+export function Header({
+  title,
+  onHelp,
+  onStats,
+  onSettings,
+  onAbout,
+  onArchive,
+  onToggleTabs,
+  isArchive,
+  archiveDayNumber
 }: HeaderProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-
-  const handleBodaoClick = () => {
-    // Evitar sobreposição e múltiplos disparos
-    if (isPlaying || !audioRef.current) return
-
-    setIsPlaying(true)
-    audioRef.current.currentTime = 0 // Reset para o início
-    audioRef.current.play()
-      .catch((error) => {
-        console.error('Erro ao tocar áudio:', error)
-        setIsPlaying(false)
-      })
-  }
-
-  const handleAudioEnded = () => {
-    setIsPlaying(false)
-  }
 
   const handleBackToToday = () => {
     // Remover query param e voltar para o dia atual
@@ -66,14 +46,6 @@ export function Header({
 
   return (
     <header className="border-b flex-shrink-0 z-10" style={{ borderColor: 'rgba(42,64,96,0.4)', background: 'rgba(15,26,46,0.85)', backdropFilter: 'blur(8px)' }}>
-      {/* Áudio do Bodão (oculto) */}
-      <audio
-        ref={audioRef}
-        src={`${import.meta.env.BASE_URL}assets/mp3/bodao.mp3`}
-        onEnded={handleAudioEnded}
-        preload="auto"
-      />
-
       <div className="max-w-7xl mx-auto px-2 py-2 sm:px-4 sm:py-3 flex md:grid md:grid-cols-3 items-center justify-between">
         {/* Left section: Toggle + Logo (mobile) / Toggle + Buttons (desktop) */}
         <div className="flex items-center gap-1 sm:gap-2 md:justify-start">
@@ -111,19 +83,6 @@ export function Header({
             className="text-cyan-300 hover:text-cyan-100"
           >
             <Users className="w-4 h-4 sm:w-5 sm:h-5" />
-          </Button>
-          
-          {/* Bodão easter egg */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleBodaoClick}
-            aria-label="Bodão! Béééééé!"
-            disabled={isPlaying}
-            title="Bodão"
-            className={`text-slate-300 hover:text-white md:flex text-2xl ${isPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            🐐
           </Button>
         </div>
 

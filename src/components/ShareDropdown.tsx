@@ -146,7 +146,7 @@ export function ShareDropdown({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          className="bg-green-600 hover:bg-green-700 transition-colors"
+          className="bg-[#00B2A9] hover:bg-[#1A2C40] transition-colors"
           disabled={disabled || isLoading}
         >
           {copied || localCopied ? (
@@ -194,7 +194,7 @@ export function ShareDropdown({
         {/* Menu Nativo Genérico (Texto) */}
         {capabilities.canShareNative && (
           <DropdownMenuItem onClick={handleNativeShareText} disabled={isLoading} className="cursor-pointer focus:bg-gray-800 focus:text-white py-2.5">
-            <MoreHorizontal className="w-4 h-4 mr-3 text-yellow-500" />
+            <MoreHorizontal className="w-4 h-4 mr-3 text-[#E3C275]" />
             Mais opções...
           </DropdownMenuItem>
         )}
@@ -203,7 +203,7 @@ export function ShareDropdown({
         
         {/* Ações de Arquivo e Clipboard */}
         <DropdownMenuItem onClick={() => executeShareAction(onShareImage)} disabled={isLoading} className="cursor-pointer focus:bg-gray-800 focus:text-white py-2.5">
-          <ImageIcon className="w-4 h-4 mr-3 text-purple-400" />
+          <ImageIcon className="w-4 h-4 mr-3 text-[#E3C275]" />
           {capabilities.canShareFiles ? 'Baixar/Outros' : 'Baixar Imagem'}
         </DropdownMenuItem>
         

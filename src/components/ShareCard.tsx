@@ -65,7 +65,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
         <div className="p-12 flex flex-col justify-center min-h-full">
           {/* Logo / Marca D'água */}
           <div className="text-center mb-8">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent tracking-wider">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-[#00B2A9] to-[#E3C275] bg-clip-text text-transparent tracking-wider">
               {SHARE_CONFIG.BRANDING_TEXT}
             </h1>
             <p className="text-sm text-gray-400 mt-2">
@@ -74,7 +74,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
           </div>
 
           {/* Modo do Jogo */}
-          <div className="bg-slate-800 rounded-xl p-8 mb-6 border border-slate-700">
+          <div className="bg-[#0F1A2E] rounded-xl p-8 mb-6 border border-[#2A4060]">
             <h2 className="text-3xl font-bold text-center text-white mb-4">
               {modeTitle}
             </h2>
@@ -82,7 +82,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
             {/* Badge de Resultado */}
             {gameState.isGameOver && (
               <div className="flex justify-center mb-6">
-                <div className="bg-slate-700 text-green-300 px-6 py-2 rounded-full text-lg font-semibold">
+                <div className="bg-[#1A2C40] text-[#E3C275] px-6 py-2 rounded-full text-lg font-semibold">
                   {resultMessage}
                 </div>
               </div>
@@ -92,11 +92,11 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
             <div className="grid grid-cols-4 gap-4 mb-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-white">{safeStats.gamesPlayed}</div>
-                <div className="text-xs text-gray-400 mt-1">Jogadas</div>
+                <div className="text-xs text-gray-400 mt-1">Pitacos</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-white">{winPercentage}</div>
-                <div className="text-xs text-gray-400 mt-1">% Vitórias</div>
+                <div className="text-xs text-gray-400 mt-1">% Homologados</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-white">{safeStats.currentStreak}</div>
@@ -108,10 +108,10 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
               </div>
             </div>
 
-            {/* Gráfico de Distribuição de Tentativas */}
+            {/* Gráfico de Distribuição de Pitacos */}
             <div className="space-y-2">
               <h3 className="text-sm font-semibold text-gray-300 mb-3">
-                Distribuição de Tentativas
+                Distribuição de Pitacos
               </h3>
               {safeStats.guessDistribution.map((count, index) => {
                 const minPossibleAttempt = minAttempts.first
@@ -132,10 +132,10 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                     <div className="w-8 text-center text-lg">
                       {getLabel(index)}
                     </div>
-                    <div className="flex-1 bg-gray-700 h-7 rounded overflow-hidden">
+                    <div className="flex-1 bg-[#2A4060] h-7 rounded overflow-hidden">
                       <div
                         className={`h-full flex items-center justify-end px-3 transition-all ${
-                          isCurrentAttempt ? 'bg-green-600' : 'bg-gray-600'
+                          isCurrentAttempt ? 'bg-[#00B2A9]' : 'bg-[#2A4060]'
                         }`}
                         style={{
                           width: `${Math.max(percentage, count > 0 ? 10 : 0)}%`,
