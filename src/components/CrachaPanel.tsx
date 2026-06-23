@@ -6,6 +6,7 @@ import { Button } from './ui/button'
 import { AvatarDisplay, AvatarConfig } from './AvatarDisplay'
 import { AvatarPicker } from './AvatarPicker'
 import { Profile } from '@/lib/multiplayer-types'
+import { storage } from '@/game/storage'
 
 interface CrachaPanelProps {
   profile: Profile | null
@@ -16,6 +17,35 @@ interface CrachaPanelProps {
   onSaveAvatar: (config: AvatarConfig) => Promise<boolean>
   onSignOut: () => void | Promise<void>
   onMessage: (message: string | null) => void
+}
+
+type Cargo = 'Chefe' | 'Auditor' | 'Estagiario' | 'Banido'
+
+const CARGO_STYLE: Record<Cargo, { label: string; bg: string; color: string; border: string }> = {
+  Chefe: {
+    label: 'Chefe',
+    bg: 'rgba(0, 178, 169, 0.18)',
+    color: '#00B2A9',
+    border: 'rgba(0, 178, 169, 0.45)',
+  },
+  Auditor: {
+    label: 'Auditor',
+    bg: 'rgba(227, 194, 117, 0.18)',
+    color: '#E3C275',
+    border: 'rgba(227, 194, 117, 0.45)',
+  },
+  Estagiario: {
+    label: 'Estagiario',
+    bg: 'rgba(148, 163, 184, 0.15)',
+    color: '#94A3B8',
+    border: 'rgba(148, 163, 184, 0.35)',
+  },
+  Banido: {
+    label: 'Banido',
+    bg: 'rgba(226, 95, 56, 0.18)',
+    color: '#E25F38',
+    border: 'rgba(226, 95, 56, 0.45)',
+  },
 }
 
 function normalizeAvatarConfig(value: unknown, nickname: string | null, email: string | null): AvatarConfig {
@@ -29,6 +59,12 @@ function normalizeAvatarConfig(value: unknown, nickname: string | null, email: s
   }
   const fallbackSeed = nickname || (email ? email.split('@')[0] : null) || 'Pitaco'
   return { style: 'avataaars', seed: fallbackSeed }
+}
+
+function resolveCargo(role: string | null | undefined, hasPlayed: boolean): Cargo {
+  if (role === 'admin') return 'Chefe'
+  if (role === 'banned') return 'Banido'
+  return hasPlayed ? 'Auditor' : 'Estagiario'
 }
 
 export function CrachaPanel({
@@ -70,6 +106,20 @@ export function CrachaPanel({
     if (typeof v.bodyColor === 'string' || typeof v.eyeStyle === 'string' || typeof v.accessory === 'string') return true
     return false
   }, [profile?.avatar_config])
+
+  const role = (profile as (Profile & { role?: string | null }) | null)?.role ?? null
+
+  const hasPlayed = useMemo(() => {
+    if (typeof window === 'undefined') return false
+    const total =
+      storage.getStats('termo').gamesPlayed +
+      storage.getStats('dueto').gamesPlayed +
+      storage.getStats('quarteto').gamesPlayed
+    return total > 0
+  }, [])
+
+  const cargo = resolveCargo(role, hasPlayed)
+  const cargoStyle = CARGO_STYLE[cargo]
 
   const handleNicknameSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -113,10 +163,14 @@ export function CrachaPanel({
           cargo
         </div>
         <span
-          className="rounded-full px-2 py-0.5 text-[10px] font-mono font-semibold uppercase"
-          style={{ background: 'rgba(0, 178, 169, 0.15)', color: '#00B2A9' }}
+          className="rounded-full border px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider"
+          style={{
+            background: cargoStyle.bg,
+            color: cargoStyle.color,
+            borderColor: cargoStyle.border,
+          }}
         >
-          Estagiario
+          {cargoStyle.label}
         </span>
       </div>
 
