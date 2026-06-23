@@ -1,4 +1,5 @@
 // src/components/Header.tsx
+import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   Menu,
@@ -24,6 +25,8 @@ interface HeaderProps {
   archiveDayNumber?: number
 }
 
+const LOGO_SRC = `${import.meta.env.BASE_URL}logo.png`
+
 export function Header({
   title,
   onHelp,
@@ -37,6 +40,7 @@ export function Header({
 }: HeaderProps) {
   const navigate = useNavigate()
   const location = useLocation()
+  const [logoFailed, setLogoFailed] = useState(false)
 
   const handleBackToToday = () => {
     // Remover query param e voltar para o dia atual
@@ -60,9 +64,18 @@ export function Header({
           </Button>
 
           {/* Logo on mobile */}
-          <h1 className="text-white text-base sm:text-lg md:hidden uppercase tracking-wider font-bold font-mono">
-            {title}
-          </h1>
+          {logoFailed ? (
+            <h1 className="text-white text-base sm:text-lg md:hidden uppercase tracking-wider font-bold font-mono">
+              {title}
+            </h1>
+          ) : (
+            <img
+              src={LOGO_SRC}
+              alt="PITACO"
+              onError={() => setLogoFailed(true)}
+              className="h-7 sm:h-8 w-auto md:hidden object-contain"
+            />
+          )}
 
           {/* Help button (visible on all screens) */}
           <Button
@@ -88,9 +101,18 @@ export function Header({
 
         {/* Center logo (desktop only) */}
         <div className="hidden md:flex items-center justify-center flex-col gap-1">
-          <h1 className="text-lg md:text-xl lg:text-2xl uppercase tracking-wider font-black font-mono" style={{ color: '#00B2A9' }}>
-            {title}
-          </h1>
+          {logoFailed ? (
+            <h1 className="text-lg md:text-xl lg:text-2xl uppercase tracking-wider font-black font-mono" style={{ color: '#00B2A9' }}>
+              {title}
+            </h1>
+          ) : (
+            <img
+              src={LOGO_SRC}
+              alt="PITACO"
+              onError={() => setLogoFailed(true)}
+              className="h-8 md:h-9 lg:h-10 w-auto max-w-[180px] object-contain"
+            />
+          )}
           {isArchive && archiveDayNumber && (
             <div className="text-xs bg-yellow-600/20 text-yellow-200 px-3 py-1 rounded-full flex items-center gap-1 font-mono">
               🕰️ Arquivo - Dia #{archiveDayNumber}

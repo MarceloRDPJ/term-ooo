@@ -12,7 +12,7 @@ export const SHARE_CONFIG = {
   BRANDING_TEXT: 'PITACO',
   
   /** Subtítulo da marca d'água */
-  BRANDING_SUBTITLE: 'Jogue em jogo.work',
+  BRANDING_SUBTITLE: 'Abra uma pauta e dê seu pitaco',
   
   /** Largura da imagem gerada (px) */
   IMAGE_WIDTH: 600,

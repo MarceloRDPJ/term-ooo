@@ -54,7 +54,7 @@ export interface RoomPlayer {
   score: number
   joined_at: string
   last_seen_at: string
-  profiles?: Pick<Profile, 'nickname' | 'avatar_url'> | null
+  profiles?: Pick<Profile, 'nickname' | 'avatar_url' | 'avatar_config'> | null
 }
 
 export interface RoomGameState {
@@ -108,4 +108,19 @@ export interface CreateRoomInput {
   maxPlayers: number
   totalRounds: number
   settings?: RoomSettings
+}
+
+export interface RoomSummary {
+  id: string
+  code: string
+  status: RoomStatus
+  room_mode: RoomMode
+  game_mode: GameMode
+  theme: ThemeId
+  max_players: number
+  current_round: number
+  total_rounds: number
+  created_at: string
+  role: PlayerRole
+  player_count: number
 }

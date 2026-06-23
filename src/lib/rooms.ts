@@ -10,6 +10,7 @@ import {
   Room,
   RoomGameState,
   RoomPlayer,
+  RoomSummary,
 } from './multiplayer-types'
 import { normalizeString } from './utils'
 
@@ -93,7 +94,7 @@ export async function getRoomByCode(code: string): Promise<Room | null> {
 export async function getRoomPlayers(roomId: string): Promise<RoomPlayer[]> {
   const { data, error } = await supabase
     .from('room_players')
-    .select('*, profiles(nickname, avatar_url)')
+    .select('*, profiles(nickname, avatar_url, avatar_config)')
     .eq('room_id', roomId)
     .order('joined_at', { ascending: true })
 
@@ -325,4 +326,71 @@ export function subscribeToRoom(roomId: string, onChange: () => void): RealtimeC
     .on('postgres_changes', { event: '*', schema: 'public', table: 'guess_suggestions', filter: `room_id=eq.${roomId}` }, onChange)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'guess_votes', filter: `room_id=eq.${roomId}` }, onChange)
     .subscribe()
+}
+
+export async function listMyRooms(userId: string): Promise<RoomSummary[]> {
+  if (!userId) return []
+
+  const [ownedRes, joinedRes, playersRes] = await Promise.all([
+    supabase
+      .from('rooms')
+      .select('*')
+      .eq('owner_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(20),
+    supabase
+      .from('room_players')
+      .select('room_id, role, rooms(*)')
+      .eq('user_id', userId)
+      .order('joined_at', { ascending: false })
+      .limit(40),
+    supabase
+      .from('room_players')
+      .select('room_id'),
+  ])
+
+  if (ownedRes.error) throw new Error(ownedRes.error.message)
+  if (joinedRes.error) throw new Error(joinedRes.error.message)
+  if (playersRes.error) throw new Error(playersRes.error.message)
+
+  const playerCountByRoom: Record<string, number> = {}
+  for (const row of playersRes.data ?? []) {
+    const id = (row as { room_id: string }).room_id
+    playerCountByRoom[id] = (playerCountByRoom[id] ?? 0) + 1
+  }
+
+  const merged = new Map<string, { room: Room; role: RoomSummary['role'] }>()
+
+  for (const room of (ownedRes.data ?? []) as Room[]) {
+    merged.set(room.id, { room, role: 'owner' })
+  }
+
+  for (const row of (joinedRes.data ?? []) as Array<{ room_id: string; role: RoomSummary['role']; rooms: Room | Room[] | null }>) {
+    const inner = Array.isArray(row.rooms) ? row.rooms[0] : row.rooms
+    if (!inner) continue
+    const existing = merged.get(row.room_id)
+    if (existing && existing.role === 'owner') continue
+    merged.set(row.room_id, { room: inner as Room, role: row.role ?? 'player' })
+  }
+
+  const summaries: RoomSummary[] = []
+  for (const { room, role } of merged.values()) {
+    summaries.push({
+      id: room.id,
+      code: room.code,
+      status: room.status,
+      room_mode: room.room_mode,
+      game_mode: room.game_mode,
+      theme: room.theme,
+      max_players: room.max_players,
+      current_round: room.current_round,
+      total_rounds: room.total_rounds,
+      created_at: room.created_at,
+      role,
+      player_count: playerCountByRoom[room.id] ?? (role === 'owner' ? 1 : 0),
+    })
+  }
+
+  summaries.sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
+  return summaries.slice(0, 10)
 }

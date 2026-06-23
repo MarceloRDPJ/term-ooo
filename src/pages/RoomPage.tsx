@@ -4,6 +4,7 @@ import { ArrowLeft, Copy, Loader2, MessageCircle, Play, Send, ThumbsUp, Trophy, 
 import { Button } from '@/components/ui/button'
 import { GameLayout } from '@/components/GameLayout'
 import { Keyboard } from '@/components/Keyboard'
+import { AvatarDisplay } from '@/components/AvatarDisplay'
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
 import { ChatMessage, GuessSuggestion, GuessVote, Room, RoomGameState, RoomPlayer } from '@/lib/multiplayer-types'
 import {
@@ -254,8 +255,13 @@ export function RoomPage() {
             </div>
             <div className="space-y-2">
               {players.map((player) => (
-                <div key={player.id} className="flex items-center justify-between rounded-lg bg-slate-950/60 px-3 py-2 text-sm">
-                  <span>{player.profiles?.nickname || 'Estagiario'}</span>
+                <div key={player.id} className="flex items-center gap-3 rounded-lg bg-slate-950/60 px-3 py-2 text-sm">
+                  <AvatarDisplay
+                    config={player.profiles?.avatar_config}
+                    name={player.profiles?.nickname}
+                    size="sm"
+                  />
+                  <span className="min-w-0 flex-1 truncate">{player.profiles?.nickname || 'Estagiario'}</span>
                   <span className="text-xs text-slate-500">{player.role}</span>
                 </div>
               ))}

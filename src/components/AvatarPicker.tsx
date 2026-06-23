@@ -32,7 +32,7 @@ export interface AvatarConfig {
   accessory: string
 }
 
-export function AvatarDisplay({ config, size = 48 }: { config: AvatarConfig; size?: number }) {
+function AvatarPreview({ config, size = 48 }: { config: AvatarConfig; size?: number }) {
   return (
     <div
       className="relative flex items-center justify-center rounded-full"
@@ -75,7 +75,7 @@ export function AvatarPicker({
   return (
     <div className="space-y-4">
       <div className="flex justify-center">
-        <AvatarDisplay config={config} size={72} />
+        <AvatarPreview config={config} size={72} />
       </div>
 
       <div>

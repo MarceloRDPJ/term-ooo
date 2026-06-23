@@ -158,18 +158,30 @@ export function useSupabaseAuth() {
     setState({ session: null, user: null, profile: null, loading: false, error: null })
   }, [])
 
-  const updateProfile = useCallback(async (values: Pick<Profile, 'nickname'>) => {
+  const updateProfile = useCallback(async (values: Partial<Pick<Profile, 'nickname' | 'avatar_url' | 'avatar_config'>>) => {
     if (!state.user) return false
 
-    const nickname = values.nickname.trim().slice(0, 20)
-    if (nickname.length < 2) {
-      setState((prev) => ({ ...prev, error: 'Nickname deve ter pelo menos 2 caracteres.' }))
-      return false
+    const patch: Record<string, unknown> = {}
+    if (typeof values.nickname === 'string') {
+      const nickname = values.nickname.trim().slice(0, 20)
+      if (nickname.length < 2) {
+        setState((prev) => ({ ...prev, error: 'Nickname deve ter pelo menos 2 caracteres.' }))
+        return false
+      }
+      patch.nickname = nickname
     }
+    if (typeof values.avatar_url === 'string') {
+      patch.avatar_url = values.avatar_url.trim() || null
+    }
+    if (values.avatar_config !== undefined) {
+      patch.avatar_config = values.avatar_config
+    }
+
+    if (Object.keys(patch).length === 0) return true
 
     const { data, error } = await supabase
       .from('profiles')
-      .update({ nickname })
+      .update(patch)
       .eq('id', state.user.id)
       .select('*')
       .single()
