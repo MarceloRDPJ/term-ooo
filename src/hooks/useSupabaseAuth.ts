@@ -158,6 +158,37 @@ export function useSupabaseAuth() {
     setState({ session: null, user: null, profile: null, loading: false, error: null })
   }, [])
 
+  const resetPasswordForEmail = useCallback(async (email: string, redirectTo?: string) => {
+    const normalized = email.trim().toLowerCase()
+    if (!normalized) {
+      setState((prev) => ({ ...prev, error: 'Informe seu e-mail.' }))
+      return false
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(normalized, {
+      redirectTo: redirectTo ?? `${window.location.origin}${import.meta.env.BASE_URL}redefinir-senha`,
+    })
+    if (error) {
+      setState((prev) => ({ ...prev, error: error.message }))
+      return false
+    }
+    setState((prev) => ({ ...prev, error: null }))
+    return true
+  }, [])
+
+  const updatePassword = useCallback(async (newPassword: string) => {
+    if (!state.user) {
+      setState((prev) => ({ ...prev, error: 'Sessao expirada. Use o link do email de novo.' }))
+      return false
+    }
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (error) {
+      setState((prev) => ({ ...prev, error: error.message }))
+      return false
+    }
+    setState((prev) => ({ ...prev, error: null }))
+    return true
+  }, [state.user])
+
   const updateProfile = useCallback(async (values: Partial<Pick<Profile, 'nickname' | 'avatar_url' | 'avatar_config'>>) => {
     if (!state.user) return false
 
@@ -201,6 +232,8 @@ export function useSupabaseAuth() {
     signInWithPassword,
     signUpWithPassword,
     signOut,
+    resetPasswordForEmail,
+    updatePassword,
     updateProfile,
   }
 }

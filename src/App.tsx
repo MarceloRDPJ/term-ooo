@@ -19,6 +19,7 @@ import { ChatPanel } from './components/Chat/ChatPanel'
 import { RoomsHome } from './pages/RoomsHome'
 import { RoomPage } from './pages/RoomPage'
 import { AdminPage } from './pages/AdminPage'
+import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { useDialogManager } from './hooks/useDialogManager'
 import { useGameAnimations } from './hooks/useGameAnimations'
 import { useKeyboardInput } from './hooks/useKeyboardInput'
@@ -494,6 +495,7 @@ function App() {
         <Route path="/mega" element={<RoomsHome />} />
         <Route path="/sala/:roomCode" element={<RoomPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
       </Routes>
     </BrowserRouter>
   )

@@ -36,7 +36,7 @@ type ProfileWithRole = Profile & { role?: UserRole | null }
 
 const ROLE_LABELS: Record<UserRole, string> = {
   user: 'auditor',
-  admin: 'chefe',
+  admin: 'admin',
   banned: 'banido',
 }
 
@@ -201,7 +201,7 @@ export function AdminPage() {
         <ShieldOff className="h-10 w-10 text-[#E25F38]" />
         <h1 className="text-2xl font-bold font-mono">acesso restrito</h1>
         <p className="max-w-md text-slate-300 font-mono text-sm">
-          Entre com sua conta para acessar o painel do chefe.
+          Entre com sua conta para acessar o painel de admin.
         </p>
         <Button onClick={() => navigate('/salas')} className="font-mono text-xs">
           <ArrowLeft className="mr-2 h-4 w-4" /> ir para o login
@@ -219,7 +219,7 @@ export function AdminPage() {
         <ShieldOff className="h-10 w-10 text-[#E25F38]" />
         <h1 className="text-2xl font-bold font-mono">acesso restrito</h1>
         <p className="max-w-md text-slate-300 font-mono text-sm">
-          Esta area e so para chefes. Se voce acha que deveria ter acesso, fale com o time.
+          Esta area e so para admins. Se voce acha que deveria ter acesso, fale com o time.
         </p>
         <Button onClick={() => navigate('/salas')} className="font-mono text-xs">
           <ArrowLeft className="mr-2 h-4 w-4" /> voltar para as pautas
@@ -252,7 +252,7 @@ export function AdminPage() {
                 className="text-2xl font-black tracking-tight"
                 style={{ fontFamily: 'var(--font-mono)', color: '#00B2A9' }}
               >
-                CHEFE
+                ADMIN
               </h1>
             </div>
             <p className="text-xs text-slate-400 font-mono">

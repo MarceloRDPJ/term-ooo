@@ -19,11 +19,11 @@ interface CrachaPanelProps {
   onMessage: (message: string | null) => void
 }
 
-type Cargo = 'Chefe' | 'Auditor' | 'Estagiario' | 'Banido'
+type Cargo = 'Admin' | 'Auditor' | 'Estagiario' | 'Banido'
 
 const CARGO_STYLE: Record<Cargo, { label: string; bg: string; color: string; border: string }> = {
-  Chefe: {
-    label: 'Chefe',
+  Admin: {
+    label: 'Admin',
     bg: 'rgba(0, 178, 169, 0.18)',
     color: '#00B2A9',
     border: 'rgba(0, 178, 169, 0.45)',
@@ -62,7 +62,7 @@ function normalizeAvatarConfig(value: unknown, nickname: string | null, email: s
 }
 
 function resolveCargo(role: string | null | undefined, hasPlayed: boolean): Cargo {
-  if (role === 'admin') return 'Chefe'
+  if (role === 'admin') return 'Admin'
   if (role === 'banned') return 'Banido'
   return hasPlayed ? 'Auditor' : 'Estagiario'
 }
