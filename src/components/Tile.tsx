@@ -30,18 +30,18 @@ export function Tile({
     filled: 'bg-transparent border-2 border-gray-500',
     correct: highContrast
       ? 'bg-orange-500 border-orange-500 text-white'
-      : 'bg-green-600 border-green-600 text-white',
+      : 'bg-[#00B2A9] border-[#00B2A9] text-white',
     present: highContrast
       ? 'bg-cyan-500 border-cyan-500 text-white'
-      : 'bg-yellow-500 border-yellow-500 text-white',
-    absent: 'bg-gray-800 border-gray-800 text-white',
+      : 'bg-[#E3C275] border-[#E3C275] text-[#1A2C40]',
+    absent: 'bg-[#243447] border-[#243447] text-white',
   }
 
   // Determinar a cor final para a animação (CSS variable)
   const getTileColor = () => {
-    if (state === 'correct') return highContrast ? '#f97316' : '#16a34a'
-    if (state === 'present') return highContrast ? '#06b6d4' : '#eab308'
-    if (state === 'absent') return '#1f2937'
+    if (state === 'correct') return highContrast ? '#f97316' : '#00B2A9'
+    if (state === 'present') return highContrast ? '#06b6d4' : '#E3C275'
+    if (state === 'absent') return '#243447'
     return 'transparent'
   }
 

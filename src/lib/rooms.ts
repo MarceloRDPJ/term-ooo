@@ -66,7 +66,7 @@ export async function createRoom(input: CreateRoomInput): Promise<Room> {
 
     if (!error && data) return data as Room
 
-    lastError = new Error(error?.message || 'Erro ao criar sala')
+    lastError = new Error(error?.message || 'Erro ao abrir pauta')
     if (!error?.message?.toLowerCase().includes('duplicate')) break
   }
 
@@ -154,7 +154,7 @@ export async function submitRoomGuess(
 
   const normalizedWord = normalizeString(word)
   if (!/^[a-z]{5}$/.test(normalizedWord)) {
-    throw new Error('O palpite precisa ter exatamente 5 letras')
+    throw new Error('O pitaco precisa ter exatamente 5 letras')
   }
 
   const stateWithGuess: GameState = {

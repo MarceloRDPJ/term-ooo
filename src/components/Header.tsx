@@ -106,8 +106,8 @@ export function Header({
             variant="ghost"
             size="icon"
             onClick={() => navigate('/salas')}
-            aria-label="Salas multiplayer"
-            title="Salas"
+            aria-label="Pautas"
+            title="Pautas"
             className="text-cyan-300 hover:text-cyan-100"
           >
             <Users className="w-4 h-4 sm:w-5 sm:h-5" />

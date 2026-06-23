@@ -42,7 +42,7 @@ export function useSupabaseAuth() {
       return
     }
 
-    const nickname = user.email?.split('@')[0]?.slice(0, 20) || 'Jogador'
+    const nickname = user.email?.split('@')[0]?.slice(0, 20) || 'Estagiario'
     const { data: createdProfile, error: createError } = await supabase
       .from('profiles')
       .insert({ id: user.id, nickname })
@@ -135,7 +135,7 @@ export function useSupabaseAuth() {
   }, [])
 
   const signUpWithPassword = useCallback(async (email: string, password: string, nickname: string) => {
-    const cleanedNickname = nickname.trim().slice(0, 20) || 'Jogador'
+    const cleanedNickname = nickname.trim().slice(0, 20) || 'Estagiario'
     const { error } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password,

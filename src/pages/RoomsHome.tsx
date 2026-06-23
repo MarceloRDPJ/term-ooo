@@ -58,7 +58,7 @@ export function RoomsHome() {
 
   const handlePasswordSignUp = async () => {
     setIsSubmitting(true)
-    const ok = await auth.signUpWithPassword(email, password, nickname || email.split('@')[0] || 'Jogador')
+    const ok = await auth.signUpWithPassword(email, password, nickname || email.split('@')[0] || 'Estagiario')
     setIsSubmitting(false)
     if (ok) setMessage('Conta criada e login realizado.')
   }
@@ -80,7 +80,7 @@ export function RoomsHome() {
       setCreatedCode(room.code)
       navigate(`/sala/${room.code}`)
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Erro ao criar sala')
+      setMessage(error instanceof Error ? error.message : 'Erro ao abrir pauta')
     } finally {
       setIsSubmitting(false)
     }
@@ -120,9 +120,9 @@ export function RoomsHome() {
           </Button>
           <div className="text-right">
             <h1 className="text-xl font-black tracking-tight" style={{ fontFamily: 'var(--font-mono)', color: '#00B2A9' }}>
-              bando
+              pauta
             </h1>
-            <p className="text-xs text-slate-500 font-mono">salas de pitacos com amigos</p>
+            <p className="text-xs text-slate-500 font-mono">abre uma pauta e chama o time</p>
           </div>
         </div>
       </header>
@@ -223,8 +223,8 @@ export function RoomsHome() {
                 <Bird className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold font-mono">abrir bando</h2>
-                <p className="text-sm text-slate-400">Todo mundo sugere, vota e o dono envia o palpite.</p>
+                <h2 className="text-lg font-semibold font-mono">abrir pauta</h2>
+                <p className="text-sm text-slate-400">Monte a pauta, chame o time e comece a dar pitacos.</p>
               </div>
             </div>
 
@@ -252,7 +252,7 @@ export function RoomsHome() {
               </label>
 
               <label className="space-y-2 text-sm">
-                <span className="text-slate-300 font-mono text-xs">passaros</span>
+                <span className="text-slate-300 font-mono text-xs">participantes</span>
                 <input
                   type="number"
                   min={1}
@@ -277,12 +277,12 @@ export function RoomsHome() {
             </div>
 
             <div className="mt-4 rounded-xl bg-[#0F1A2E]/80 p-4 text-sm text-slate-300 font-mono">
-              {gameModeEmoji} modo de jogo: <strong style={{ color: '#00B2A9' }}>{form.gameMode}</strong> &middot; os amigos sugerem palavras de 5 letras, votam na melhor e o dono envia pro tabuleiro.
+              {gameModeEmoji} modo: <strong style={{ color: '#00B2A9' }}>{form.gameMode}</strong> &middot; todos dao pitacos de 5 letras, votam na melhor e o dono envia pro tabuleiro.
             </div>
 
             <Button type="submit" disabled={!auth.user || isSubmitting} className="mt-5 w-full font-mono text-xs">
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-              abrir bando
+              abrir pauta
             </Button>
           </form>
 
@@ -302,7 +302,7 @@ export function RoomsHome() {
 
           {createdCode && (
             <div className="rounded-2xl border border-[#00B2A9]/30 p-5 text-emerald-50" style={{ background: 'rgba(0,178,169,0.08)' }}>
-              <p className="text-sm font-mono text-slate-400">bando criado</p>
+              <p className="text-sm font-mono text-slate-400">pauta aberta</p>
               <p className="text-3xl font-black tracking-[0.3em] font-mono" style={{ color: '#00B2A9' }}>{createdCode}</p>
               <Button onClick={handleCopyInvite} className="mt-3 text-sm font-mono" style={{ background: '#00B2A9', color: '#0F1A2E' }}>
                 <Copy className="mr-2 h-4 w-4" /> copiar convite

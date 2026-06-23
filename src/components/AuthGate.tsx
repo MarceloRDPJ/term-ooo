@@ -36,7 +36,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
               <Bird className="h-7 w-7" style={{ color: '#00B2A9' }} />
             </div>
             <h1 className="text-2xl font-black tracking-tight font-mono" style={{ fontFamily: 'var(--font-mono)', color: '#00B2A9' }}>PITACO</h1>
-            <p className="mt-2 text-sm text-slate-400">entre com seu bando pra dar pitacos.</p>
+            <p className="mt-2 text-sm text-slate-400">entre no escritorio pra dar pitacos.</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-3">

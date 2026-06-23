@@ -82,7 +82,7 @@ export function RoomPage() {
 
       try {
         let currentRoom = await getRoomByCode(normalizedCode)
-        if (!currentRoom) throw new Error('Sala nao encontrada')
+        if (!currentRoom) throw new Error('Pauta nao encontrada')
 
         currentRoom = await joinRoom(currentRoom.code)
         if (cancelled) return
@@ -170,7 +170,7 @@ export function RoomPage() {
       if (nextRoom) setRoom(nextRoom)
       await loadRoomData(nextRoom || room)
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Erro ao enviar palpite')
+      setStatus(error instanceof Error ? error.message : 'Erro ao enviar pitaco')
     }
   }
 
@@ -206,7 +206,7 @@ export function RoomPage() {
   if (!room) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-950 px-4 text-center text-white">
-        <h1 className="text-2xl font-bold">Sala indisponivel</h1>
+        <h1 className="text-2xl font-bold">Pauta indisponivel</h1>
         <p className="max-w-md text-slate-400">{status || 'Nao foi possivel carregar essa sala.'}</p>
         <Button onClick={() => navigate('/salas')}>Criar outra sala</Button>
       </div>
@@ -218,10 +218,10 @@ export function RoomPage() {
       <header className="border-b border-slate-800 bg-slate-950/70 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <Button variant="ghost" onClick={() => navigate('/salas')} className="text-slate-300 hover:text-white">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Salas
+            <ArrowLeft className="mr-2 h-4 w-4" /> Pautas
           </Button>
           <div className="text-right">
-            <p className="text-xs text-slate-400">Codigo da sala</p>
+            <p className="text-xs text-slate-400">Codigo da pauta</p>
             <button onClick={handleCopyInvite} className="text-2xl font-black tracking-[0.35em] text-cyan-200">
               {room.code}
             </button>
@@ -233,7 +233,7 @@ export function RoomPage() {
         <aside className="space-y-5">
           <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-semibold">Sala</h2>
+              <h2 className="font-semibold">Pauta</h2>
               <Button size="sm" onClick={handleCopyInvite}>
                 <Copy className="mr-2 h-4 w-4" /> Convite
               </Button>
@@ -250,12 +250,12 @@ export function RoomPage() {
           <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
             <div className="mb-3 flex items-center gap-2">
               <Users className="h-4 w-4 text-cyan-300" />
-              <h2 className="font-semibold">Jogadores</h2>
+              <h2 className="font-semibold">Time</h2>
             </div>
             <div className="space-y-2">
               {players.map((player) => (
                 <div key={player.id} className="flex items-center justify-between rounded-lg bg-slate-950/60 px-3 py-2 text-sm">
-                  <span>{player.profiles?.nickname || 'Jogador'}</span>
+                  <span>{player.profiles?.nickname || 'Estagiario'}</span>
                   <span className="text-xs text-slate-500">{player.role}</span>
                 </div>
               ))}
@@ -265,8 +265,8 @@ export function RoomPage() {
 
         <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
           <div className="mb-4">
-            <h1 className="text-2xl font-black font-mono tracking-tight" style={{ color: '#00B2A9' }}>bando</h1>
-            <p className="text-sm text-slate-400">Sugiram palavras, votem e deixem o dono enviar o palpite para o tabuleiro compartilhado.</p>
+            <h1 className="text-2xl font-black font-mono tracking-tight" style={{ color: '#00B2A9' }}>pauta</h1>
+            <p className="text-sm text-slate-400">De pitacos, vote no melhor e o dono envia pro tabuleiro.</p>
           </div>
 
           <div className="mb-5 rounded-xl bg-slate-950/60 p-4 text-sm text-slate-300">
@@ -338,15 +338,15 @@ export function RoomPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-2xl font-black uppercase tracking-widest">{suggestion.normalized_word}</p>
-                    <p className="text-xs text-slate-500">por {suggestion.profiles?.nickname || 'Jogador'}</p>
+                    <p className="text-xs text-slate-500">por {suggestion.profiles?.nickname || 'Estagiario'}</p>
                   </div>
                   <div className="flex flex-col gap-2">
                     <Button size="sm" onClick={() => handleVote(suggestion.id)}>
                       <ThumbsUp className="mr-2 h-4 w-4" /> {voteCountBySuggestion[suggestion.id] || 0}
                     </Button>
                     {isOwner && sharedGameState && !sharedGameState.isGameOver && (
-                      <Button size="sm" variant="outline" onClick={() => handleSubmitSuggestion(suggestion)} className="border-cyan-500/40 bg-transparent text-cyan-100 hover:bg-cyan-500/10">
-                        Enviar
+                      <Button size="sm" variant="outline" onClick={() => handleSubmitSuggestion(suggestion)} className="border-[#00B2A9]/40 bg-transparent text-[#00B2A9] hover:bg-[#00B2A9]/10 font-mono text-xs">
+                        enviar pitaco
                       </Button>
                     )}
                   </div>
