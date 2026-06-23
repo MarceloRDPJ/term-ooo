@@ -153,7 +153,7 @@ export function loadChatMinimized(): boolean {
   try {
     const value = localStorage.getItem(CHAT_CONFIG.STORAGE_KEY_CHAT_MINIMIZED)
     return value === 'true'
-  } catch (error) {
+  } catch {
     return true
   }
 }

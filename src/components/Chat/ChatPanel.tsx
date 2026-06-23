@@ -9,6 +9,7 @@ import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import { useEscapeKey } from '@/hooks/useEscapeKey'
 import { formatLatency, getLatencyColor } from '@/lib/chat-utils'
 import { Z_INDEX } from '@/lib/z-index'
+import { ChatMessage } from '@/game/chat-types'
 
 interface ChatPanelProps {
   open: boolean
@@ -17,7 +18,7 @@ interface ChatPanelProps {
   authenticated: boolean
   userId: string | null
   nickname: string | null
-  messages: any[]
+  messages: ChatMessage[]
   onlineCount: number
   error: string | null
   latency: number | null

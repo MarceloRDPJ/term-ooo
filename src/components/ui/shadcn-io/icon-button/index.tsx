@@ -47,18 +47,19 @@ function IconButton({
       )}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
+      transition={transition}
       style={
         {
           '--icon-button-color': `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
         } as React.CSSProperties
       }
-      {...(props as any)}
+      {...props}
     >
       <motion.div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 stroke-muted-foreground group-hover/icon-button:stroke-[var(--icon-button-color)]"
         aria-hidden="true"
       >
-        {React.createElement(Icon as React.ComponentType<any>, {
+        {React.createElement(Icon as React.ComponentType<{ className?: string }>, {
           className: active ? 'fill-[var(--icon-button-color)]' : 'fill-transparent'
         })}
       </motion.div>

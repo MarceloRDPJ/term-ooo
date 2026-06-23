@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { CHAT_CONFIG } from '@/lib/chat-config'
+import { ChatMessage } from '@/game/chat-types'
 
 interface ConnectionState {
   connected: boolean
@@ -17,7 +18,7 @@ interface UseChatConnectionProps {
   maxReconnectAttempts?: number
   reconnectDelayBase?: number
   heartbeatInterval?: number
-  onMessage?: (data: any) => void
+  onMessage?: (data: ChatMessage) => void
   onConnected?: () => void
   onDisconnected?: () => void
 }
@@ -69,8 +70,9 @@ export function useChatConnection({
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         lastPingTimeRef.current = Date.now()
         wsRef.current.send(JSON.stringify({
-          type: 'ping',
-          time: lastPingTimeRef.current
+            type: 'ping',
+            timestamp: new Date().toISOString(),
+            time: lastPingTimeRef.current
         }))
       }
     }, heartbeatInterval)
@@ -108,7 +110,7 @@ export function useChatConnection({
             lastPingTimeRef.current = null
           }
           
-          onMessage?.(data)
+          onMessage?.(data as ChatMessage)
         } catch (error) {
           console.error('[ChatConnection] Erro ao parsear mensagem:', error)
         }
@@ -159,7 +161,7 @@ export function useChatConnection({
   }, [clearTimers])
 
   // Enviar mensagem
-  const send = useCallback((data: any) => {
+  const send = useCallback((data: unknown) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(data))
       return true
@@ -183,7 +185,6 @@ export function useChatConnection({
       isIntentionalCloseRef.current = true
       disconnect()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoConnect])
 
   return {

@@ -20,20 +20,22 @@ export function useSoundEffects({ settings, enabled = true }: UseSoundEffectsOpt
     
     const preloadSounds = SOUNDS_CONFIG.filter(config => config.preload)
     
+    const cache = audioCache.current
+
     preloadSounds.forEach(config => {
       const audio = new Audio(config.file)
       audio.volume = config.volume ?? 1
       audio.preload = 'auto'
-      audioCache.current.set(config.event, audio)
+      cache.set(config.event, audio)
     })
     
     // Cleanup
     return () => {
-      audioCache.current.forEach(audio => {
+      cache.forEach(audio => {
         audio.pause()
         audio.src = ''
       })
-      audioCache.current.clear()
+      cache.clear()
     }
   }, [settings.soundEnabled, enabled])
   

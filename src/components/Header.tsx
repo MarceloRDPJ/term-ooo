@@ -8,7 +8,8 @@ import {
   Info,
   BarChart3,
   Settings,
-  Home
+  Home,
+  Users
 } from "lucide-react";
 import { Button } from './ui/button'
 
@@ -100,6 +101,16 @@ export function Header({
             className="text-slate-300 hover:text-white"
           >
             <HelpCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/salas')}
+            aria-label="Salas multiplayer"
+            title="Salas"
+            className="text-cyan-300 hover:text-cyan-100"
+          >
+            <Users className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
           
           {/* Bodão easter egg */}

@@ -16,6 +16,8 @@ import { AboutDialog } from './components/AboutDialog'
 import { ArchiveDialog } from './components/ArchiveDialog'
 import { ChatButton } from './components/Chat/ChatButton'
 import { ChatPanel } from './components/Chat/ChatPanel'
+import { RoomsHome } from './pages/RoomsHome'
+import { RoomPage } from './pages/RoomPage'
 import { useDialogManager } from './hooks/useDialogManager'
 import { useGameAnimations } from './hooks/useGameAnimations'
 import { useKeyboardInput } from './hooks/useKeyboardInput'
@@ -486,6 +488,10 @@ function App() {
         <Route path="/dueto" element={<Game />} />
         <Route path="/4" element={<Game />} />
         <Route path="/quarteto" element={<Game />} />
+        <Route path="/salas" element={<RoomsHome />} />
+        <Route path="/multi" element={<RoomsHome />} />
+        <Route path="/mega" element={<RoomsHome />} />
+        <Route path="/sala/:roomCode" element={<RoomPage />} />
       </Routes>
     </BrowserRouter>
   )

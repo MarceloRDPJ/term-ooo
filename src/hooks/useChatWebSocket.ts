@@ -52,6 +52,7 @@ export function useChatWebSocket({
     onMessage: (data: ChatMessage) => {
       switch (data.type) {
         case 'request-auth':
+        {
           if (data.connectionId) {
             connection.setConnectionId(data.connectionId)
             auth.setConnectionId(data.connectionId)
@@ -68,6 +69,7 @@ export function useChatWebSocket({
             }, 100)
           }
           break
+        }
 
         case 'auth-accepted':
           auth.authenticate(data.nickname || '')

@@ -162,8 +162,9 @@ const MessageInput = React.forwardRef<HTMLDivElement, MessageInputProps>(
 
     const handleCompositionEnd = React.useCallback((e: React.CompositionEvent<HTMLDivElement>) => {
       isComposingRef.current = false
-      handleInput(e as any)
-    }, [handleInput])
+      const text = e.currentTarget.textContent || ''
+      onValueChange?.(maxLength && text.length > maxLength ? text.slice(0, maxLength) : text)
+    }, [maxLength, onValueChange])
 
     // Estados visuais
     const isEmpty = !value || value.length === 0
