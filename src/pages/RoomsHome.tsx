@@ -1,24 +1,16 @@
 import { FormEvent, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Brain, Copy, Loader2, LogOut, Sparkles, Users } from 'lucide-react'
+import { ArrowLeft, Bird, Copy, Loader2, LogOut, Plus, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { GameMode } from '@/game/types'
-import { CreateRoomInput, RoomMode, ThemeId } from '@/lib/multiplayer-types'
+import { CreateRoomInput, ThemeId } from '@/lib/multiplayer-types'
 import { createRoom, getRoomInviteUrl, joinRoom } from '@/lib/rooms'
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
 
-const roomModeOptions: { value: RoomMode; label: string; description: string }[] = [
-  { value: 'multi_brain', label: 'Multi Brain', description: 'Todo mundo sugere e vota na melhor palavra.' },
-  { value: 'multi_task', label: 'Multi Task', description: 'Sala livre para combinar regras e tarefas entre amigos.' },
-  { value: 'mega_brain', label: 'Mega Brain', description: 'Rodadas, placar e desafio cooperativo mais longo.' },
-  { value: 'theme_team', label: 'Tema em equipe', description: 'Jogo cooperativo com tema escolhido.' },
-  { value: 'daily_team', label: 'Diario em equipe', description: 'A palavra do dia jogada junto com amigos.' },
-]
-
-const gameModeOptions: { value: GameMode; label: string }[] = [
-  { value: 'termo', label: 'Termo' },
-  { value: 'dueto', label: 'Dueto' },
-  { value: 'quarteto', label: 'Quarteto' },
+const gameModeOptions: { value: GameMode; label: string; emoji: string }[] = [
+  { value: 'termo', label: '1 Palavra', emoji: '🐤' },
+  { value: 'dueto', label: '2 Palavras', emoji: '🐤🐤' },
+  { value: 'quarteto', label: '4 Palavras', emoji: '🐤🐤🐤🐤' },
 ]
 
 const themeOptions: { value: ThemeId; label: string }[] = [
@@ -117,29 +109,33 @@ export function RoomsHome() {
     setMessage('Convite copiado.')
   }
 
+  const gameModeEmoji = gameModeOptions.find((o) => o.value === form.gameMode)?.emoji ?? '🐤'
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
-      <header className="border-b border-slate-800 bg-slate-950/70 backdrop-blur">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #0F1A2E, #1A2C40, #243447)' }}>
+      <header className="border-b border-[#2A4060]/40" style={{ background: 'rgba(15,26,46,0.85)', backdropFilter: 'blur(8px)' }}>
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <Button variant="ghost" onClick={() => navigate('/')} className="text-slate-300 hover:text-white">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Voltar ao jogo
+          <Button variant="ghost" onClick={() => navigate('/')} className="text-slate-300 hover:text-white font-mono text-xs">
+            <ArrowLeft className="mr-2 h-4 w-4" /> voltar ao jogo
           </Button>
           <div className="text-right">
-            <h1 className="text-xl font-bold tracking-wide">Salas com amigos</h1>
-            <p className="text-xs text-slate-400">Multi Brain, Multi Task e Mega Brain</p>
+            <h1 className="text-xl font-black tracking-tight" style={{ fontFamily: 'var(--font-mono)', color: '#00B2A9' }}>
+              bando
+            </h1>
+            <p className="text-xs text-slate-500 font-mono">salas de pitacos com amigos</p>
           </div>
         </div>
       </header>
 
       <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[0.8fr_1.2fr]">
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-2xl">
+        <section className="rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-5 shadow-2xl">
           <div className="mb-5 flex items-center gap-3">
-            <div className="rounded-xl bg-violet-500/20 p-3 text-violet-200">
+            <div className="rounded-xl p-3" style={{ background: 'rgba(0,178,169,0.15)', color: '#00B2A9' }}>
               <Users className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">Sua conta</h2>
-              <p className="text-sm text-slate-400">Login simples para salvar perfil e entrar nas salas.</p>
+              <h2 className="text-lg font-semibold font-mono">perfil</h2>
+              <p className="text-sm text-slate-400">Login simples pra salvar progresso e jogar com amigos.</p>
             </div>
           </div>
 
@@ -149,178 +145,167 @@ export function RoomsHome() {
             </div>
           ) : auth.user ? (
             <div className="space-y-4">
-              <div className="rounded-xl bg-slate-950/60 p-4">
-                <p className="text-sm text-slate-400">Logado como</p>
-                <p className="font-semibold">{auth.profile?.nickname || auth.user.email}</p>
-                <p className="mt-1 text-xs text-slate-500">{auth.user.email}</p>
+              <div className="rounded-xl bg-[#0F1A2E]/80 p-4">
+                <p className="text-sm text-slate-400">logado como</p>
+                <p className="font-semibold" style={{ color: '#00B2A9' }}>{auth.profile?.nickname || auth.user.email}</p>
+                <p className="mt-1 text-xs text-slate-500 font-mono">{auth.user.email}</p>
               </div>
 
               <form onSubmit={handleNicknameSubmit} className="space-y-2">
-                <label className="text-sm font-medium text-slate-300" htmlFor="nickname">Nickname</label>
+                <label className="text-sm font-medium text-slate-300 font-mono" htmlFor="nickname">apelido</label>
                 <input
                   id="nickname"
                   value={nickname}
                   onChange={(event) => setNickname(event.target.value)}
                   placeholder={auth.profile?.nickname || 'Seu apelido'}
                   maxLength={20}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-violet-400"
+                  className="w-full rounded-lg border border-[#2A4060] bg-[#0F1A2E] px-3 py-2 font-mono text-white outline-none focus:border-[#00B2A9]"
                 />
-                <Button type="submit" disabled={isSubmitting || nickname.trim().length < 2} className="w-full">
-                  Salvar nickname
+                <Button type="submit" disabled={isSubmitting || nickname.trim().length < 2} className="w-full font-mono text-xs">
+                  salvar apelido
                 </Button>
               </form>
 
-              <Button variant="outline" onClick={auth.signOut} className="w-full border-slate-700 bg-transparent text-slate-200">
-                <LogOut className="mr-2 h-4 w-4" /> Sair
+              <Button variant="outline" onClick={auth.signOut} className="w-full border-[#2A4060] bg-transparent text-slate-300 font-mono text-xs">
+                <LogOut className="mr-2 h-4 w-4" /> sair
               </Button>
             </div>
           ) : (
             <form onSubmit={handlePasswordLogin} className="space-y-3">
-              <label className="text-sm font-medium text-slate-300" htmlFor="email">E-mail</label>
+              <label className="text-sm font-medium text-slate-300 font-mono" htmlFor="email">e-mail</label>
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="voce@email.com"
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-violet-400"
+                className="w-full rounded-lg border border-[#2A4060] bg-[#0F1A2E] px-3 py-2 font-mono text-white outline-none focus:border-[#00B2A9]"
               />
-              <label className="text-sm font-medium text-slate-300" htmlFor="password">Senha</label>
+              <label className="text-sm font-medium text-slate-300 font-mono" htmlFor="password">senha</label>
               <input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="minimo 6 caracteres"
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-violet-400"
+                className="w-full rounded-lg border border-[#2A4060] bg-[#0F1A2E] px-3 py-2 font-mono text-white outline-none focus:border-[#00B2A9]"
               />
-              <label className="text-sm font-medium text-slate-300" htmlFor="signup-nickname">Nickname para cadastro</label>
+              <label className="text-sm font-medium text-slate-300 font-mono" htmlFor="signup-nickname">apelido pra cadastro</label>
               <input
                 id="signup-nickname"
                 value={nickname}
                 onChange={(event) => setNickname(event.target.value)}
                 placeholder="Seu apelido"
                 maxLength={20}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-violet-400"
+                className="w-full rounded-lg border border-[#2A4060] bg-[#0F1A2E] px-3 py-2 font-mono text-white outline-none focus:border-[#00B2A9]"
               />
-              <Button type="submit" disabled={isSubmitting || password.length < 6} className="w-full">
+              <Button type="submit" disabled={isSubmitting || password.length < 6} className="w-full font-mono text-xs">
                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Entrar
+                entrar
               </Button>
-              <Button type="button" onClick={handlePasswordSignUp} disabled={isSubmitting || password.length < 6 || !email.trim()} variant="outline" className="w-full border-slate-700 bg-transparent text-slate-200">
-                Criar conta
+              <Button type="button" onClick={handlePasswordSignUp} disabled={isSubmitting || password.length < 6 || !email.trim()} variant="outline" className="w-full border-[#2A4060] bg-transparent text-slate-300 font-mono text-xs">
+                criar conta
               </Button>
             </form>
           )}
 
           {(auth.error || message) && (
-            <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-100">
+            <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-100 font-mono">
               {auth.error || message}
             </div>
           )}
         </section>
 
         <section className="space-y-6">
-          <form onSubmit={handleCreateRoom} className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-2xl">
+          <form onSubmit={handleCreateRoom} className="rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-5 shadow-2xl">
             <div className="mb-5 flex items-center gap-3">
-              <div className="rounded-xl bg-cyan-500/20 p-3 text-cyan-200">
-                <Brain className="h-6 w-6" />
+              <div className="rounded-xl p-3" style={{ background: 'rgba(0,178,169,0.15)', color: '#00B2A9' }}>
+                <Bird className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold">Criar sala</h2>
-                <p className="text-sm text-slate-400">Configure as regras e compartilhe o codigo com seus amigos.</p>
+                <h2 className="text-lg font-semibold font-mono">abrir bando</h2>
+                <p className="text-sm text-slate-400">Todo mundo sugere, vota e o dono envia o palpite.</p>
               </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <label className="space-y-2 text-sm">
-                <span className="text-slate-300">Modo da sala</span>
-                <select
-                  value={form.roomMode}
-                  onChange={(event) => setForm((prev) => ({ ...prev, roomMode: event.target.value as RoomMode }))}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white"
-                >
-                  {roomModeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </select>
-              </label>
-
-              <label className="space-y-2 text-sm">
-                <span className="text-slate-300">Tabuleiro</span>
+                <span className="text-slate-300 font-mono text-xs">tabuleiro</span>
                 <select
                   value={form.gameMode}
                   onChange={(event) => setForm((prev) => ({ ...prev, gameMode: event.target.value as GameMode }))}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white"
+                  className="w-full rounded-lg border border-[#2A4060] bg-[#0F1A2E] px-3 py-2 font-mono text-white"
                 >
-                  {gameModeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  {gameModeOptions.map((option) => <option key={option.value} value={option.value}>{option.emoji} {option.label}</option>)}
                 </select>
               </label>
 
               <label className="space-y-2 text-sm">
-                <span className="text-slate-300">Tema</span>
+                <span className="text-slate-300 font-mono text-xs">tema</span>
                 <select
                   value={form.theme}
                   onChange={(event) => setForm((prev) => ({ ...prev, theme: event.target.value as ThemeId }))}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white"
+                  className="w-full rounded-lg border border-[#2A4060] bg-[#0F1A2E] px-3 py-2 font-mono text-white"
                 >
                   {themeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </select>
               </label>
 
               <label className="space-y-2 text-sm">
-                <span className="text-slate-300">Jogadores</span>
+                <span className="text-slate-300 font-mono text-xs">passaros</span>
                 <input
                   type="number"
                   min={1}
                   max={20}
                   value={form.maxPlayers}
                   onChange={(event) => setForm((prev) => ({ ...prev, maxPlayers: Number(event.target.value) }))}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white"
+                  className="w-full rounded-lg border border-[#2A4060] bg-[#0F1A2E] px-3 py-2 font-mono text-white"
                 />
               </label>
 
               <label className="space-y-2 text-sm">
-                <span className="text-slate-300">Rodadas</span>
+                <span className="text-slate-300 font-mono text-xs">rodadas</span>
                 <input
                   type="number"
                   min={1}
                   max={20}
                   value={form.totalRounds}
                   onChange={(event) => setForm((prev) => ({ ...prev, totalRounds: Number(event.target.value) }))}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white"
+                  className="w-full rounded-lg border border-[#2A4060] bg-[#0F1A2E] px-3 py-2 font-mono text-white"
                 />
               </label>
             </div>
 
-            <div className="mt-4 rounded-xl bg-slate-950/60 p-4 text-sm text-slate-300">
-              {roomModeOptions.find((option) => option.value === form.roomMode)?.description}
+            <div className="mt-4 rounded-xl bg-[#0F1A2E]/80 p-4 text-sm text-slate-300 font-mono">
+              {gameModeEmoji} modo de jogo: <strong style={{ color: '#00B2A9' }}>{form.gameMode}</strong> &middot; os amigos sugerem palavras de 5 letras, votam na melhor e o dono envia pro tabuleiro.
             </div>
 
-            <Button type="submit" disabled={!auth.user || isSubmitting} className="mt-5 w-full">
-              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-              Criar sala
+            <Button type="submit" disabled={!auth.user || isSubmitting} className="mt-5 w-full font-mono text-xs">
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+              abrir bando
             </Button>
           </form>
 
-          <form onSubmit={handleJoinRoom} className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-2xl">
-            <h2 className="mb-3 text-lg font-semibold">Entrar com codigo</h2>
+          <form onSubmit={handleJoinRoom} className="rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-5 shadow-2xl">
+            <h2 className="mb-3 text-lg font-semibold font-mono">entrar com codigo</h2>
             <div className="flex gap-2">
               <input
                 value={joinCode}
                 onChange={(event) => setJoinCode(event.target.value.toUpperCase())}
                 placeholder="K7X9Q"
                 maxLength={8}
-                className="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-violet-400"
+                className="min-w-0 flex-1 rounded-lg border border-[#2A4060] bg-[#0F1A2E] px-3 py-2 font-mono text-white outline-none focus:border-[#00B2A9]"
               />
-              <Button type="submit" disabled={!auth.user || isSubmitting}>Entrar</Button>
+              <Button type="submit" disabled={!auth.user || isSubmitting} className="font-mono text-xs">entrar</Button>
             </div>
           </form>
 
           {createdCode && (
-            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 text-emerald-50">
-              <p className="text-sm">Sala criada</p>
-              <p className="text-3xl font-black tracking-widest">{createdCode}</p>
-              <Button onClick={handleCopyInvite} className="mt-3 bg-emerald-500 text-emerald-950 hover:bg-emerald-400">
-                <Copy className="mr-2 h-4 w-4" /> Copiar convite
+            <div className="rounded-2xl border border-[#00B2A9]/30 p-5 text-emerald-50" style={{ background: 'rgba(0,178,169,0.08)' }}>
+              <p className="text-sm font-mono text-slate-400">bando criado</p>
+              <p className="text-3xl font-black tracking-[0.3em] font-mono" style={{ color: '#00B2A9' }}>{createdCode}</p>
+              <Button onClick={handleCopyInvite} className="mt-3 text-sm font-mono" style={{ background: '#00B2A9', color: '#0F1A2E' }}>
+                <Copy className="mr-2 h-4 w-4" /> copiar convite
               </Button>
             </div>
           )}

@@ -265,7 +265,7 @@ export function RoomPage() {
 
         <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
           <div className="mb-4">
-            <h1 className="text-2xl font-black">{room.room_mode === 'mega_brain' ? 'Mega Brain' : room.room_mode === 'multi_task' ? 'Multi Task' : 'Multi Brain'}</h1>
+            <h1 className="text-2xl font-black font-mono tracking-tight" style={{ color: '#00B2A9' }}>bando</h1>
             <p className="text-sm text-slate-400">Sugiram palavras, votem e deixem o dono enviar o palpite para o tabuleiro compartilhado.</p>
           </div>
 

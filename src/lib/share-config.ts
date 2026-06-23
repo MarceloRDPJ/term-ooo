@@ -9,7 +9,7 @@
 
 export const SHARE_CONFIG = {
   /** Texto principal da marca d'água */
-  BRANDING_TEXT: 'Jogo.Work',
+  BRANDING_TEXT: 'PITACO',
   
   /** Subtítulo da marca d'água */
   BRANDING_SUBTITLE: 'Jogue em jogo.work',

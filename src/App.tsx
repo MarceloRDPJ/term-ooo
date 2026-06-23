@@ -326,16 +326,16 @@ function Game() {
 
   if (!gameState) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="text-white text-xl">Carregando...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom, #0F1A2E, #1A2C40)' }}>
+        <div className="text-white text-xl font-mono">Carregando...</div>
       </div>
     )
   }
 
-  const modeTitle = mode === 'termo' ? 'TERMO' : mode === 'dueto' ? 'DUETO' : 'QUARTETO'
+  const modeTitle = mode === 'termo' ? 'PITACO' : mode === 'dueto' ? 'PITACO' : 'PITACO'
 
   return (
-    <div className="h-dvh bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex flex-col overflow-hidden">
+    <div className="h-dvh flex flex-col overflow-hidden" style={{ background: 'linear-gradient(to bottom, #0F1A2E, #1A2C40, #243447)' }}>
       <Header
         title={modeTitle}
         onHelp={dialogManager.dialogs.help.onOpen}

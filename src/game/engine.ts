@@ -287,7 +287,7 @@ export function generateShareText(state: GameState, isArchive: boolean = false):
   const result = isWin ? `${currentRow}/${maxAttempts}` : 'X/' + maxAttempts
   const archiveTag = isArchive ? ' (Arquivo)' : ''
 
-  let text = `Jogo.Work - Dia #${dayNumber}${archiveTag}\n\n`
+  let text = `PITACO - Dia #${dayNumber}${archiveTag}\n\n`
   text += `Modo: ${modeText} - Tentativas: ${result}\n\n`
   text += SHARE_LEGEND + '\n\n'
 
@@ -307,7 +307,7 @@ export function generateShareText(state: GameState, isArchive: boolean = false):
   }
 
   // Adicionar URL no final
-  text += '\n\n🎮 Jogue também: https://jogo.work'
+  text += '\n\n🎮 Jogue tambem: https://marcelordpj.github.io/term-ooo/'
 
   return text
 }

@@ -65,7 +65,7 @@ export function Header({
   }
 
   return (
-    <header className="border-b border-slate-700 bg-slate-900/50 backdrop-blur-sm flex-shrink-0 z-10">
+    <header className="border-b flex-shrink-0 z-10" style={{ borderColor: 'rgba(42,64,96,0.4)', background: 'rgba(15,26,46,0.85)', backdropFilter: 'blur(8px)' }}>
       {/* Áudio do Bodão (oculto) */}
       <audio
         ref={audioRef}
@@ -88,7 +88,7 @@ export function Header({
           </Button>
 
           {/* Logo on mobile */}
-          <h1 className="text-white text-base sm:text-lg md:hidden uppercase tracking-wider font-bold">
+          <h1 className="text-white text-base sm:text-lg md:hidden uppercase tracking-wider font-bold font-mono">
             {title}
           </h1>
 
@@ -129,11 +129,11 @@ export function Header({
 
         {/* Center logo (desktop only) */}
         <div className="hidden md:flex items-center justify-center flex-col gap-1">
-          <h1 className="text-white text-lg md:text-xl lg:text-2xl uppercase tracking-wider font-bold">
+          <h1 className="text-lg md:text-xl lg:text-2xl uppercase tracking-wider font-black font-mono" style={{ color: '#00B2A9' }}>
             {title}
           </h1>
           {isArchive && archiveDayNumber && (
-            <div className="text-xs bg-yellow-600 text-white px-3 py-1 rounded-full flex items-center gap-1 animate-pulse">
+            <div className="text-xs bg-yellow-600/20 text-yellow-200 px-3 py-1 rounded-full flex items-center gap-1 font-mono">
               🕰️ Arquivo - Dia #{archiveDayNumber}
             </div>
           )}
