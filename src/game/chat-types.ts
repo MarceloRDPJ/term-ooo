@@ -20,6 +20,13 @@ export type ChatMessageType =
   | 'ping'
   | 'pong'
   | 'error'
+  // Multiplayer
+  | 'join-room'
+  | 'leave-room'
+  | 'room-state'
+  | 'game-start'
+  | 'game-guess-submit'
+  | 'game-end'
 
 export interface ChatMessage {
   type: ChatMessageType
@@ -27,6 +34,11 @@ export interface ChatMessage {
   // Conteúdo da mensagem
   text?: string
   message?: string
+  roomId?: string
+  dayNumber?: number
+  mode?: string
+  guessState?: any
+
   
   // Identificação
   nickname?: string

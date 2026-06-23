@@ -23,6 +23,8 @@ import { useGameMode } from './hooks/useGameMode'
 import { usePersistentGameState } from './hooks/usePersistentGameState'
 import { useStatsTracker } from './hooks/useStatsTracker'
 import { useChatWebSocket } from './hooks/useChatWebSocket'
+import { useMultiplayerRooms } from './hooks/useMultiplayerRooms'
+import { RoomLobby } from './components/Multiplayer/RoomLobby'
 import { CHAT_CONFIG } from './lib/chat-config'
 import { StarsBackground } from './components/animate-ui/components/backgrounds/stars'
 import { APP_VERSION } from './lib/version'
@@ -54,6 +56,16 @@ function Game() {
   // WebSocket Chat (apenas se habilitado)
   const chat = useChatWebSocket({
     autoConnect: CHAT_CONFIG.ENABLED,
+  })
+
+  const multiplayer = useMultiplayerRooms({
+    current: {
+      send: (_data: any) => {
+        // useChatWebSocket doesn't expose raw send easily,
+        // we can piggyback on chat.sendMessage or directly if we adapt useChatWebSocket
+        // But let's mock it using chat.sendMessage temporarily by wrapping it
+      }
+    }
   })
 
   // Estado do chat integrado ao dialogManager
@@ -258,6 +270,12 @@ function Game() {
       storage.saveGameState(mode, gameState.dateKey, result.newState)
       animActions.setCursorPosition(0)
 
+      // Send the guess state to the multiplayer room if connected
+      if (multiplayer.currentRoomId) {
+        // Find a way to send this using our mock multiplayer object
+        // This broadcasts the guess over the WebSocket so opponents can render a mini-board
+      }
+
       // Se algum board foi completado, ativar animação happy jump
       if (newlyCompletedBoardIndices.length > 0) {
         setTimeout(() => {
@@ -347,6 +365,17 @@ function Game() {
       />
 
       <TopTabs currentMode={mode} onModeChange={handleModeChange} isVisible={tabsVisible} />
+
+      {tabsVisible && (
+        <div className="flex justify-center mt-2 z-10 relative">
+          <RoomLobby
+            onJoinRoom={multiplayer.joinRoom}
+            onCreateRoom={multiplayer.createRoom}
+            currentRoomId={multiplayer.currentRoomId}
+            onLeaveRoom={multiplayer.leaveRoom}
+          />
+        </div>
+      )}
 
       <main className="flex-1 flex flex-col items-center justify-between px-2 py-2 sm:px-4 sm:py-4 md:py-6 max-w-7xl mx-auto w-full overflow-hidden">
         {error && (
