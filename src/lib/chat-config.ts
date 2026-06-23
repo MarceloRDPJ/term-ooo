@@ -6,7 +6,7 @@ export const CHAT_CONFIG = {
   WS_URL: import.meta.env.VITE_CHAT_WS_URL || 'wss://term-ooo-chat.arthurtuio.workers.dev',
   
   // Feature flag - habilitar/desabilitar chat
-  ENABLED: import.meta.env.VITE_CHAT_ENABLED !== 'false',
+  ENABLED: import.meta.env.VITE_CHAT_ENABLED === 'true',
   
   // Limites de validação
   MAX_MESSAGE_LENGTH: 1000,
