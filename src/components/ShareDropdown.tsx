@@ -186,7 +186,7 @@ export function ShareDropdown({
             disabled={isLoading} 
             className="cursor-pointer focus:bg-gray-800 focus:text-white py-2.5"
           >
-            <Instagram className="w-4 h-4 mr-3 text-pink-500" />
+            <Instagram className="w-4 h-4 mr-3 text-[#E3C275]" />
             Instagram
           </DropdownMenuItem>
         )}
