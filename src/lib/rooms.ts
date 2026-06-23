@@ -328,6 +328,11 @@ export function subscribeToRoom(roomId: string, onChange: () => void): RealtimeC
     .subscribe()
 }
 
+export async function ownerCloseRoom(roomId: string): Promise<void> {
+  const { error } = await supabase.rpc('owner_close_room', { p_room_id: roomId })
+  if (error) throw new Error(error.message)
+}
+
 export async function listMyRooms(userId: string): Promise<RoomSummary[]> {
   if (!userId) return []
 

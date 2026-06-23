@@ -22,17 +22,6 @@ const target = 'marcelorodriguesd017@gmail.com'
 const oldPassword = 'Prego1223@'
 const newPassword = 'PitacoSeguro2026!'
 
-function log(label, fn) {
-  try {
-    const r = fn()
-    console.log(`${label}: OK ${r ? '(' + JSON.stringify(r).slice(0, 80) + ')' : ''}`)
-    return r
-  } catch (e) {
-    console.log(`${label}: ERR ${e?.message ?? e}`)
-    return null
-  }
-}
-
 async function section(name, fn) {
   console.log(`\n--- ${name} ---`)
   await fn()

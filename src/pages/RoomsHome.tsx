@@ -269,7 +269,11 @@ export function RoomsHome() {
                   <p className="text-sm text-slate-400">Suas ultimas pautas abertas ou que voce esta no time.</p>
                 </div>
               </div>
-              <PautasRecentesList userId={auth.user?.id ?? null} refreshKey={recentsKey} />
+              <PautasRecentesList
+                userId={auth.user?.id ?? null}
+                refreshKey={recentsKey}
+                onAfterClose={() => setRecentsKey((prev) => prev + 1)}
+              />
             </div>
 
             {createdCode && (

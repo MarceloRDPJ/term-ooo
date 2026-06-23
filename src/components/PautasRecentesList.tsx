@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Copy, History, Loader2, LogIn } from 'lucide-react'
+import { Copy, DoorClosed, History, Loader2, LogIn } from 'lucide-react'
 import { Button } from './ui/button'
-import { listMyRooms } from '@/lib/rooms'
+import { listMyRooms, ownerCloseRoom } from '@/lib/rooms'
 import { RoomSummary } from '@/lib/multiplayer-types'
 
 interface PautasRecentesListProps {
   userId: string | null
   refreshKey?: number
+  onAfterClose?: () => void
 }
 
 const STATUS_LABEL: Record<RoomSummary['status'], string> = {
@@ -50,11 +51,16 @@ function formatRelative(iso: string): string {
   return new Date(iso).toLocaleDateString('pt-BR')
 }
 
-export function PautasRecentesList({ userId, refreshKey = 0 }: PautasRecentesListProps) {
+function canShowCloseButton(room: RoomSummary): boolean {
+  return room.role === 'owner' && (room.status === 'lobby' || room.status === 'playing')
+}
+
+export function PautasRecentesList({ userId, refreshKey = 0, onAfterClose }: PautasRecentesListProps) {
   const navigate = useNavigate()
   const [rooms, setRooms] = useState<RoomSummary[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [pendingRoomId, setPendingRoomId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!userId) {
@@ -82,6 +88,22 @@ export function PautasRecentesList({ userId, refreshKey = 0 }: PautasRecentesLis
       cancelled = true
     }
   }, [userId, refreshKey])
+
+  const handleCloseRoom = async (room: RoomSummary) => {
+    const ok = window.confirm(
+      `Fechar a pauta ${room.code}? O status passa para 'abandonada' e nenhum jogador podera mais enviar pitaco.`,
+    )
+    if (!ok) return
+    setPendingRoomId(room.id)
+    try {
+      await ownerCloseRoom(room.id)
+      onAfterClose?.()
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : 'Erro ao fechar pauta')
+    } finally {
+      setPendingRoomId(null)
+    }
+  }
 
   if (!userId) return null
 
@@ -114,6 +136,8 @@ export function PautasRecentesList({ userId, refreshKey = 0 }: PautasRecentesLis
     <div className="space-y-2">
       {rooms.map((room) => {
         const statusColor = STATUS_COLOR[room.status]
+        const isPending = pendingRoomId === room.id
+        const showClose = canShowCloseButton(room)
         return (
           <div
             key={room.id}
@@ -138,7 +162,7 @@ export function PautasRecentesList({ userId, refreshKey = 0 }: PautasRecentesLis
                 {MODE_LABEL[room.game_mode]} &middot; rodada {room.current_round}/{room.total_rounds} &middot; {room.player_count}/{room.max_players} no time &middot; voce e {ROLE_LABEL[room.role]} &middot; {formatRelative(room.created_at)}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -148,6 +172,22 @@ export function PautasRecentesList({ userId, refreshKey = 0 }: PautasRecentesLis
               >
                 <Copy className="mr-1 h-3.5 w-3.5" /> codigo
               </Button>
+              {showClose && (
+                <button
+                  type="button"
+                  onClick={() => void handleCloseRoom(room)}
+                  disabled={isPending}
+                  className="inline-flex items-center gap-1 rounded-lg border border-[#00B2A9]/40 bg-[#00B2A9]/10 px-2.5 py-1 text-[11px] font-mono text-[#5BE0D8] transition-colors hover:bg-[#00B2A9]/20 disabled:opacity-50"
+                  aria-label={`Fechar pauta ${room.code}`}
+                >
+                  {isPending ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <DoorClosed className="h-3 w-3" />
+                  )}
+                  fechar
+                </button>
+              )}
               <Button
                 type="button"
                 size="sm"
