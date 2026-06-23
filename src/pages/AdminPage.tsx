@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Ban,
   Bird,
+  DoorClosed,
   Loader2,
   Shield,
   ShieldCheck,
@@ -20,7 +21,9 @@ import {
   type AdminUser,
   type UserRole,
   adminBanUser,
+  adminCloseRoom,
   adminDeleteRoom,
+  canCloseRoom,
   isUserAdmin,
   listAdminRooms,
   listAdminUsers,
@@ -32,8 +35,8 @@ type Tab = 'users' | 'rooms'
 type ProfileWithRole = Profile & { role?: UserRole | null }
 
 const ROLE_LABELS: Record<UserRole, string> = {
-  user: 'usuario',
-  admin: 'admin',
+  user: 'auditor',
+  admin: 'chefe',
   banned: 'banido',
 }
 
@@ -137,10 +140,29 @@ export function AdminPage() {
     [loadUsers],
   )
 
+  const handleCloseRoom = useCallback(
+    async (room: AdminRoom) => {
+      const ok = window.confirm(
+        `Fechar a pauta ${room.code}? O status passa a "abandonada" e nenhum jogador podera mais enviar pitaco.`,
+      )
+      if (!ok) return
+      setPendingRoomId(room.id)
+      try {
+        await adminCloseRoom(room.id)
+        await loadRooms()
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : 'Erro ao fechar pauta')
+      } finally {
+        setPendingRoomId(null)
+      }
+    },
+    [loadRooms],
+  )
+
   const handleDeleteRoom = useCallback(
     async (room: AdminRoom) => {
       const ok = window.confirm(
-        `Deletar a sala ${room.code}? Todos os jogadores, mensagens e pitacos serao removidos.`,
+        `Excluir a sala ${room.code}? Todos os jogadores, mensagens e pitacos serao removidos de verdade.`,
       )
       if (!ok) return
       setPendingRoomId(room.id)
@@ -148,7 +170,7 @@ export function AdminPage() {
         await adminDeleteRoom(room.id)
         await loadRooms()
       } catch (error) {
-        window.alert(error instanceof Error ? error.message : 'Erro ao deletar sala')
+        window.alert(error instanceof Error ? error.message : 'Erro ao excluir sala')
       } finally {
         setPendingRoomId(null)
       }
@@ -179,7 +201,7 @@ export function AdminPage() {
         <ShieldOff className="h-10 w-10 text-[#E25F38]" />
         <h1 className="text-2xl font-bold font-mono">acesso restrito</h1>
         <p className="max-w-md text-slate-300 font-mono text-sm">
-          Entre com sua conta para acessar o painel de administracao.
+          Entre com sua conta para acessar o painel do chefe.
         </p>
         <Button onClick={() => navigate('/salas')} className="font-mono text-xs">
           <ArrowLeft className="mr-2 h-4 w-4" /> ir para o login
@@ -197,7 +219,7 @@ export function AdminPage() {
         <ShieldOff className="h-10 w-10 text-[#E25F38]" />
         <h1 className="text-2xl font-bold font-mono">acesso restrito</h1>
         <p className="max-w-md text-slate-300 font-mono text-sm">
-          Esta area e so para administradores. Se voce acha que deveria ter acesso, fale com o time.
+          Esta area e so para chefes. Se voce acha que deveria ter acesso, fale com o time.
         </p>
         <Button onClick={() => navigate('/salas')} className="font-mono text-xs">
           <ArrowLeft className="mr-2 h-4 w-4" /> voltar para as pautas
@@ -230,7 +252,7 @@ export function AdminPage() {
                 className="text-2xl font-black tracking-tight"
                 style={{ fontFamily: 'var(--font-mono)', color: '#00B2A9' }}
               >
-                ADMIN
+                CHEFE
               </h1>
             </div>
             <p className="text-xs text-slate-400 font-mono">
@@ -357,7 +379,7 @@ export function AdminPage() {
                       <th className="px-3 py-2 font-medium">id</th>
                       <th className="px-3 py-2 font-medium">email</th>
                       <th className="px-3 py-2 font-medium">apelido</th>
-                      <th className="px-3 py-2 font-medium">role</th>
+                      <th className="px-3 py-2 font-medium">cargo</th>
                       <th className="px-3 py-2 font-medium">criado em</th>
                       <th className="px-3 py-2 font-medium text-right">acoes</th>
                     </tr>
@@ -499,20 +521,38 @@ export function AdminPage() {
                         </td>
                         <td className="px-3 py-2 text-slate-300">{formatDate(room.created_at)}</td>
                         <td className="px-3 py-2 text-right">
-                          <button
-                            type="button"
-                            onClick={() => void handleDeleteRoom(room)}
-                            disabled={pendingRoomId === room.id}
-                            className="inline-flex items-center gap-1 rounded-lg border border-[#E25F38]/40 bg-[#E25F38]/10 px-2.5 py-1 text-[11px] font-mono text-[#F1A28A] transition-colors hover:bg-[#E25F38]/20 disabled:opacity-50"
-                            aria-label={`Deletar sala ${room.code}`}
-                          >
-                            {pendingRoomId === room.id ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-3 w-3" />
+                          <div className="inline-flex items-center gap-1.5">
+                            {canCloseRoom(room.status) && (
+                              <button
+                                type="button"
+                                onClick={() => void handleCloseRoom(room)}
+                                disabled={pendingRoomId === room.id}
+                                className="inline-flex items-center gap-1 rounded-lg border border-[#00B2A9]/40 bg-[#00B2A9]/10 px-2.5 py-1 text-[11px] font-mono text-[#5BE0D8] transition-colors hover:bg-[#00B2A9]/20 disabled:opacity-50"
+                                aria-label={`Fechar pauta ${room.code}`}
+                              >
+                                {pendingRoomId === room.id ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <DoorClosed className="h-3 w-3" />
+                                )}
+                                fechar
+                              </button>
                             )}
-                            deletar
-                          </button>
+                            <button
+                              type="button"
+                              onClick={() => void handleDeleteRoom(room)}
+                              disabled={pendingRoomId === room.id}
+                              className="inline-flex items-center gap-1 rounded-lg border border-[#E25F38]/40 bg-[#E25F38]/10 px-2.5 py-1 text-[11px] font-mono text-[#F1A28A] transition-colors hover:bg-[#E25F38]/20 disabled:opacity-50"
+                              aria-label={`Excluir sala ${room.code}`}
+                            >
+                              {pendingRoomId === room.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-3 w-3" />
+                              )}
+                              excluir
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

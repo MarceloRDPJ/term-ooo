@@ -4,6 +4,12 @@ import type { RoomMode, RoomStatus, ThemeId } from './multiplayer-types'
 
 export type UserRole = 'user' | 'admin' | 'banned'
 
+export const CLOSABLE_ROOM_STATUSES: RoomStatus[] = ['lobby', 'playing']
+
+export function canCloseRoom(status: RoomStatus): boolean {
+  return CLOSABLE_ROOM_STATUSES.includes(status)
+}
+
 export interface AdminUser {
   id: string
   email: string
@@ -40,6 +46,11 @@ export async function listAdminRooms(): Promise<AdminRoom[]> {
   const { data, error } = await supabase.rpc('admin_list_rooms')
   if (error) throw new Error(error.message)
   return (data ?? []) as AdminRoom[]
+}
+
+export async function adminCloseRoom(roomId: string): Promise<void> {
+  const { error } = await supabase.rpc('admin_close_room', { p_room_id: roomId })
+  if (error) throw new Error(error.message)
 }
 
 export async function adminDeleteRoom(roomId: string): Promise<void> {
