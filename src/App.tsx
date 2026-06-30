@@ -20,7 +20,12 @@ import { RoomsHome } from './pages/RoomsHome'
 import { RoomPage } from './pages/RoomPage'
 import { AdminPage } from './pages/AdminPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
+import { PitacoTematicoGame } from './pages/games/pitaco-tematico/PitacoTematicoGame'
 import { HallOfGames } from './components/HallOfGames'
+import { PitacoNerdleGame } from './pages/games/pitaco-nerdle/PitacoNerdleGame'
+import { PitacoGeografiaGame } from './pages/games/pitaco-geografia/PitacoGeografiaGame'
+import { PitacoEmojiGame } from './pages/games/pitaco-emoji/PitacoEmojiGame'
+import { PitacoCitacaoGame } from './pages/games/pitaco-citacao/PitacoCitacaoGame'
 import { useDialogManager } from './hooks/useDialogManager'
 import { useGameAnimations } from './hooks/useGameAnimations'
 import { useKeyboardInput } from './hooks/useKeyboardInput'
@@ -29,6 +34,9 @@ import { usePersistentGameState } from './hooks/usePersistentGameState'
 import { useStatsTracker } from './hooks/useStatsTracker'
 import { useChatWebSocket } from './hooks/useChatWebSocket'
 import { CHAT_CONFIG } from './lib/chat-config'
+import { PitacoCruzadoGame } from './pages/games/pitaco-cruzado/PitacoCruzadoGame'
+import { PitacoAtributosGame } from './pages/games/pitaco-atributos/PitacoAtributosGame'
+import { NarutodleGame } from './pages/games/narutodle/NarutodleGame'
 import { StarsBackground } from './components/animate-ui/components/backgrounds/stars'
 import { APP_VERSION } from './lib/version'
 import { useSoundEffects } from './lib/sounds/useSoundEffects'
@@ -488,10 +496,18 @@ function App() {
       <Routes>
         <Route path="/" element={<HallOfGames />} />
         <Route path="/play/pitaco" element={<Game />} />
+        <Route path="/play/pitaco-tematico" element={<PitacoTematicoGame />} />
+        <Route path="/play/pitaco-nerdle" element={<PitacoNerdleGame />} />
+        <Route path="/play/pitaco-geografia" element={<PitacoGeografiaGame />} />
+        <Route path="/play/pitaco-emoji" element={<PitacoEmojiGame />} />
+        <Route path="/play/pitaco-citacao" element={<PitacoCitacaoGame />} />
         <Route path="/2" element={<Game />} />
         <Route path="/dueto" element={<Game />} />
         <Route path="/4" element={<Game />} />
         <Route path="/quarteto" element={<Game />} />
+        <Route path="/play/pitaco-cruzado" element={<PitacoCruzadoGame />} />
+        <Route path="/play/pitaco-atributos" element={<PitacoAtributosGame />} />
+        <Route path="/play/narutodle" element={<NarutodleGame />} />
         <Route path="/salas" element={<RoomsHome />} />
         <Route path="/multi" element={<RoomsHome />} />
         <Route path="/mega" element={<RoomsHome />} />
