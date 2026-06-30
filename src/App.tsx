@@ -24,6 +24,7 @@ import { PitacoTematicoGame } from './pages/games/pitaco-tematico/PitacoTematico
 import { HallOfGames } from './components/HallOfGames'
 import { PitacoNerdleGame } from './pages/games/pitaco-nerdle/PitacoNerdleGame'
 import { PitacoGeografiaGame } from './pages/games/pitaco-geografia/PitacoGeografiaGame'
+import { LoldleGame } from './pages/games/loldle/LoldleGame'
 import { PitacoEmojiGame } from './pages/games/pitaco-emoji/PitacoEmojiGame'
 import { PitacoCitacaoGame } from './pages/games/pitaco-citacao/PitacoCitacaoGame'
 import { useDialogManager } from './hooks/useDialogManager'
@@ -506,6 +507,7 @@ function App() {
         <Route path="/4" element={<Game />} />
         <Route path="/quarteto" element={<Game />} />
         <Route path="/play/pitaco-cruzado" element={<PitacoCruzadoGame />} />
+        <Route path="/play/loldle" element={<LoldleGame />} />
         <Route path="/play/pitaco-atributos" element={<PitacoAtributosGame />} />
         <Route path="/play/narutodle" element={<NarutodleGame />} />
         <Route path="/salas" element={<RoomsHome />} />
