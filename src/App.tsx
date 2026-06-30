@@ -20,6 +20,7 @@ import { RoomsHome } from './pages/RoomsHome'
 import { RoomPage } from './pages/RoomPage'
 import { AdminPage } from './pages/AdminPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
+import { HallOfGames } from './components/HallOfGames'
 import { useDialogManager } from './hooks/useDialogManager'
 import { useGameAnimations } from './hooks/useGameAnimations'
 import { useKeyboardInput } from './hooks/useKeyboardInput'
@@ -485,7 +486,8 @@ function App() {
       }}
     >
       <Routes>
-        <Route path="/" element={<Game />} />
+        <Route path="/" element={<HallOfGames />} />
+        <Route path="/play/pitaco" element={<Game />} />
         <Route path="/2" element={<Game />} />
         <Route path="/dueto" element={<Game />} />
         <Route path="/4" element={<Game />} />
