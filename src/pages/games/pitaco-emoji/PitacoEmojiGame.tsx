@@ -101,7 +101,7 @@ function AuditorAutocomplete({
           variant="ghost"
           onClick={() => value.trim() && onSubmit(value.trim())}
           disabled={disabled || !value.trim()}
-          className="h-8 w-8 text-[#00B2A9] hover:text-cyan-200"
+          className="h-8 w-8 text-[#00B2A9] hover:text-[#5BE0D8]"
           aria-label="Enviar chute"
         >
           <Send className="h-4 w-4" />
@@ -245,7 +245,7 @@ function GameOverCard({
     >
       <div className="flex items-start gap-3">
         {state.isWin ? (
-          <Trophy className="h-7 w-7 text-cyan-300" />
+          <Trophy className="h-7 w-7 text-[#5BE0D8]" />
         ) : (
           <X className="h-7 w-7 text-[#F1A28A]" />
         )}
@@ -428,7 +428,7 @@ export function PitacoEmojiGame() {
 
                 <div className="mt-3 space-y-1.5 font-mono text-[10px] text-slate-300 sm:text-xs">
                   <p>
-                    <Check className="mr-1 inline h-3 w-3 text-cyan-300" />
+                    <Check className="mr-1 inline h-3 w-3 text-[#5BE0D8]" />
                     digite o <strong>nome</strong> ou o <strong>apelido</strong> do auditor.
                   </p>
                   <p>
@@ -470,7 +470,7 @@ export function PitacoEmojiGame() {
           <ul className="space-y-1 font-mono">
             <li>
               <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#00B2A9] align-middle" />
-              <strong className="text-cyan-200">verde</strong> · acertou o auditor
+              <strong className="text-[#5BE0D8]">verde</strong> · acertou o auditor
             </li>
             <li>
               <span className="mr-2 inline-block h-2 w-2 rounded-full bg-slate-500 align-middle" />

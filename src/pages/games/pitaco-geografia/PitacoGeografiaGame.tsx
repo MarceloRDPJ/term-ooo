@@ -52,16 +52,16 @@ function directionArrow(bearing: number): string {
 function bandClasses(band: 'perto' | 'medio' | 'longe'): { bg: string; border: string; text: string } {
   if (band === 'perto') {
     return {
-      bg: 'bg-cyan-500/15',
-      border: 'border-cyan-400/50',
-      text: 'text-cyan-200',
+      bg: 'bg-[#00B2A9]/15',
+      border: 'border-[#00B2A9]/50',
+      text: 'text-[#5BE0D8]',
     }
   }
   if (band === 'medio') {
     return {
-      bg: 'bg-yellow-500/15',
+      bg: 'bg-[#E3C275]/15',
       border: 'border-yellow-400/50',
-      text: 'text-yellow-200',
+      text: 'text-[#E3C275]',
     }
   }
   return {
@@ -140,7 +140,7 @@ function StateAutocomplete({
           variant="ghost"
           onClick={() => value.trim() && onSubmit(value.trim())}
           disabled={disabled || !value.trim()}
-          className="h-8 w-8 text-[#00B2A9] hover:text-cyan-200"
+          className="h-8 w-8 text-[#00B2A9] hover:text-[#5BE0D8]"
           aria-label="Enviar chute"
         >
           <Send className="h-4 w-4" />
@@ -283,8 +283,8 @@ function GuessCard({ guess, index }: { guess: GeoGuess; index: number }) {
           transition={{ duration: 0.6, delay: index * 0.05 + 0.1 }}
           className={cn(
             'h-full rounded-full',
-            band === 'perto' && 'bg-cyan-400',
-            band === 'medio' && 'bg-yellow-400',
+            band === 'perto' && 'bg-[#00B2A9]',
+            band === 'medio' && 'bg-[#E3C275]',
             band === 'longe' && 'bg-[#E25F38]'
           )}
         />
@@ -308,14 +308,14 @@ function GameOverCard({
       className={cn(
         'rounded-2xl border-2 p-5 shadow-2xl sm:p-6',
         state.isWin
-          ? 'border-cyan-400/60 bg-cyan-500/10'
+          ? 'border-[#00B2A9]/60 bg-[#00B2A9]/10'
           : 'border-[#E25F38]/60 bg-[#E25F38]/10'
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           {state.isWin ? (
-            <Trophy className="h-7 w-7 text-cyan-300" />
+            <Trophy className="h-7 w-7 text-[#5BE0D8]" />
           ) : (
             <X className="h-7 w-7 text-[#F1A28A]" />
           )}
@@ -485,7 +485,7 @@ export function PitacoGeografiaGame() {
 
                 <div className="mt-3 space-y-1.5 font-mono text-[10px] text-slate-300 sm:text-xs">
                   <p>
-                    <Check className="mr-1 inline h-3 w-3 text-cyan-300" />
+                    <Check className="mr-1 inline h-3 w-3 text-[#5BE0D8]" />
                     digite a <strong>UF</strong>, o <strong>nome do estado</strong> ou a
                     <strong> capital</strong>.
                   </p>
@@ -533,12 +533,12 @@ export function PitacoGeografiaGame() {
           </h4>
           <ul className="space-y-1 font-mono">
             <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-cyan-400 align-middle" />
-              <strong className="text-cyan-200">perto</strong> · menos de 500 km
+              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#00B2A9] align-middle" />
+              <strong className="text-[#5BE0D8]">perto</strong> · menos de 500 km
             </li>
             <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-yellow-400 align-middle" />
-              <strong className="text-yellow-200">medio</strong> · entre 500 e 1500 km
+              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#E3C275] align-middle" />
+              <strong className="text-[#E3C275]">medio</strong> · entre 500 e 1500 km
             </li>
             <li>
               <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#E25F38] align-middle" />

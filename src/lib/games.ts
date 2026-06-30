@@ -101,17 +101,6 @@ export const GAMES: GameDefinition[] = [
     hint: 'As citacoes sao do proprio chat do PITACO. Inspirado em Loldle Quote.',
   },
   {
-    slug: 'pitaco-citacao',
-    title: 'PITACO Citacao',
-    description: 'Adivinhe o auditor pela citacao que ele mandou no chat.',
-    category: 'auditivo',
-    difficulty: 3,
-    thumbnail: '💬',
-    enabled: false,
-    path: '/play/pitaco-citacao',
-    hint: 'As citacoes sao do proprio chat do PITACO. Inspirado em Loldle Quote.',
-  },
-  {
     slug: 'loldle',
     title: 'Loldle',
     description: 'Adivinhe o campeao de League of Legends pelos atributos (regiao, classe, recurso, alcance, genero, ano).',
@@ -121,6 +110,17 @@ export const GAMES: GameDefinition[] = [
     enabled: true,
     path: '/play/loldle',
     hint: 'Inspirado em Loldle Classic. 8 tentativas, 6 atributos, 1 campeao.',
+  },
+  {
+    slug: 'narutodle',
+    title: 'Narutodle',
+    description: 'Adivinhe o ninja de Naruto Shippuden pelos atributos (cla, vila, rank, kekkei genkai, elemento, afiliacao, genero).',
+    category: 'atributos',
+    difficulty: 3,
+    thumbnail: '🍥',
+    enabled: true,
+    path: '/play/narutodle',
+    hint: 'Inspirado em Narutodle. 8 tentativas, 7 atributos, 1 ninja.',
   },
 ]
 

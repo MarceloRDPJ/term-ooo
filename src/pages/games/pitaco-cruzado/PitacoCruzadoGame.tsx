@@ -98,6 +98,7 @@ export function PitacoCruzadoGame() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return
+      if (state?.isGameOver) return
       if (e.key === 'Enter') {
         handleKey('ENTER')
         return
@@ -113,7 +114,7 @@ export function PitacoCruzadoGame() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [handleKey])
+  }, [handleKey, state?.isGameOver])
 
   const handleReopen = () => {
     if (!state) return
@@ -182,7 +183,7 @@ export function PitacoCruzadoGame() {
 
       {/* Mensagem de erro flutuante. Some apos 1.5s. */}
       {error && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 font-mono text-sm animate-pulse">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-[#E25F38] text-white px-4 py-2 rounded-lg shadow-lg z-50 font-mono text-sm animate-pulse">
           {error}
         </div>
       )}

@@ -308,8 +308,9 @@ export function findStateByQuery(query: string): BrazilianState | undefined {
       .toLowerCase()
     return (
       ufLower === normalized ||
-      nameLower === normalized ||
-      capitalLower === normalized
+      nameLower.includes(normalized) ||
+      capitalLower.includes(normalized) ||
+      normalized.includes(nameLower.split(' ')[0]!)
     )
   })
 }

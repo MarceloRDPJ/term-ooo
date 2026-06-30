@@ -62,16 +62,16 @@ function feedbackClasses(status: NarutodleFeedbackStatus): {
 } {
   if (status === 'correct') {
     return {
-      bg: 'bg-emerald-500/20',
-      border: 'border-emerald-400/60',
-      text: 'text-emerald-200',
+      bg: 'bg-[#00B2A9]/20',
+      border: 'border-[#00B2A9]/60',
+      text: 'text-[#5BE0D8]',
     }
   }
   if (status === 'near') {
     return {
-      bg: 'bg-yellow-500/20',
-      border: 'border-yellow-400/60',
-      text: 'text-yellow-200',
+      bg: 'bg-[#E3C275]/20',
+      border: 'border-[#E3C275]/60',
+      text: 'text-[#E3C275]',
     }
   }
   return {
@@ -147,7 +147,7 @@ function CharacterAutocomplete({
           variant="ghost"
           onClick={() => value.trim() && onSubmit(value.trim())}
           disabled={disabled || !value.trim()}
-          className="h-8 w-8 text-[#F59E0B] hover:text-yellow-200"
+          className="h-8 w-8 text-[#F59E0B] hover:text-[#E3C275]"
           aria-label="Enviar chute"
         >
           <Send className="h-4 w-4" />
@@ -284,14 +284,14 @@ function GameOverCard({
       className={cn(
         'rounded-2xl border-2 p-5 shadow-2xl sm:p-6',
         state.isWin
-          ? 'border-emerald-400/60 bg-emerald-500/10'
+          ? 'border-[#00B2A9]/60 bg-[#00B2A9]/10'
           : 'border-[#E25F38]/60 bg-[#E25F38]/10'
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           {state.isWin ? (
-            <Trophy className="h-7 w-7 text-emerald-300" />
+            <Trophy className="h-7 w-7 text-[#5BE0D8]" />
           ) : (
             <X className="h-7 w-7" style={{ color: THEME.wrongText }} />
           )}
@@ -506,7 +506,7 @@ export function NarutodleGame() {
 
                 <div className="mt-3 space-y-1.5 font-mono text-[10px] text-slate-300 sm:text-xs">
                   <p>
-                    <Check className="mr-1 inline h-3 w-3 text-emerald-300" />
+                    <Check className="mr-1 inline h-3 w-3 text-[#5BE0D8]" />
                     digite o <strong>nome do personagem</strong> (autocomplete aparece).
                   </p>
                   <p>
@@ -561,12 +561,12 @@ export function NarutodleGame() {
           </h4>
           <ul className="space-y-1 font-mono">
             <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-emerald-400 align-middle" />
-              <strong className="text-emerald-200">correto</strong> · atributo bate com o alvo
+              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#00B2A9] align-middle" />
+              <strong className="text-[#5BE0D8]">correto</strong> · atributo bate com o alvo
             </li>
             <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-yellow-400 align-middle" />
-              <strong className="text-yellow-200">perto</strong> · apenas no rank (diferenca de 1 nivel)
+              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#E3C275] align-middle" />
+              <strong className="text-[#E3C275]">perto</strong> · apenas no rank (diferenca de 1 nivel)
             </li>
             <li>
               <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#E25F38] align-middle" />

@@ -95,10 +95,10 @@ export function evaluateAtributosGuess(
   const cargo: AtributosFeedback['cargo'] =
     guess.cargo === target.cargo ? 'correct' : 'wrong'
 
-  // equipe: se igual -> correct. senao, checa se existe outro auditor
-  // (ja chutado ou mesmo o chute atual) com essa equipe. Se sim, e o
-  // alvo nao tem essa equipe, a cor e "partial" (amarelo) - pista
-  // positiva de que alguem tem essa equipe. Caso contrario, "wrong".
+  // equipe: se igual -> correct. senao, checa se existe OUTRO auditor
+  // (ja chutado, nao o chute atual) com essa equipe. Se sim, "partial"
+  // (amarelo) - pista positiva de que a equipe existe em alguem ja
+  // chutado, mas nao e o alvo. Caso contrario, "wrong".
   let equipe: AtributosFeedback['equipe'] = 'wrong'
   if (guess.equipe === target.equipe) {
     equipe = 'correct'
@@ -106,8 +106,9 @@ export function evaluateAtributosGuess(
     const teamExistsElsewhere = AUDITORES.some(
       (a) =>
         a.id !== target.id &&
+        a.id !== guess.id &&
         a.equipe === guess.equipe &&
-        (a.id === guess.id || historyIds.includes(a.id)),
+        historyIds.includes(a.id),
     )
     if (teamExistsElsewhere) {
       equipe = 'partial'

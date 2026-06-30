@@ -105,7 +105,7 @@ function AuthorAutocomplete({
           variant="ghost"
           onClick={() => value.trim() && onSubmit(value.trim())}
           disabled={disabled || !value.trim()}
-          className="h-8 w-8 text-[#F59E0B] hover:text-amber-200"
+          className="h-8 w-8 text-[#F59E0B] hover:text-[#E3C275]"
           aria-label="Enviar chute"
         >
           <Send className="h-4 w-4" />
@@ -228,7 +228,7 @@ function GuessCard({ guess }: { guess: QuoteGuess }) {
         className={cn(
           'flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider',
           isCorrect
-            ? 'border-[#F59E0B]/60 bg-[#F59E0B]/20 text-amber-200'
+            ? 'border-[#F59E0B]/60 bg-[#F59E0B]/20 text-[#E3C275]'
             : 'border-[#2A4060]/60 bg-[#243447]/60 text-slate-300'
         )}
       >
@@ -267,7 +267,7 @@ function GameOverCard({
     >
       <div className="flex items-start gap-3">
         {state.isWin ? (
-          <Trophy className="h-7 w-7 text-amber-200" />
+          <Trophy className="h-7 w-7 text-[#E3C275]" />
         ) : (
           <X className="h-7 w-7 text-[#F1A28A]" />
         )}
@@ -434,7 +434,7 @@ export function PitacoCitacaoGame() {
 
                 <div className="mt-3 space-y-1.5 font-mono text-[10px] text-slate-300 sm:text-xs">
                   <p>
-                    <Check className="mr-1 inline h-3 w-3 text-amber-200" />
+                    <Check className="mr-1 inline h-3 w-3 text-[#E3C275]" />
                     digite o <strong>nome</strong> ou o <strong>apelido</strong> do autor.
                   </p>
                   <p>
@@ -476,7 +476,7 @@ export function PitacoCitacaoGame() {
           <ul className="space-y-1 font-mono">
             <li>
               <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#F59E0B] align-middle" />
-              <strong className="text-amber-200">amarelo</strong> · acertou o autor da citacao
+              <strong className="text-[#E3C275]">amarelo</strong> · acertou o autor da citacao
             </li>
             <li>
               <span className="mr-2 inline-block h-2 w-2 rounded-full bg-slate-500 align-middle" />

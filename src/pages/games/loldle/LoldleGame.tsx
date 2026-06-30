@@ -35,7 +35,6 @@ import { CHAMPIONS, findChampionById, searchChampions } from './champions'
 import {
   createInitialLoldleState,
   processLoldleGuess,
-  pickChampionForDate,
   yearArrow,
 } from './engine'
 import { loadLoldleState, saveLoldleState } from './storage'
@@ -65,11 +64,11 @@ const ATTRIBUTE_SHORT: Record<AttributeKey, string> = {
 function statusClasses(status: LoldleFeedbackStatus): string {
   switch (status) {
     case 'correct':
-      return 'bg-emerald-500/20 border-emerald-400/60 text-emerald-200'
+      return 'bg-[#00B2A9]/20 border-[#00B2A9]/60 text-[#5BE0D8]'
     case 'near':
-      return 'bg-yellow-500/20 border-yellow-400/60 text-yellow-200'
+      return 'bg-[#E3C275]/20 border-[#E3C275]/60 text-[#E3C275]'
     case 'partial':
-      return 'bg-cyan-500/20 border-cyan-400/60 text-cyan-200'
+      return 'bg-[#00B2A9]/20 border-[#00B2A9]/60 text-[#5BE0D8]'
     case 'far':
       return 'bg-[#E25F38]/20 border-[#E25F38]/60 text-[#F1A28A]'
     case 'wrong':
@@ -190,7 +189,7 @@ function ChampionAutocomplete({
             }
           }}
           disabled={disabled || !value.trim()}
-          className="h-8 w-8 text-[#00B2A9] hover:text-cyan-200"
+          className="h-8 w-8 text-[#00B2A9] hover:text-[#5BE0D8]"
           aria-label="Enviar chute"
         >
           <Send className="h-4 w-4" />
@@ -340,14 +339,14 @@ function GameOverCard({
       className={cn(
         'rounded-2xl border-2 p-5 shadow-2xl sm:p-6',
         state.isWin
-          ? 'border-emerald-400/60 bg-emerald-500/10'
+          ? 'border-[#00B2A9]/60 bg-[#00B2A9]/10'
           : 'border-[#E25F38]/60 bg-[#E25F38]/10'
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           {state.isWin ? (
-            <Trophy className="h-7 w-7 text-emerald-300" />
+            <Trophy className="h-7 w-7 text-[#5BE0D8]" />
           ) : (
             <X className="h-7 w-7 text-[#F1A28A]" />
           )}
@@ -437,7 +436,6 @@ export function LoldleGame() {
 
   const guessedCount = state.guesses.length
   const emptyRows = Math.max(0, state.maxAttempts - guessedCount)
-  const targetPreview = useMemo(() => pickChampionForDate(dateKey), [dateKey])
 
   return (
     <div
@@ -523,24 +521,18 @@ export function LoldleGame() {
 
                 <div className="mt-3 space-y-1.5 font-mono text-[10px] text-slate-300 sm:text-xs">
                   <p>
-                    <Check className="mr-1 inline h-3 w-3 text-emerald-300" />
+                    <Check className="mr-1 inline h-3 w-3 text-[#5BE0D8]" />
                     digite o <strong>nome</strong> do campeao (autocomplete sugere).
                   </p>
                   <p>
-                    <span className="mr-1 inline-block h-2 w-2 rounded-full bg-yellow-400 align-middle" />
-                    <strong className="text-yellow-200">amarelo</strong> no ano = proximo (±2).
+                    <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#E3C275] align-middle" />
+                    <strong className="text-[#E3C275]">amarelo</strong> no ano = proximo (±2).
                   </p>
                   <p>
-                    <span className="mr-1 inline-block h-2 w-2 rounded-full bg-emerald-400 align-middle" />
-                    <strong className="text-emerald-200">verde</strong> = atributo correto.
+                    <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#00B2A9] align-middle" />
+                    <strong className="text-[#5BE0D8]">verde</strong> = atributo correto.
                   </p>
                 </div>
-
-                {state.isGameOver && targetPreview && (
-                  <div className="mt-3 rounded-lg border border-[#2A4060] bg-[#0F1A2E]/60 p-2 font-mono text-[10px] text-slate-300">
-                    preview alvo: {targetPreview.name}
-                  </div>
-                )}
               </>
             )}
           </section>
@@ -580,20 +572,20 @@ export function LoldleGame() {
           </h4>
           <ul className="space-y-1 font-mono">
             <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-emerald-400 align-middle" />
-              <strong className="text-emerald-200">verde</strong> · atributo exato
+              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#00B2A9] align-middle" />
+              <strong className="text-[#5BE0D8]">verde</strong> · atributo exato
             </li>
             <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-yellow-400 align-middle" />
-              <strong className="text-yellow-200">amarelo</strong> · ano proximo (±2)
+              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#E3C275] align-middle" />
+              <strong className="text-[#E3C275]">amarelo</strong> · ano proximo (±2)
             </li>
             <li>
               <span className="mr-2 inline-block h-2 w-2 rounded-full bg-slate-500 align-middle" />
               <strong className="text-slate-300">cinza</strong> · atributo errado
             </li>
             <li>
-              <ArrowUp className="mr-1 inline h-3 w-3 text-yellow-200 align-middle" />
-              / <ArrowDown className="mr-1 inline h-3 w-3 text-yellow-200 align-middle" />
+              <ArrowUp className="mr-1 inline h-3 w-3 text-[#E3C275] align-middle" />
+              / <ArrowDown className="mr-1 inline h-3 w-3 text-[#E3C275] align-middle" />
               no ano: alvo maior / alvo menor
             </li>
           </ul>

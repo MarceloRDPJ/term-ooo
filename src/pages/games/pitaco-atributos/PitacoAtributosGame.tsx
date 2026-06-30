@@ -624,7 +624,7 @@ export function PitacoAtributosGame() {
             </li>
             <li className="flex items-center gap-2">
               <span className="inline-block h-3 w-3 rounded bg-[#E3C275]" />
-              <span className="text-yellow-200">amarelo</span> · parcial (ex: senioridade proxima, equipe existe em outro auditor)
+              <span className="text-[#E3C275]">amarelo</span> · parcial (ex: senioridade proxima, equipe existe em outro auditor)
             </li>
             <li className="flex items-center gap-2">
               <span className="inline-block h-3 w-3 rounded bg-[#E25F38]" />

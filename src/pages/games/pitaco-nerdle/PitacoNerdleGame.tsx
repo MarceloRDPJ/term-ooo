@@ -83,8 +83,8 @@ function NerdleTile({
 }) {
   const colorClass = useMemo(() => {
     if (highContrast) {
-      if (state === 'correct') return 'bg-orange-500 border-orange-500 text-white'
-      if (state === 'present') return 'bg-cyan-500 border-cyan-500 text-white'
+      if (state === 'correct') return 'bg-[#E25F38] border-[#E25F38] text-white'
+      if (state === 'present') return 'bg-[#00B2A9] border-[#00B2A9] text-white'
       if (state === 'absent') return 'bg-[#243447] border-[#243447] text-white'
       if (state === 'filled') return 'bg-transparent border-slate-400'
       return 'bg-transparent border-slate-600'
@@ -443,7 +443,7 @@ export function PitacoNerdleGame() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 font-mono text-sm"
+            className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#E25F38] text-white px-4 py-2 rounded-lg shadow-lg z-50 font-mono text-sm"
           >
             {error}
           </motion.div>
