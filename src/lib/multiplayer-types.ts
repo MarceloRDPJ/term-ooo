@@ -16,7 +16,8 @@ export interface Profile {
   id: string
   nickname: string
   avatar_url: string | null
-  avatar_config: AvatarConfig | Record<string, unknown> | null
+  avatar_config: Record<string, unknown>
+  role: 'user' | 'admin' | 'banned'
   created_at: string
   updated_at: string
 }

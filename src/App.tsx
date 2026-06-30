@@ -163,7 +163,7 @@ function Game() {
 
   const handleModeChange = (newMode: GameMode) => {
     if (newMode === 'termo') {
-      navigate('/')
+      navigate('/play/pitaco')
     } else if (newMode === 'dueto') {
       navigate('/2')
     } else {

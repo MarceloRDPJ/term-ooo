@@ -3,7 +3,7 @@
 // Hall de entrada do PITACO. Lista os jogos disponiveis + em breve.
 // Cracha rapido no header se o user estiver logado.
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Gamepad2, Sparkles, Trophy } from 'lucide-react'
 import { Button } from './ui/button'
@@ -21,13 +21,7 @@ export function HallOfGames() {
 
   const enabled = getEnabledGames()
   const coming = getComingSoonGames()
-  const profile = auth.profile as (typeof auth.profile & { role?: string | null }) | null
-
-  useEffect(() => {
-    if (auth.user) {
-      setMessage(null)
-    }
-  }, [auth.user])
+  const profile = auth.profile
 
   const handlePlayPitaco = () => {
     navigate('/play/pitaco')
@@ -85,19 +79,28 @@ export function HallOfGames() {
             bem-vindo ao escritorio
           </h2>
           <p className="mt-2 max-w-2xl text-sm sm:text-base text-slate-300 leading-relaxed">
-            aqui voce da seus <span style={{ color: '#00B2A9' }}>pitacos</span> em varios jogos. alguns sao solo,
-            outros viram <span style={{ color: '#E3C275' }}>pauta</span> com o time. escolha o seu e
-            homologue o resultado.
+            o hub de <span style={{ color: '#00B2A9' }}>pitacos</span> do escritorio. aqui voce joga mini-games de palavras, logica e geografia.
+            da seu palpite solo ou abre uma <span style={{ color: '#E3C275' }}>pauta</span> com o time e homologue o resultado.
           </p>
         </section>
 
         {enabled.length > 0 && (
           <section className="mb-10">
-            <header className="mb-4 flex items-center gap-2">
-              <Trophy className="h-4 w-4" style={{ color: '#E3C275' }} />
-              <h3 className="text-sm font-mono uppercase tracking-wider text-slate-300">
-                disponivel agora
-              </h3>
+            <header className="mb-4 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Trophy className="h-4 w-4" style={{ color: '#E3C275' }} />
+                <h3 className="text-sm font-mono uppercase tracking-wider text-slate-300">
+                  disponivel agora
+                </h3>
+              </div>
+              <Button
+                onClick={handlePlayPitaco}
+                className="font-mono text-xs"
+                size="lg"
+                style={{ background: '#00B2A9', color: '#0F1A2E', minHeight: 44 }}
+              >
+                jogar PITACO agora
+              </Button>
             </header>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {enabled.map((game) => (
@@ -105,18 +108,6 @@ export function HallOfGames() {
               ))}
             </div>
           </section>
-        )}
-
-        {enabled.length > 0 && (
-          <div className="mb-10 flex justify-center sm:justify-start">
-            <Button
-              onClick={handlePlayPitaco}
-              className="font-mono text-xs"
-              style={{ background: '#00B2A9', color: '#0F1A2E' }}
-            >
-              jogar PITACO agora
-            </Button>
-          </div>
         )}
 
         {coming.length > 0 && (
@@ -135,7 +126,7 @@ export function HallOfGames() {
 
         <section className="mt-12 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-5 shadow-2xl sm:p-6">
           <h2 className="text-lg font-mono font-bold text-white">acessar o escritorio</h2>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-slate-300">
             faca login pra abrir pautas, jogar contra o time e homologar resultados.
           </p>
           <div className="mt-5">
@@ -148,10 +139,25 @@ export function HallOfGames() {
                     size="md"
                   />
                   <div>
-                    <p className="font-mono text-sm font-bold" style={{ color: '#00B2A9' }}>
-                      {profile?.nickname || 'Estagiario'}
-                    </p>
-                    <p className="text-xs text-slate-500 font-mono">{auth.user.email}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-mono text-sm font-bold" style={{ color: '#00B2A9' }}>
+                        {profile?.nickname || 'Estagiario'}
+                      </p>
+                      {profile?.role === 'admin' && (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider"
+                          style={{
+                            background: 'rgba(0, 178, 169, 0.18)',
+                            color: '#00B2A9',
+                            borderColor: 'rgba(0, 178, 169, 0.45)',
+                          }}
+                          aria-label="papel de admin"
+                        >
+                          admin
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-300 font-mono">{auth.user.email}</p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 sm:ml-auto">
@@ -159,6 +165,8 @@ export function HallOfGames() {
                     variant="outline"
                     onClick={() => navigate('/salas')}
                     className="border-[#2A4060] bg-transparent text-slate-200 font-mono text-xs"
+                    size="lg"
+                    style={{ minHeight: 44 }}
                   >
                     abrir pauta
                   </Button>
@@ -166,6 +174,8 @@ export function HallOfGames() {
                     <Button
                       onClick={() => navigate('/admin')}
                       className="font-mono text-xs"
+                      size="lg"
+                      style={{ minHeight: 44 }}
                     >
                       painel de admin
                     </Button>
@@ -188,40 +198,26 @@ export function HallOfGames() {
           </div>
         </section>
 
-        <footer className="mt-10 flex flex-wrap items-center justify-center gap-3 text-xs text-slate-500 font-mono">
-          <a
-            href="/docs"
-            className="hover:text-[#00B2A9]"
-            onClick={(event) => {
-              event.preventDefault()
-              navigate('/docs')
-            }}
-          >
-            docs
-          </a>
-          <span aria-hidden="true">·</span>
-          <a
-            href="/perfil"
-            className="hover:text-[#00B2A9]"
-            onClick={(event) => {
-              event.preventDefault()
-              navigate('/perfil')
-            }}
-          >
-            cracha
-          </a>
-          <span aria-hidden="true">·</span>
-          <a
-            href="/ranking"
-            className="hover:text-[#00B2A9]"
-            onClick={(event) => {
-              event.preventDefault()
-              navigate('/ranking')
-            }}
-          >
-            relatorio
-          </a>
-        </footer>
+        <section className="mt-12 grid gap-3 sm:grid-cols-3">
+          <article className="rounded-xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4">
+            <p className="text-[10px] font-mono uppercase tracking-wider text-slate-300">1 · jogue</p>
+            <p className="mt-1 text-sm text-slate-300">
+              escolha um jogo da lista, de seu palpite e ganhe crachas.
+            </p>
+          </article>
+          <article className="rounded-xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4">
+            <p className="text-[10px] font-mono uppercase tracking-wider text-slate-300">2 · abra pauta</p>
+            <p className="mt-1 text-sm text-slate-300">
+              convide o time, votem nos melhores pitacos e o dono envia pro tabuleiro.
+            </p>
+          </article>
+          <article className="rounded-xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4">
+            <p className="text-[10px] font-mono uppercase tracking-wider text-slate-300">3 · homologue</p>
+            <p className="mt-1 text-sm text-slate-300">
+              pontue o cracha, suba no relatorio e compare com o escritorio.
+            </p>
+          </article>
+        </section>
       </main>
     </div>
   )

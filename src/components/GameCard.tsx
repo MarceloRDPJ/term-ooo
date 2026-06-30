@@ -44,14 +44,15 @@ export function GameCard({ game }: GameCardProps) {
   }
 
   return (
-    <article
-      className={`group relative flex flex-col gap-4 rounded-2xl border p-5 shadow-2xl transition-all ${
+    <div
+      className={`group relative flex flex-col gap-4 rounded-2xl border p-5 shadow-2xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00B2A9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F1A2E] ${
         game.enabled
-          ? 'cursor-pointer border-[#2A4060]/40 bg-[#1A2C40]/70 hover:-translate-y-0.5 hover:border-[#00B2A9]/40'
-          : 'cursor-not-allowed border-[#2A4060]/20 bg-[#1A2C40]/40 opacity-90'
+          ? 'cursor-pointer border-[#2A4060]/40 bg-[#1A2C40]/70 hover:-translate-y-0.5 hover:border-[#00B2A9]/40 motion-reduce:transform-none motion-reduce:hover:translate-y-0'
+          : 'cursor-not-allowed border-[#2A4060]/20 bg-[#1A2C40]/40 opacity-60 grayscale'
       }`}
       onClick={handleClick}
       role="button"
+      aria-disabled={!game.enabled}
       tabIndex={game.enabled ? 0 : -1}
       onKeyDown={(event) => {
         if (game.enabled && (event.key === 'Enter' || event.key === ' ')) {
@@ -59,7 +60,7 @@ export function GameCard({ game }: GameCardProps) {
           handleClick()
         }
       }}
-      aria-label={`${game.title}${game.enabled ? '' : ' (em breve)'}`}
+      aria-label={`${game.title}, ${label}, dificuldade ${game.difficulty} de 5${game.enabled ? ', jogar' : ', em breve'}`}
       data-testid={`game-card-${game.slug}`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -90,7 +91,7 @@ export function GameCard({ game }: GameCardProps) {
         </h3>
         <p className="mt-1 text-sm text-slate-300 leading-relaxed">{game.description}</p>
         {game.hint && !game.enabled && (
-          <p className="mt-2 text-[11px] font-mono text-slate-500 italic">dica: {game.hint}</p>
+          <p className="mt-2 text-[11px] font-mono text-slate-300 italic">dica: {game.hint}</p>
         )}
       </div>
 
@@ -98,6 +99,8 @@ export function GameCard({ game }: GameCardProps) {
         {game.enabled ? (
           <Button
             className="w-full font-mono text-xs"
+            size="lg"
+            style={{ minHeight: 44 }}
             onClick={(event) => {
               event.stopPropagation()
               handleClick()
@@ -108,7 +111,8 @@ export function GameCard({ game }: GameCardProps) {
           </Button>
         ) : (
           <div
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-[#2A4060] py-2 text-[11px] font-mono text-slate-500"
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-[#2A4060] py-3 text-[11px] font-mono text-slate-300"
+            style={{ minHeight: 44 }}
           >
             <Lock className="h-3 w-3" />
             em breve
@@ -116,6 +120,6 @@ export function GameCard({ game }: GameCardProps) {
           </div>
         )}
       </div>
-    </article>
+    </div>
   )
 }
