@@ -1,15 +1,16 @@
 // src/pages/games/narutodle/modes.ts
 //
 // Definicao dos modos do Narutodle. 'classic' e 'silhouette' estao
-// implementados. 'jutsu' fica como 'em breve' (dados ja existem em
-// jutsu/jutsu.ts para uso futuro).
+// implementados. 'jutsu' e 'citacao' ficam como 'em breve' (dados ja
+// existem em jutsu/jutsu.ts para uso futuro).
 
-export type NarutodleMode = 'classic' | 'silhouette' | 'jutsu'
+export type NarutodleMode = 'classic' | 'silhouette' | 'jutsu' | 'citacao'
 
 export const NARUTODLE_MODES: { id: NarutodleMode; label: string; available: boolean }[] = [
-  { id: 'classic', label: 'Classic', available: true },
+  { id: 'classic', label: 'Clássico', available: true },
   { id: 'silhouette', label: 'Silhueta', available: true },
   { id: 'jutsu', label: 'Jutsu', available: false },
+  { id: 'citacao', label: 'Citação', available: false },
 ]
 
 export const DEFAULT_NARUTODLE_MODE: NarutodleMode = 'classic'
@@ -21,6 +22,7 @@ export const DEFAULT_NARUTODLE_MODE: NarutodleMode = 'classic'
 export function parseNarutodleModeFromPathname(pathname: string): NarutodleMode {
   if (pathname.endsWith('/narutodle-silhouette')) return 'silhouette'
   if (pathname.endsWith('/narutodle-jutsu')) return 'jutsu'
+  if (pathname.endsWith('/narutodle-citacao')) return 'citacao'
   return 'classic'
 }
 
@@ -29,5 +31,6 @@ export function parseNarutodleModeFromUrl(search: string): NarutodleMode {
   const raw = params.get('mode')
   if (raw === 'silhouette') return 'silhouette'
   if (raw === 'jutsu') return 'jutsu'
+  if (raw === 'citacao') return 'citacao'
   return 'classic'
 }

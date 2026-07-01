@@ -27,7 +27,6 @@ import {
   Search,
   Send,
   Sparkles,
-  Target,
   Trophy,
   X,
 } from 'lucide-react'
@@ -397,7 +396,7 @@ function EmptyRow({ index }: { index: number }) {
       <span className="rounded-md bg-[#0F1A2E]/80 px-2 py-0.5 font-black text-slate-400">
         #{index + 1}
       </span>
-      <span>tentativa {index + 1}</span>
+      <span className="font-bold text-[#cbd5e1]">tentativa {index + 1}</span>
     </div>
   )
 }
@@ -645,219 +644,257 @@ export function LoldleGame() {
 
   return (
     <div
-      className="min-h-screen w-full"
-      style={{ background: 'linear-gradient(to bottom, #0F1A2E, #1A2C40, #243447)' }}
+      className="relative min-h-screen w-full overflow-hidden"
+      style={{ background: 'radial-gradient(ellipse at top, #0d1830 0%, #0a1224 45%, #060b18 100%)' }}
     >
-      <header
-        className="border-b border-[#2A4060]/40"
-        style={{ background: 'rgba(15,26,46,0.85)', backdropFilter: 'blur(8px)' }}
-      >
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-3 py-3 sm:px-4 sm:py-4">
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            className="flex min-h-[44px] items-center gap-1.5 px-2 text-sm text-[#cbd5e1] hover:text-white font-mono"
-            aria-label="Voltar ao hall"
-          >
-            <ArrowLeft className="h-4 w-4" /> hall
-          </button>
-          <div className="flex items-center gap-2">
-            <span className="text-xl sm:text-2xl" aria-hidden="true">⚔️</span>
-            <h1 className="font-mono text-base font-black tracking-tight text-white sm:text-xl">
-              LOLDLE <span style={{ color: '#00B2A9' }}>{modeLabel}</span>
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <LoldleModeSelector current={mode} onSelect={setMode} />
-            <span
-              className={cn(
-                'rounded-full border bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider',
-                state.isWin
-                  ? 'border-[#00B2A9] text-[#fbbf24]'
-                  : 'border-[#2A4060] text-[#cbd5e1]'
-              )}
-            >
-              {dateKey}
-            </span>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-5xl px-3 py-4 sm:px-4 sm:py-6">
-        <div className="grid gap-4 md:grid-cols-2">
-          <section className="rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-4 shadow-2xl sm:p-5">
-            <div className="mb-3 flex items-center gap-2">
-              <Target className="h-4 w-4" style={{ color: '#00B2A9' }} />
-              <h2 className="font-mono text-lg font-bold uppercase tracking-wider text-white sm:text-xl">
-                {effectiveMode === 'quote' ? 'frase do dia' : 'alvo do dia'}
-              </h2>
-              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#cbd5e1]">
-                {state.isGameOver
-                  ? state.isWin
-                    ? `${state.currentRow}/${state.maxAttempts}`
-                    : 'acabou'
-                  : `${attemptsLeft} restantes`}
-              </span>
-            </div>
-            {effectiveMode === 'quote' ? (
-              <>
-                <LoldleQuoteCard text={targetQuote} revealed={state.isGameOver} />
-                <p className="mt-3 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
-                  {state.isGameOver && target
-                    ? `o autor era: ${target.name}`
-                    : `descubra quem falou a frase acima em ate ${state.maxAttempts} tentativas.`}
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#2A4060] bg-gradient-to-br from-[#0F1A2E] to-[#1A2C40] p-6 text-center">
-                  <span className="text-5xl" aria-hidden="true">❓</span>
-                  <p className="font-mono text-sm font-bold text-[#5BE0D8] sm:text-base">
-                    Campeao oculto
-                  </p>
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1] sm:text-xs">
-                    {state.isGameOver && target
-                      ? 'spoiler abaixo'
-                      : `pool: ${CHAMPIONS.length} campeoes`}
-                  </p>
-                </div>
-                <p className="mt-3 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
-                  Adivinhe o campeao pelos seus atributos. 6 atributos, 8 tentativas.
-                </p>
-              </>
-            )}
-          </section>
-
-          <section className="rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-4 shadow-2xl sm:p-5">
-            <div className="mb-3 flex items-center gap-2">
-              <Sparkles className="h-4 w-4" style={{ color: '#E3C275' }} />
-              <h2 className="font-mono text-lg font-bold uppercase tracking-wider text-white sm:text-xl">
-                chute
-              </h2>
-            </div>
-
-            {state.isGameOver ? (
-              <GameOverCard state={state} onBack={() => navigate('/')} onReopen={handleReopen} />
-            ) : (
-              <>
-                <ChampionAutocomplete
-                  value={input}
-                  onChange={setInput}
-                  onSubmit={handleSubmit}
-                  disabled={state.isGameOver}
-                  history={state.history}
-                  error={error}
-                />
-
-                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
-                  {effectiveMode === 'quote' ? (
-                    <>
-                      <p>
-                        <Check className="mr-1 inline h-3 w-3 text-[#86efac]" />
-                        digite o <strong>nome</strong> do campeao que falou a frase.
-                      </p>
-                      <p>
-                        <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#16a34a] align-middle" />
-                        <strong className="text-[#86efac]">verde</strong> = autor correto.
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p>
-                        <Check className="mr-1 inline h-3 w-3 text-[#86efac]" />
-                        digite o <strong>nome</strong> do campeao (autocomplete sugere).
-                      </p>
-                      <p>
-                        <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#E3C275] align-middle" />
-                        <strong className="text-[#E3C275]">amarelo</strong> no ano = proximo (±2).
-                      </p>
-                      <p>
-                        <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#16a34a] align-middle" />
-                        <strong className="text-[#86efac]">verde</strong> = atributo correto.
-                      </p>
-                    </>
-                  )}
-                </div>
-              </>
-            )}
-          </section>
-        </div>
-
-        <section className="mt-5">
-          <h3 className="mb-2 flex items-center gap-2 font-mono text-base font-bold uppercase tracking-wider text-[#cbd5e1]">
-            tentativas
-            <span className="text-[#94A3B8]">
-              ({guessedCount}/{state.maxAttempts})
-            </span>
-          </h3>
-          <div ref={tentativasRef} className="grid gap-2">
-            {state.guesses.map((g, i) => {
-              const champ = findChampionById(g.championId)
-              if (!champ) return null
-              return (
-                <GuessRow
-                  key={`${g.championId}-${i}`}
-                  champion={champ}
-                  feedback={g.feedback}
-                  index={i}
-                  target={target}
-                  yearDelta={g.yearDelta}
-                  mode={effectiveMode}
-                />
-              )
-            })}
-            {Array.from({ length: emptyRows }).map((_, i) => (
-              <EmptyRow key={`empty-${i}`} index={guessedCount + i} />
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-[#cbd5e1] sm:text-sm">
-          <h4 className="mb-2 font-mono text-base font-bold uppercase tracking-wider text-[#cbd5e1]">
-            legenda
-          </h4>
-          {effectiveMode === 'quote' ? (
-            <ul className="space-y-1 font-mono">
-              <li>
-                <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#16a34a] align-middle" />
-                <strong className="text-[#86efac]">verde</strong> · autor da frase
-              </li>
-              <li>
-                <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#94A3B8] align-middle" />
-                <strong className="text-[#cbd5e1]">cinza</strong> · chute errado
-              </li>
-            </ul>
-          ) : (
-            <ul className="space-y-1 font-mono">
-              <li>
-                <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#16a34a] align-middle" />
-                <strong className="text-[#86efac]">verde</strong> · atributo exato
-              </li>
-              <li>
-                <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#E3C275] align-middle" />
-                <strong className="text-[#E3C275]">amarelo</strong> · ano proximo (±2)
-              </li>
-              <li>
-                <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#94A3B8] align-middle" />
-                <strong className="text-[#cbd5e1]">cinza</strong> · atributo errado
-              </li>
-              <li>
-                <ArrowUp className="mr-1 inline h-3 w-3 text-[#E3C275] align-middle" />
-                / <ArrowDown className="mr-1 inline h-3 w-3 text-[#E3C275] align-middle" />
-                no ano: alvo maior / alvo menor
-              </li>
-            </ul>
-          )}
-        </section>
-      </main>
-
       <StarsBackground
-        className="fixed inset-0 z-0 max-h-dvh max-w-full opacity-30"
+        className="pointer-events-none fixed inset-0 z-0 h-full w-full opacity-80"
+        starColor="#cbd5e1"
         pointerEvents={false}
       />
 
-      <div className="fixed bottom-2 right-2 z-[5] pointer-events-none">
-        <span className="font-mono text-[8px] text-[#94A3B8]/50 md:text-xs">v{APP_VERSION}</span>
+      <div className="pointer-events-none fixed inset-0 z-0 h-full w-full bg-[radial-gradient(ellipse_at_center,_rgba(91,224,216,0.08)_0%,_transparent_55%)]" />
+
+      <div className="relative z-10">
+        <header
+          className="border-b border-[#2A4060]/40"
+          style={{ background: 'rgba(10,18,36,0.85)', backdropFilter: 'blur(10px)' }}
+        >
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3">
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="flex min-h-[40px] items-center gap-1.5 px-2 text-sm text-[#cbd5e1] hover:text-white font-mono"
+              aria-label="Voltar ao hall"
+            >
+              <ArrowLeft className="h-4 w-4" /> hall
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-lg sm:text-xl" aria-hidden="true">⚔️</span>
+              <h1 className="font-mono text-sm font-black uppercase tracking-wider text-white sm:text-base">
+                Loldle <span style={{ color: '#00B2A9' }}>{modeLabel}</span>
+              </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className={cn(
+                  'rounded-md border bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider',
+                  state.isWin
+                    ? 'border-[#fbbf24] text-[#fbbf24]'
+                    : 'border-[#2A4060] text-[#cbd5e1]'
+                )}
+              >
+                {dateKey}
+              </span>
+            </div>
+          </div>
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-1.5 border-t border-[#2A4060]/30 px-3 py-2 sm:px-4">
+            <LoldleModeSelector current={mode} onSelect={setMode} />
+          </div>
+        </header>
+
+        <main className="mx-auto max-w-5xl px-3 py-4 sm:px-4 sm:py-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <section className="rounded-2xl border border-[#2A4060]/40 bg-[#0F1A2E]/70 p-4 shadow-2xl backdrop-blur sm:p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <span
+                  className="flex h-5 w-5 items-center justify-center rounded-full border-2"
+                  style={{ borderColor: '#5BE0D8' }}
+                  aria-hidden="true"
+                >
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#5BE0D8' }} />
+                </span>
+                <h2 className="font-mono text-sm font-black uppercase tracking-wider text-white sm:text-base">
+                  alvo do dia
+                </h2>
+                <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#cbd5e1]">
+                  {state.isGameOver
+                    ? state.isWin
+                      ? `${state.currentRow}/${state.maxAttempts}`
+                      : 'acabou'
+                    : `${attemptsLeft} restantes`}
+                </span>
+              </div>
+              {effectiveMode === 'quote' ? (
+                <>
+                  <LoldleQuoteCard text={targetQuote} revealed={state.isGameOver} />
+                  <p className="mt-3 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
+                    {state.isGameOver && target
+                      ? `o autor era: ${target.name}`
+                      : `descubra quem falou a frase acima em ate ${state.maxAttempts} tentativas.`}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#2A4060]/80 bg-gradient-to-br from-[#0F1A2E]/80 to-[#1A2C40]/60 p-6 text-center">
+                    <span
+                      className="font-mono text-6xl font-black leading-none sm:text-7xl"
+                      style={{ color: '#fb923c' }}
+                      aria-hidden="true"
+                    >
+                      ?
+                    </span>
+                    <p className="font-mono text-base font-black text-[#5BE0D8] sm:text-lg">
+                      Campeao oculto
+                    </p>
+                    <p
+                      className="font-mono text-[10px] font-bold uppercase tracking-widest sm:text-xs"
+                      style={{ color: '#fbbf24' }}
+                    >
+                      pool: {CHAMPIONS.length} campeoes
+                    </p>
+                  </div>
+                  <p className="mt-3 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
+                    Adivinhe o campeao pelos seus atributos. 6 atributos, 8 tentativas.
+                  </p>
+                </>
+              )}
+            </section>
+
+            <section className="rounded-2xl border border-[#2A4060]/40 bg-[#0F1A2E]/70 p-4 shadow-2xl backdrop-blur sm:p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <Sparkles className="h-4 w-4" style={{ color: '#E3C275' }} />
+                <h2 className="font-mono text-sm font-black uppercase tracking-wider text-white sm:text-base">
+                  chute
+                </h2>
+              </div>
+
+              {state.isGameOver ? (
+                <GameOverCard state={state} onBack={() => navigate('/')} onReopen={handleReopen} />
+              ) : (
+                <>
+                  <ChampionAutocomplete
+                    value={input}
+                    onChange={setInput}
+                    onSubmit={handleSubmit}
+                    disabled={state.isGameOver}
+                    history={state.history}
+                    error={error}
+                  />
+
+                  <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
+                    {effectiveMode === 'quote' ? (
+                      <>
+                        <p>
+                          <Check className="mr-1 inline h-3 w-3 text-[#22c55e]" />
+                          digite o <strong>nome</strong> do campeao que falou a frase.
+                        </p>
+                        <p>
+                          <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#22c55e] align-middle" />
+                          <strong className="text-[#86efac]">verde</strong> = autor correto.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p>
+                          <Check className="mr-1 inline h-3 w-3 text-[#22c55e]" />
+                          digite o <strong>nome</strong> do campeao (autocomplete sugere).
+                        </p>
+                        <p>
+                          <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#eab308] align-middle" />
+                          <strong className="text-[#fbbf24]">amarelo</strong> no ano = proximo (±2).
+                        </p>
+                        <p>
+                          <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#22c55e] align-middle" />
+                          <strong className="text-[#86efac]">verde</strong> = atributo correto.
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
+            </section>
+          </div>
+
+          <section className="mt-5">
+            <h3 className="mb-2 flex items-center gap-2 font-mono text-sm font-black uppercase tracking-wider sm:text-base">
+              <span
+                className="font-mono text-sm font-black sm:text-base"
+                style={{ color: '#5BE0D8' }}
+              >
+                tentativas
+              </span>
+              <span className="text-[10px] text-[#94A3B8] sm:text-xs">
+                ({guessedCount}/{state.maxAttempts})
+              </span>
+            </h3>
+            <div ref={tentativasRef} className="grid gap-2">
+              {state.guesses.map((g, i) => {
+                const champ = findChampionById(g.championId)
+                if (!champ) return null
+                return (
+                  <GuessRow
+                    key={`${g.championId}-${i}`}
+                    champion={champ}
+                    feedback={g.feedback}
+                    index={i}
+                    target={target}
+                    yearDelta={g.yearDelta}
+                    mode={effectiveMode}
+                  />
+                )
+              })}
+              {Array.from({ length: emptyRows }).map((_, i) => (
+                <EmptyRow key={`empty-${i}`} index={guessedCount + i} />
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#0F1A2E]/50 p-4 text-xs text-[#cbd5e1] backdrop-blur sm:text-sm">
+            <h4 className="mb-2 font-mono text-sm font-black uppercase tracking-wider text-white sm:text-base">
+              legenda
+            </h4>
+            {effectiveMode === 'quote' ? (
+              <ul className="space-y-1.5 font-mono">
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-3 w-3 rounded-sm bg-[#22c55e]" />
+                  <span>
+                    <strong className="text-[#86efac]">verde</strong> · autor da frase
+                  </span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-3 w-3 rounded-sm bg-[#6b7280]" />
+                  <span>
+                    <strong className="text-[#cbd5e1]">cinza</strong> · chute errado
+                  </span>
+                </li>
+              </ul>
+            ) : (
+              <ul className="space-y-1.5 font-mono">
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-3 w-3 rounded-sm bg-[#22c55e]" />
+                  <span>
+                    <strong className="text-[#86efac]">verde</strong> · atributo exato
+                  </span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-3 w-3 rounded-sm bg-[#eab308]" />
+                  <span>
+                    <strong className="text-[#fbbf24]">amarelo</strong> · ano proximo (±2)
+                  </span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-3 w-3 rounded-sm bg-[#6b7280]" />
+                  <span>
+                    <strong className="text-[#cbd5e1]">cinza</strong> · atributo errado
+                  </span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <ArrowUp className="h-3 w-3 text-[#fbbf24]" />
+                  <ArrowDown className="h-3 w-3 text-[#fbbf24]" />
+                  <span>
+                    no ano: <strong className="text-[#fbbf24]">alvo maior</strong> /{' '}
+                    <strong className="text-[#fbbf24]">alvo menor</strong>
+                  </span>
+                </li>
+              </ul>
+            )}
+          </section>
+        </main>
+
+        <div className="fixed bottom-2 right-2 z-[5] pointer-events-none">
+          <span className="font-mono text-[8px] text-[#94A3B8]/50 md:text-xs">v{APP_VERSION}</span>
+        </div>
       </div>
     </div>
   )

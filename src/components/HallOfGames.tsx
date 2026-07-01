@@ -5,13 +5,59 @@
 
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Gamepad2, Sparkles, Trophy } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Gamepad2, Sparkles, Trophy } from 'lucide-react'
 import { Button } from './ui/button'
 import { GameCard } from './GameCard'
 import { AvatarDisplay } from './AvatarDisplay'
 import { AuthPanel } from './AuthPanel'
 import { getEnabledGames, getComingSoonGames } from '@/lib/games'
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
+
+interface PartnerGame {
+  slug: string
+  name: string
+  description: string
+  icon: string
+  url: string
+}
+
+const PARTNER_GAMES: readonly PartnerGame[] = [
+  {
+    slug: 'loldle',
+    name: 'LoLdle',
+    description: 'adivinhe campeoes de League of Legends',
+    icon: '⚔️',
+    url: 'https://loldle.net',
+  },
+  {
+    slug: 'pokedle',
+    name: 'Pokedle',
+    description: 'descubra o pokemon do dia',
+    icon: '⚡',
+    url: 'https://pokedle.net',
+  },
+  {
+    slug: 'smashdle',
+    name: 'Smashdle',
+    description: 'personagens de Super Smash Bros',
+    icon: '💥',
+    url: 'https://smashdle.net',
+  },
+  {
+    slug: 'dotadle',
+    name: 'Dotadle',
+    description: 'herois de Dota 2',
+    icon: '🗡️',
+    url: 'https://dotadle.app',
+  },
+  {
+    slug: 'onepiecdle',
+    name: 'OnePiecdle',
+    description: 'adivinhe personagens de One Piece',
+    icon: '🏴\u200d☠️',
+    url: 'https://onepiecedle.net',
+  },
+]
 
 export function HallOfGames() {
   const navigate = useNavigate()
@@ -123,6 +169,48 @@ export function HallOfGames() {
             </div>
           </section>
         )}
+
+        <section className="mb-10">
+          <header className="mb-4 flex items-center gap-2">
+            <ExternalLink className="h-4 w-4" style={{ color: '#E3C275' }} />
+            <h3 className="text-sm font-mono uppercase tracking-wider text-slate-300">
+              joga os nossos outros jogos
+            </h3>
+          </header>
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            {PARTNER_GAMES.map((partner) => (
+              <a
+                key={partner.slug}
+                href={partner.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col gap-3 rounded-xl border border-[#2A4060]/40 bg-[#1A2C40]/60 p-4 transition-all hover:-translate-y-0.5 hover:border-[#00B2A9]/40 motion-reduce:transform-none motion-reduce:hover:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00B2A9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F1A2E]"
+                aria-label={`${partner.name}, abre em nova aba`}
+                data-testid={`partner-card-${partner.slug}`}
+              >
+                <div className="flex items-center justify-between">
+                  <div
+                    className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl"
+                    style={{ background: 'rgba(15,26,46,0.6)' }}
+                    aria-hidden="true"
+                  >
+                    {partner.icon}
+                  </div>
+                  <ExternalLink
+                    className="h-3.5 w-3.5 text-slate-500 transition-colors group-hover:text-[#00B2A9]"
+                    aria-hidden="true"
+                  />
+                </div>
+                <div>
+                  <h4 className="font-mono text-sm font-bold text-white">{partner.name}</h4>
+                  <p className="mt-0.5 text-xs text-slate-300 leading-relaxed">
+                    {partner.description}
+                  </p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
 
         <section className="mt-12 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-5 shadow-2xl sm:p-6">
           <h2 className="text-lg font-mono font-bold text-white">acessar o escritorio</h2>

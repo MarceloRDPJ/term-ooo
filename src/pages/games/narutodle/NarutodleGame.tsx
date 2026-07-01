@@ -4,9 +4,9 @@
 // 8 tentativas para adivinhar um personagem de Naruto Shippuden a partir
 // de 7 atributos categoricos (cla, vila, rank, kekkei genkai, elemento,
 // afiliacao, genero). Feedback colorido por atributo (verde = correto,
-// amarelo = perto apenas no rank, vermelho = errado).
+// laranja = perto apenas no rank, cinza = errado).
 //
-// Persistencia: localStorage com chave `narutodle:state:${dateKey}`.
+// Persistencia: localStorage com chave `narutodle:state:${mode}:${dateKey}`.
 // Auto-save em todo useEffect de mudanca de state.
 
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -55,13 +55,18 @@ import {
   type NarutodleMode,
 } from './modes'
 
-// Cores do tema Naruto (laranja + preto, paleta da roupa do protagonista)
+// Cores do tema Naruto (laranja + preto, paleta da roupa do protagonista).
+// Tile feedback:
+//  - correct: verde
+//  - near (rank only): laranja
+//  - wrong: cinza
 const THEME = {
   accent: '#F59E0B',
   accentSoft: '#FBBF24',
-  near: '#FBBF24',
-  wrong: '#E25F38',
-  wrongText: '#F1A28A',
+  near: '#F97316',
+  nearText: '#FDBA74',
+  wrong: '#475569',
+  wrongText: '#94A3B8',
 }
 
 function feedbackClasses(status: NarutodleFeedbackStatus): {
@@ -78,15 +83,15 @@ function feedbackClasses(status: NarutodleFeedbackStatus): {
   }
   if (status === 'near') {
     return {
-      bg: 'bg-[#E3C275]/20',
-      border: 'border-[#E3C275]/60',
-      text: 'text-[#E3C275]',
+      bg: 'bg-[#F97316]/20',
+      border: 'border-[#F97316]/70',
+      text: 'text-[#FDBA74]',
     }
   }
   return {
-    bg: 'bg-[#E25F38]/15',
-    border: 'border-[#E25F38]/50',
-    text: 'text-[#F1A28A]',
+    bg: 'bg-[#475569]/25',
+    border: 'border-[#475569]/60',
+    text: 'text-[#94A3B8]',
   }
 }
 
@@ -132,10 +137,10 @@ function CharacterAutocomplete({
   return (
     <div ref={containerRef} className="relative w-full">
       <div
-        className="flex items-center gap-2 rounded-xl border-2 border-[#2A4060] bg-[#0F1A2E]/90 px-3 py-3 shadow-lg focus-within:border-[#E3C275] focus-within:ring-2 focus-within:ring-[#E3C275]/30"
+        className="flex items-center gap-2 rounded-xl border-2 border-[#2A4060] bg-[#0F1A2E]/90 px-3 py-3 shadow-lg focus-within:border-[#F97316] focus-within:ring-2 focus-within:ring-[#F97316]/30"
         onClick={() => inputRef.current?.focus()}
       >
-        <Target className="h-5 w-5" style={{ color: '#E3C275' }} />
+        <Target className="h-5 w-5" style={{ color: '#F97316' }} />
         <input
           ref={inputRef}
           type="text"
@@ -153,7 +158,7 @@ function CharacterAutocomplete({
           }}
           disabled={disabled}
           placeholder="Digite o nome do personagem (ex: Naruto, Sasuke)..."
-          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#cbd5e1] outline-none font-mono caret-[#E3C275] min-h-[32px] cursor-text"
+          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#cbd5e1] outline-none font-mono caret-[#F97316] min-h-[32px] cursor-text"
           aria-label="Chutar personagem"
         />
         <Button
@@ -161,7 +166,7 @@ function CharacterAutocomplete({
           variant="ghost"
           onClick={() => value.trim() && onSubmit(value.trim())}
           disabled={disabled || !value.trim()}
-          className="h-8 w-8 text-[#F59E0B] hover:text-[#E3C275]"
+          className="h-8 w-8 text-[#F59E0B] hover:text-[#F97316]"
           aria-label="Enviar chute"
         >
           <Send className="h-4 w-4" />
@@ -331,14 +336,14 @@ function GameOverCard({
       className={cn(
         'rounded-2xl border-2 p-5 shadow-2xl sm:p-6',
         state.isWin
-          ? 'border-[#fbbf24] bg-[#fbbf24]/10'
-          : 'border-[#E25F38]/60 bg-[#E25F38]/10'
+          ? 'border-[#F97316] bg-[#F97316]/10'
+          : 'border-[#475569]/60 bg-[#475569]/20'
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           {state.isWin ? (
-            <Trophy className="h-7 w-7 text-[#fbbf24]" />
+            <Trophy className="h-7 w-7 text-[#F97316]" />
           ) : (
             <X className="h-7 w-7" style={{ color: THEME.wrongText }} />
           )}
@@ -493,9 +498,13 @@ export function NarutodleGame() {
           <div className="flex items-center gap-2">
             <span className="text-xl sm:text-2xl" aria-hidden="true">🍥</span>
             <h1 className="font-mono text-base font-black tracking-tight text-white sm:text-xl">
-              NARUTO<span style={{ color: '#F59E0B' }}>DLE</span>
-              <span className="ml-1 text-xs sm:text-sm" style={{ color: '#F59E0B' }}>
-                {modeLabel}
+              <span style={{ color: '#F59E0B' }}>NARUTO</span>
+              <span style={{ color: '#FCD34D' }}>DLE</span>
+              <span
+                className="ml-1 text-[10px] sm:text-xs"
+                style={{ color: '#F59E0B' }}
+              >
+                · {modeLabel}
               </span>
             </h1>
           </div>
@@ -503,11 +512,12 @@ export function NarutodleGame() {
             <NarutodleModeSelector current={mode} onSelect={setMode} />
             <span
               className={cn(
-                'rounded-full border bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider',
+                'rounded-full border bg-[#0F1A2E]/70 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider',
                 state.isWin
-                  ? 'border-[#00B2A9] text-[#fbbf24]'
+                  ? 'border-[#F97316] text-[#FDBA74]'
                   : 'border-[#2A4060] text-slate-300'
               )}
+              title={`Data: ${dateKey}`}
             >
               dia #{dayNumber}
             </span>
@@ -518,10 +528,20 @@ export function NarutodleGame() {
       <main className="mx-auto max-w-5xl px-3 py-4 sm:px-4 sm:py-6">
         <div className="grid gap-4 md:grid-cols-2">
           <section className="rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-4 shadow-2xl sm:p-5">
-            <div className="mb-3 flex items-center gap-2">
+            <div
+              className="mb-3 flex items-center gap-2 rounded-lg border px-3 py-1.5"
+              style={{
+                background:
+                  'linear-gradient(90deg, rgba(15,26,46,0.6) 0%, rgba(245,158,11,0.15) 100%)',
+                borderColor: 'rgba(245,158,11,0.4)',
+              }}
+            >
               <Target className="h-4 w-4" style={{ color: '#F59E0B' }} />
-              <h2 className="font-mono text-lg font-bold uppercase tracking-wider text-white sm:text-xl">
-                ninja do dia
+              <h2 className="font-mono text-lg font-black uppercase tracking-wider text-white sm:text-xl">
+                <span style={{ color: '#FCD34D' }}>NINJA</span>
+                <span className="ml-1 text-[10px] sm:text-xs" style={{ color: '#F59E0B' }}>
+                  DO DIA
+                </span>
               </h2>
               <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-slate-300">
                 {state.isGameOver
@@ -538,11 +558,20 @@ export function NarutodleGame() {
               />
             ) : (
               <div
-                className="relative w-full overflow-hidden rounded-2xl border-2 border-dashed border-[#2A4060] bg-gradient-to-br from-[#0F1A2E] to-[#1A2C40] p-5 sm:p-6"
-                style={{ minHeight: 180 }}
+                className="relative w-full overflow-hidden rounded-2xl border-2 border-dashed p-5 sm:p-6"
+                style={{
+                  borderColor: state.isGameOver ? 'rgba(245,158,11,0.5)' : 'rgba(42,64,96,0.8)',
+                  background:
+                    'linear-gradient(160deg, #0F1A2E 0%, #1A2C40 50%, rgba(245,158,11,0.08) 100%)',
+                  minHeight: 180,
+                }}
               >
                 <div className="flex flex-col items-center justify-center gap-2 text-center">
-                  <span className="text-5xl sm:text-6xl" aria-hidden="true">
+                  <span
+                    className="font-mono text-6xl font-black leading-none sm:text-7xl"
+                    style={{ color: state.isGameOver ? '#FCD34D' : '#F97316' }}
+                    aria-hidden="true"
+                  >
                     {state.isGameOver ? '🍥' : '?'}
                   </span>
                   {state.isGameOver && target ? (
@@ -564,9 +593,20 @@ export function NarutodleGame() {
                       </span>
                     </>
                   ) : (
-                    <span className="font-mono text-xs text-slate-300 sm:text-sm">
-                      Quem e o ninja do dia? Chute um personagem abaixo.
-                    </span>
+                    <>
+                      <span
+                        className="font-mono text-sm font-bold uppercase tracking-wider sm:text-base"
+                        style={{ color: '#F97316' }}
+                      >
+                        ninja oculto
+                      </span>
+                      <span
+                        className="font-mono text-[10px] uppercase tracking-wider sm:text-xs"
+                        style={{ color: '#F59E0B' }}
+                      >
+                        pool: {NARUTO_CHARACTERS.length} personagens
+                      </span>
+                    </>
                   )}
                 </div>
               </div>
@@ -581,10 +621,17 @@ export function NarutodleGame() {
           </section>
 
           <section className="rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-4 shadow-2xl sm:p-5">
-            <div className="mb-3 flex items-center gap-2">
-              <Sparkles className="h-4 w-4" style={{ color: '#F59E0B' }} />
-              <h2 className="font-mono text-lg font-bold uppercase tracking-wider text-white sm:text-xl">
-                chute
+            <div
+              className="mb-3 flex items-center gap-2 rounded-lg border px-3 py-1.5"
+              style={{
+                background:
+                  'linear-gradient(90deg, rgba(15,26,46,0.6) 0%, rgba(249,115,22,0.15) 100%)',
+                borderColor: 'rgba(249,115,22,0.4)',
+              }}
+            >
+              <Sparkles className="h-4 w-4" style={{ color: '#F97316' }} />
+              <h2 className="font-mono text-lg font-black uppercase tracking-wider text-white sm:text-xl">
+                <span style={{ color: '#FDBA74' }}>CHUTE</span>
               </h2>
             </div>
 
@@ -604,7 +651,7 @@ export function NarutodleGame() {
                   history={state.history}
                 />
                 {error && (
-                  <div className="mt-2 rounded-lg border border-[#E25F38]/50 bg-[#E25F38]/10 p-2 font-mono text-xs" style={{ color: THEME.wrongText }}>
+                  <div className="mt-2 rounded-lg border border-[#475569]/50 bg-[#475569]/20 p-2 font-mono text-xs" style={{ color: THEME.wrongText }}>
                     {error}
                   </div>
                 )}
@@ -616,7 +663,7 @@ export function NarutodleGame() {
                   </p>
                   <p>
                     <ChevronDown className="mr-1 inline h-3 w-3 text-slate-300" />
-                    feedback mostra 7 atributos: <strong className="text-[#86efac]">verde</strong> = certo, amarelo = perto (so no rank), vermelho = errado.
+                    feedback mostra 7 atributos: <strong className="text-[#86efac]">verde</strong> = certo, <strong style={{ color: '#FDBA74' }}>laranja</strong> = perto (so no rank), cinza = errado.
                   </p>
                 </div>
               </>
@@ -670,12 +717,12 @@ export function NarutodleGame() {
               <strong className="text-[#86efac]">correto</strong> · atributo bate com o alvo
             </li>
             <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#E3C275] align-middle" />
-              <strong className="text-[#E3C275]">perto</strong> · apenas no rank (diferenca de 1 nivel)
+              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#F97316] align-middle" />
+              <strong style={{ color: '#FDBA74' }}>perto</strong> · apenas no rank (diferenca de 1 nivel)
             </li>
             <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#E25F38] align-middle" />
-              <strong className="text-[#F1A28A]">errado</strong> · atributo nao bate
+              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#475569] align-middle" />
+              <strong className="text-[#94A3B8]">errado</strong> · atributo nao bate
             </li>
           </ul>
         </section>

@@ -1,7 +1,9 @@
 // src/pages/games/narutodle/ModeSelector.tsx
 //
-// Pills horizontais com 3 modos (classic, silhueta, jutsu).
-// Apenas 'classic' e funcional. Os outros mostram "em breve".
+// Pills horizontais com 4 modos (classic, silhueta, jutsu, citacao).
+// Apenas 'classic' e 'silhouette' sao funcionais. Os outros mostram
+// "em breve" com cadeado. Visual inspirado em narutodle.net:
+// borda laranja + fundo sutil no modo ativo, borda cinza nos demais.
 
 import { Lock } from 'lucide-react'
 import { NARUTODLE_MODES, type NarutodleMode } from './modes'
@@ -16,7 +18,7 @@ export function NarutodleModeSelector({
 }) {
   return (
     <div
-      className="flex flex-wrap items-center gap-2"
+      className="flex flex-wrap items-center gap-1.5"
       role="tablist"
       aria-label="Selecao de modo do Narutodle"
     >
@@ -36,11 +38,11 @@ export function NarutodleModeSelector({
             }}
             title={m.available ? `Modo ${m.label}` : `${m.label} - em breve`}
             className={cn(
-              'flex min-h-[36px] items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-wider transition-colors',
+              'flex min-h-[32px] items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-wider transition-colors',
               isCurrent
-                ? 'border-[#F59E0B] bg-[#F59E0B] text-[#0F1A2E]'
+                ? 'border-[#F59E0B] bg-[#F59E0B]/15 text-[#FCD34D] shadow-[0_0_0_1px_rgba(245,158,11,0.25)]'
                 : isDisabled
-                ? 'cursor-not-allowed border-[#2A4060] bg-transparent text-[#94A3B8]'
+                ? 'cursor-not-allowed border-[#2A4060] bg-transparent text-[#94A3B8] opacity-60'
                 : 'border-[#2A4060] bg-[#0F1A2E]/70 text-[#cbd5e1] hover:border-[#F59E0B] hover:text-white'
             )}
           >
