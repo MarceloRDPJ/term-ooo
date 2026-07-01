@@ -5,60 +5,64 @@
 // categoricos (regiao, classe, recurso, alcance, genero) + numerico (ano).
 
 /**
- * Regioes de Runeterra cobertas pelo dataset do MVP.
+ * Regioes de Runeterra cobertas pelo dataset.
  * Hardcoded para serem identicas as de champions.ts.
+ * Formato kebab-case lowercase (ex: 'bandle-city', 'mount-targon').
  */
 export type LoldleRegion =
-  | 'Demacia'
-  | 'Noxus'
-  | 'Ionia'
-  | 'Freljord'
-  | 'Piltover'
-  | 'Zaun'
-  | 'Bandle'
-  | 'Shadow Isles'
-  | 'Targon'
-  | 'Shurima'
-  | 'Bilgewater'
-  | 'Ixtal'
-  | 'Void'
-  | 'Runeterra'
+  | 'demacia'
+  | 'noxus'
+  | 'ionia'
+  | 'freljord'
+  | 'piltover'
+  | 'zaun'
+  | 'bandle-city'
+  | 'shadow-isles'
+  | 'mount-targon'
+  | 'shurima'
+  | 'bilgewater'
+  | 'ixtal'
+  | 'void'
+  | 'runeterra'
 
 /**
  * Classes / roles primarias de League of Legends.
- * Campeoes com classe dupla (ex: Senna = Atirador/Suporte) sao
- * categorizados pela role primaria.
+ * Campeoes com classe dupla (ex: Senna = Marksman/Support) sao
+ * categorizados pela role primaria. TitleCase em ingles (padrao
+ * do Data Dragon do LoL).
  */
 export type LoldleClasse =
-  | 'Lutador'
-  | 'Mago'
-  | 'Assassino'
-  | 'Atirador'
-  | 'Suporte'
-  | 'Tanque'
+  | 'Fighter'
+  | 'Mage'
+  | 'Assassin'
+  | 'Marksman'
+  | 'Support'
+  | 'Tank'
 
 /**
- * Sistema de recurso docampeao.
- * - Mana: caster padrao
- * - Energia: Ionia (Akali, Lee Sin, Shen, Zed, Kennen)
- * - Furia: Sett, Tryndamere, etc
- * - Vida: Aatrox, Vladimir, etc (custam % de HP)
- * - Sem custo: Garen, Katarina, Riven, Yasuo, Yone
- * - Calor: Rumble (heat system)
+ * Sistema de recurso do campeao. TitleCase em ingles.
+ * Cobrimos os valores usados pelo dataset hardcoded em champions.ts.
  */
 export type LoldleRecurso =
   | 'Mana'
-  | 'Energia'
-  | 'Furia'
-  | 'Vida'
-  | 'Sem custo'
-  | 'Calor'
+  | 'Energy'
+  | 'Fury'
+  | 'Ferocity'
+  | 'Flow'
+  | 'Blood Well'
+  | 'Courage'
+  | 'Crimson Rush'
+  | 'Grit'
+  | 'Heat'
+  | 'Rage'
+  | 'Shield'
+  | 'None'
 
-/** Tipo de ataque basico. */
-export type LoldleAlcance = 'Corpo-a-corpo' | 'A distancia'
+/** Tipo de ataque basico. 'close' = corpo-a-corpo, 'range' = a distancia. */
+export type LoldleAlcance = 'close' | 'range'
 
-/** Genero do campeao. "Outro" cobre entidades sem genero binario (ex: Aurelion Sol, Gnar). */
-export type LoldleGenero = 'Masculino' | 'Feminino' | 'Outro'
+/** Genero do campeao. 'divers' cobre entidades sem genero binario. */
+export type LoldleGenero = 'male' | 'female' | 'divers'
 
 /**
  * Status de feedback por atributo.
@@ -150,6 +154,10 @@ export interface LoldleState {
   dateKey: string
   /** Historico de campeoes chutados (evita duplicata). */
   history: string[]
+  /** Modo de jogo. 'classic' e 'quote' sao persistidos (quote usa a mesma pool). */
+  mode?: 'classic' | 'quote'
+  /** Quote index usada no modo Quote (deterministica por dateKey + targetId). */
+  quoteIndex?: number
 }
 
 /** Resultado de processLoldleGuess. */

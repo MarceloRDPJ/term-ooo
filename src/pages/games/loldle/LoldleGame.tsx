@@ -5,15 +5,20 @@
 // recebendo feedback de 6 atributos (regiao, classe, recurso, alcance,
 // genero, ano).
 //
+// Suporta dois modos via ?mode= na URL:
+//   - classic (default): feedback por atributo (6 tiles coloridos por chute)
+//   - quote: o jogador recebe uma frase do campeao-alvo e adivinha quem falou
+//
 // Layout:
-//   - header: voltar + titulo + dia
-//   - board: 8 rows x 6 cols de tiles coloridos (1 row por chute)
+//   - header: voltar + titulo + mode selector + dia
+//   - board: 8 rows (1 row por chute) - tiles ou card com nome
 //   - input: autocomplete com os 40 campeoes do dataset
 //   - game over card: aparece quando isGameOver
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import confetti from 'canvas-confetti'
 import {
   ArrowDown,
   ArrowLeft,
@@ -40,6 +45,17 @@ import {
 import { clearLoldleState, loadLoldleState, saveLoldleState } from './storage'
 import type { LoldleFeedback, LoldleFeedbackStatus, LoldleState } from './types'
 import type { LoldleChampion } from './types'
+import { LoldleModeSelector } from './ModeSelector'
+import { LoldleQuoteCard } from './QuoteCard'
+import {
+  DEFAULT_LOLDLE_MODE,
+  parseLoldleModeFromPathname,
+  parseLoldleModeFromUrl,
+  type LoldleMode,
+} from './modes'
+import {
+  getQuoteForChampionForDate,
+} from './quotes/quotes'
 
 type AttributeKey = 'region' | 'classe' | 'recurso' | 'alcance' | 'genero' | 'ano'
 
@@ -64,11 +80,11 @@ const ATTRIBUTE_SHORT: Record<AttributeKey, string> = {
 function statusClasses(status: LoldleFeedbackStatus): string {
   switch (status) {
     case 'correct':
-      return 'bg-[#00B2A9]/20 border-[#00B2A9]/60 text-[#5BE0D8]'
+      return 'bg-[#16a34a]/25 border-[#16a34a]/70 text-[#86efac]'
     case 'near':
       return 'bg-[#E3C275]/20 border-[#E3C275]/60 text-[#E3C275]'
     case 'partial':
-      return 'bg-[#00B2A9]/20 border-[#00B2A9]/60 text-[#5BE0D8]'
+      return 'bg-[#16a34a]/25 border-[#16a34a]/70 text-[#86efac]'
     case 'far':
       return 'bg-[#E25F38]/20 border-[#E25F38]/60 text-[#F1A28A]'
     case 'wrong':
@@ -273,14 +289,47 @@ function GuessRow({
   index,
   target,
   yearDelta,
+  mode,
 }: {
   champion: LoldleChampion
   feedback: LoldleFeedback
   index: number
   target: LoldleChampion | null
   yearDelta?: number
+  mode: LoldleMode
 }) {
   const keys: AttributeKey[] = ['region', 'classe', 'recurso', 'alcance', 'genero', 'ano']
+
+  if (mode === 'quote') {
+    const isCorrect = feedback.ano === 'correct'
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, delay: index * 0.05 }}
+        className={cn(
+          'flex items-center gap-3 rounded-2xl border p-3 shadow-lg sm:p-4',
+          isCorrect
+            ? 'border-[#00B2A9]/60 bg-[#00B2A9]/10'
+            : 'border-[#2A4060]/60 bg-[#0F1A2E]/40'
+        )}
+      >
+        <span className="rounded-md bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] font-black text-white">
+          #{index + 1}
+        </span>
+        <span className="font-mono text-sm font-bold text-white sm:text-base">
+          {champion.name}
+        </span>
+        <span className="ml-auto font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">
+          {isCorrect ? (
+            <span className="text-[#5BE0D8]">autor correto</span>
+          ) : (
+            'errado'
+          )}
+        </span>
+      </motion.div>
+    )
+  }
 
   return (
     <motion.div
@@ -304,14 +353,17 @@ function GuessRow({
       </div>
 
       <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6 sm:gap-2">
-        {keys.map((k) => {
+        {keys.map((k, i) => {
           const status = feedback[k]
           const value = getAttributeValue(champion, k)
           const showArrow = k === 'ano' && target && status !== 'correct' && champion.ano !== target.ano
           const arrow = target && showArrow ? yearArrow(champion.ano, target.ano) : null
           return (
-            <div
+            <motion.div
               key={k}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: index * 0.04 + i * 0.04 }}
               className={cn(
                 'flex flex-col items-center justify-center gap-0.5 rounded-lg border px-2 py-2 text-center',
                 statusClasses(status)
@@ -331,7 +383,7 @@ function GuessRow({
                   {status === 'near' ? `±${yearDelta}` : `Δ${yearDelta}`}
                 </span>
               )}
-            </div>
+            </motion.div>
           )
         })}
       </div>
@@ -360,6 +412,36 @@ function GameOverCard({
   onReopen: () => void
 }) {
   const target = findChampionById(state.targetId)
+
+  useEffect(() => {
+    if (!state.isWin) return
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
+    const t1 = setTimeout(
+      () =>
+        confetti({
+          particleCount: 50,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+        }),
+      250
+    )
+    const t2 = setTimeout(
+      () =>
+        confetti({
+          particleCount: 50,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+        }),
+      400
+    )
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+    }
+  }, [state.isWin])
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -373,14 +455,14 @@ function GameOverCard({
       className={cn(
         'rounded-2xl border-2 p-5 shadow-2xl sm:p-6',
         state.isWin
-          ? 'border-[#00B2A9]/60 bg-[#00B2A9]/10'
+          ? 'border-[#fbbf24] bg-[#00B2A9]/10'
           : 'border-[#E25F38]/60 bg-[#E25F38]/10'
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           {state.isWin ? (
-            <Trophy className="h-7 w-7 text-[#5BE0D8]" />
+            <Trophy className="h-7 w-7 text-[#fbbf24]" />
           ) : (
             <X className="h-7 w-7 text-[#F1A28A]" />
           )}
@@ -442,16 +524,24 @@ function GameOverCard({
 
 export function LoldleGame() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [dateKey, setDateKey] = useState<string>(() => getTodayDateKey())
+  const [mode, setModeState] = useState<LoldleMode>(() => {
+    const fromPath = parseLoldleModeFromPathname(window.location.pathname)
+    if (fromPath !== 'classic') return fromPath
+    return parseLoldleModeFromUrl(window.location.search)
+  })
+  const effectiveMode: 'classic' | 'quote' = mode === 'quote' ? 'quote' : 'classic'
 
   const [state, setState] = useState<LoldleState>(() => {
     const initialKey = getTodayDateKey()
-    const persisted = loadLoldleState(initialKey)
+    const persisted = loadLoldleState(initialKey, effectiveMode)
     if (persisted) return persisted
-    return createInitialLoldleState(initialKey)
+    return createInitialLoldleState(initialKey, effectiveMode)
   })
   const [input, setInput] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const tentativasRef = useRef<HTMLDivElement | null>(null)
 
   const target = useMemo(() => {
     if (state.isGameOver) {
@@ -460,9 +550,45 @@ export function LoldleGame() {
     return null
   }, [state.isGameOver, state.targetId])
 
+  const targetQuote = useMemo(() => {
+    if (effectiveMode !== 'quote') return ''
+    return getQuoteForChampionForDate(state.targetId, state.dateKey)
+  }, [effectiveMode, state.targetId, state.dateKey])
+
+  const setMode = useCallback(
+    (next: LoldleMode) => {
+      setModeState(next)
+      const newMode: 'classic' | 'quote' = next === 'quote' ? 'quote' : 'classic'
+      const persisted = loadLoldleState(dateKey, newMode)
+      if (persisted) {
+        setState(persisted)
+      } else {
+        setState(createInitialLoldleState(dateKey, newMode))
+      }
+      setInput('')
+      setError(null)
+      const params = new URLSearchParams(location.search)
+      if (next === DEFAULT_LOLDLE_MODE) {
+        params.delete('mode')
+      } else {
+        params.set('mode', next)
+      }
+      const qs = params.toString()
+      const newPath = `${location.pathname}${qs ? `?${qs}` : ''}`
+      window.history.replaceState(null, '', newPath)
+    },
+    [dateKey, location.pathname, location.search]
+  )
+
   useEffect(() => {
-    saveLoldleState(dateKey, state)
-  }, [state, dateKey])
+    saveLoldleState(dateKey, state, effectiveMode)
+  }, [state, dateKey, effectiveMode])
+
+  useEffect(() => {
+    if (state.guesses.length > 0 && tentativasRef.current) {
+      tentativasRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }
+  }, [state.guesses.length])
 
   // Recarrega o estado quando o dia muda (usuario deixou a aba aberta
   // ate a meia-noite, ou voltou a tab apos virar o dia). Sem isso,
@@ -472,11 +598,11 @@ export function LoldleGame() {
       const today = getTodayDateKey()
       if (today !== dateKey) {
         setDateKey(today)
-        const persisted = loadLoldleState(today)
+        const persisted = loadLoldleState(today, effectiveMode)
         if (persisted) {
           setState(persisted)
         } else {
-          setState(createInitialLoldleState(today))
+          setState(createInitialLoldleState(today, effectiveMode))
         }
       }
     }
@@ -486,7 +612,7 @@ export function LoldleGame() {
       clearInterval(interval)
       document.removeEventListener('visibilitychange', checkDateChange)
     }
-  }, [dateKey])
+  }, [dateKey, effectiveMode])
 
   useEffect(() => {
     if (!error) return
@@ -509,12 +635,13 @@ export function LoldleGame() {
   }
 
   function handleReopen() {
-    clearLoldleState(dateKey)
+    clearLoldleState(dateKey, effectiveMode)
     window.location.reload()
   }
 
   const guessedCount = state.guesses.length
   const emptyRows = Math.max(0, state.maxAttempts - guessedCount)
+  const modeLabel = effectiveMode === 'quote' ? 'Quote' : 'Classic'
 
   return (
     <div
@@ -525,7 +652,7 @@ export function LoldleGame() {
         className="border-b border-[#2A4060]/40"
         style={{ background: 'rgba(15,26,46,0.85)', backdropFilter: 'blur(8px)' }}
       >
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-3 py-3 sm:px-4 sm:py-4">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-3 py-3 sm:px-4 sm:py-4">
           <button
             type="button"
             onClick={() => navigate('/')}
@@ -537,12 +664,22 @@ export function LoldleGame() {
           <div className="flex items-center gap-2">
             <span className="text-xl sm:text-2xl" aria-hidden="true">⚔️</span>
             <h1 className="font-mono text-base font-black tracking-tight text-white sm:text-xl">
-              LOLDLE <span style={{ color: '#00B2A9' }}>Classic</span>
+              LOLDLE <span style={{ color: '#00B2A9' }}>{modeLabel}</span>
             </h1>
           </div>
-          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">
-            {dateKey}
-          </span>
+          <div className="flex items-center gap-2">
+            <LoldleModeSelector current={mode} onSelect={setMode} />
+            <span
+              className={cn(
+                'rounded-full border bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider',
+                state.isWin
+                  ? 'border-[#00B2A9] text-[#fbbf24]'
+                  : 'border-[#2A4060] text-[#cbd5e1]'
+              )}
+            >
+              {dateKey}
+            </span>
+          </div>
         </div>
       </header>
 
@@ -551,8 +688,8 @@ export function LoldleGame() {
           <section className="rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-4 shadow-2xl sm:p-5">
             <div className="mb-3 flex items-center gap-2">
               <Target className="h-4 w-4" style={{ color: '#00B2A9' }} />
-              <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
-                alvo do dia
+              <h2 className="font-mono text-lg font-bold uppercase tracking-wider text-white sm:text-xl">
+                {effectiveMode === 'quote' ? 'frase do dia' : 'alvo do dia'}
               </h2>
               <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#cbd5e1]">
                 {state.isGameOver
@@ -562,26 +699,39 @@ export function LoldleGame() {
                   : `${attemptsLeft} restantes`}
               </span>
             </div>
-            <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#2A4060] bg-gradient-to-br from-[#0F1A2E] to-[#1A2C40] p-6 text-center">
-              <span className="text-5xl" aria-hidden="true">❓</span>
-              <p className="font-mono text-sm font-bold text-[#5BE0D8] sm:text-base">
-                Campeao oculto
-              </p>
-              <p className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1] sm:text-xs">
-                {state.isGameOver && target
-                  ? 'spoiler abaixo'
-                  : `pool: ${CHAMPIONS.length} campeoes`}
-              </p>
-            </div>
-            <p className="mt-3 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
-              Adivinhe o campeao pelos seus atributos. 6 atributos, 8 tentativas.
-            </p>
+            {effectiveMode === 'quote' ? (
+              <>
+                <LoldleQuoteCard text={targetQuote} revealed={state.isGameOver} />
+                <p className="mt-3 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
+                  {state.isGameOver && target
+                    ? `o autor era: ${target.name}`
+                    : `descubra quem falou a frase acima em ate ${state.maxAttempts} tentativas.`}
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#2A4060] bg-gradient-to-br from-[#0F1A2E] to-[#1A2C40] p-6 text-center">
+                  <span className="text-5xl" aria-hidden="true">❓</span>
+                  <p className="font-mono text-sm font-bold text-[#5BE0D8] sm:text-base">
+                    Campeao oculto
+                  </p>
+                  <p className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1] sm:text-xs">
+                    {state.isGameOver && target
+                      ? 'spoiler abaixo'
+                      : `pool: ${CHAMPIONS.length} campeoes`}
+                  </p>
+                </div>
+                <p className="mt-3 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
+                  Adivinhe o campeao pelos seus atributos. 6 atributos, 8 tentativas.
+                </p>
+              </>
+            )}
           </section>
 
           <section className="rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-4 shadow-2xl sm:p-5">
             <div className="mb-3 flex items-center gap-2">
               <Sparkles className="h-4 w-4" style={{ color: '#E3C275' }} />
-              <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
+              <h2 className="font-mono text-lg font-bold uppercase tracking-wider text-white sm:text-xl">
                 chute
               </h2>
             </div>
@@ -600,18 +750,33 @@ export function LoldleGame() {
                 />
 
                 <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
-                  <p>
-                    <Check className="mr-1 inline h-3 w-3 text-[#5BE0D8]" />
-                    digite o <strong>nome</strong> do campeao (autocomplete sugere).
-                  </p>
-                  <p>
-                    <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#E3C275] align-middle" />
-                    <strong className="text-[#E3C275]">amarelo</strong> no ano = proximo (±2).
-                  </p>
-                  <p>
-                    <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#00B2A9] align-middle" />
-                    <strong className="text-[#5BE0D8]">verde</strong> = atributo correto.
-                  </p>
+                  {effectiveMode === 'quote' ? (
+                    <>
+                      <p>
+                        <Check className="mr-1 inline h-3 w-3 text-[#86efac]" />
+                        digite o <strong>nome</strong> do campeao que falou a frase.
+                      </p>
+                      <p>
+                        <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#16a34a] align-middle" />
+                        <strong className="text-[#86efac]">verde</strong> = autor correto.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p>
+                        <Check className="mr-1 inline h-3 w-3 text-[#86efac]" />
+                        digite o <strong>nome</strong> do campeao (autocomplete sugere).
+                      </p>
+                      <p>
+                        <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#E3C275] align-middle" />
+                        <strong className="text-[#E3C275]">amarelo</strong> no ano = proximo (±2).
+                      </p>
+                      <p>
+                        <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#16a34a] align-middle" />
+                        <strong className="text-[#86efac]">verde</strong> = atributo correto.
+                      </p>
+                    </>
+                  )}
                 </div>
               </>
             )}
@@ -619,13 +784,13 @@ export function LoldleGame() {
         </div>
 
         <section className="mt-5">
-          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#cbd5e1]">
+          <h3 className="mb-2 flex items-center gap-2 font-mono text-base font-bold uppercase tracking-wider text-[#cbd5e1]">
             tentativas
             <span className="text-[#94A3B8]">
               ({guessedCount}/{state.maxAttempts})
             </span>
           </h3>
-          <div className="grid gap-2">
+          <div ref={tentativasRef} className="grid gap-2">
             {state.guesses.map((g, i) => {
               const champ = findChampionById(g.championId)
               if (!champ) return null
@@ -637,6 +802,7 @@ export function LoldleGame() {
                   index={i}
                   target={target}
                   yearDelta={g.yearDelta}
+                  mode={effectiveMode}
                 />
               )
             })}
@@ -647,28 +813,41 @@ export function LoldleGame() {
         </section>
 
         <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-[#cbd5e1] sm:text-sm">
-          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#cbd5e1]">
+          <h4 className="mb-2 font-mono text-base font-bold uppercase tracking-wider text-[#cbd5e1]">
             legenda
           </h4>
-          <ul className="space-y-1 font-mono">
-            <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#00B2A9] align-middle" />
-              <strong className="text-[#5BE0D8]">verde</strong> · atributo exato
-            </li>
-            <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#E3C275] align-middle" />
-              <strong className="text-[#E3C275]">amarelo</strong> · ano proximo (±2)
-            </li>
-            <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#94A3B8] align-middle" />
-              <strong className="text-[#cbd5e1]">cinza</strong> · atributo errado
-            </li>
-            <li>
-              <ArrowUp className="mr-1 inline h-3 w-3 text-[#E3C275] align-middle" />
-              / <ArrowDown className="mr-1 inline h-3 w-3 text-[#E3C275] align-middle" />
-              no ano: alvo maior / alvo menor
-            </li>
-          </ul>
+          {effectiveMode === 'quote' ? (
+            <ul className="space-y-1 font-mono">
+              <li>
+                <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#16a34a] align-middle" />
+                <strong className="text-[#86efac]">verde</strong> · autor da frase
+              </li>
+              <li>
+                <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#94A3B8] align-middle" />
+                <strong className="text-[#cbd5e1]">cinza</strong> · chute errado
+              </li>
+            </ul>
+          ) : (
+            <ul className="space-y-1 font-mono">
+              <li>
+                <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#16a34a] align-middle" />
+                <strong className="text-[#86efac]">verde</strong> · atributo exato
+              </li>
+              <li>
+                <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#E3C275] align-middle" />
+                <strong className="text-[#E3C275]">amarelo</strong> · ano proximo (±2)
+              </li>
+              <li>
+                <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#94A3B8] align-middle" />
+                <strong className="text-[#cbd5e1]">cinza</strong> · atributo errado
+              </li>
+              <li>
+                <ArrowUp className="mr-1 inline h-3 w-3 text-[#E3C275] align-middle" />
+                / <ArrowDown className="mr-1 inline h-3 w-3 text-[#E3C275] align-middle" />
+                no ano: alvo maior / alvo menor
+              </li>
+            </ul>
+          )}
         </section>
       </main>
 

@@ -7,6 +7,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import confetti from 'canvas-confetti'
 import {
   ArrowLeft,
   Check,
@@ -286,6 +287,36 @@ function GameOverCard({
   onReopen: () => void
 }) {
   const citacao = findCitacaoById(state.targetCitacaoId)
+
+  useEffect(() => {
+    if (!state.isWin) return
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
+    const t1 = setTimeout(
+      () =>
+        confetti({
+          particleCount: 50,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+        }),
+      250
+    )
+    const t2 = setTimeout(
+      () =>
+        confetti({
+          particleCount: 50,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+        }),
+      400
+    )
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+    }
+  }, [state.isWin])
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -299,13 +330,13 @@ function GameOverCard({
       className={cn(
         'rounded-2xl border-2 p-5 shadow-2xl sm:p-6',
         state.isWin
-          ? 'border-[#F59E0B]/60 bg-[#F59E0B]/10'
+          ? 'border-[#fbbf24] bg-[#F59E0B]/10'
           : 'border-[#E25F38]/60 bg-[#E25F38]/10'
       )}
     >
       <div className="flex items-start gap-3">
         {state.isWin ? (
-          <Trophy className="h-7 w-7 text-[#E3C275]" />
+          <Trophy className="h-7 w-7 text-[#fbbf24]" />
         ) : (
           <X className="h-7 w-7 text-[#F1A28A]" />
         )}
@@ -448,7 +479,14 @@ export function PitacoCitacaoGame() {
               PITACO <span style={{ color: '#F59E0B' }}>Citacao</span>
             </h1>
           </div>
-          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">
+          <span
+            className={cn(
+              'rounded-full border bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider',
+              state.isWin
+                ? 'border-[#00B2A9] text-[#fbbf24]'
+                : 'border-[#2A4060] text-[#cbd5e1]'
+            )}
+          >
             dia #{dayNumber}
           </span>
         </div>

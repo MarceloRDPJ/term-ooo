@@ -24,6 +24,13 @@ export type NarutodleClan =
   | 'Sarutobi'
   | 'Namikaze'
   | 'Nenhum'
+  | 'Otsutsuki'
+  | 'Hoshigaki'
+  | 'Shimura'
+  | 'Nohara'
+  | 'Kaguya'
+  | 'Momochi'
+  | 'Yuki'
 
 export type NarutodleVila =
   | 'Konoha'
@@ -53,17 +60,24 @@ export type NarutodleKekkeiGenkai =
   | 'Magnet Release'
   | 'Storm Release'
   | 'Dust Release'
+  | 'Shikotsumyaku'
+  | 'Ice Release'
 
 export type NarutodleElemento =
   | 'Fogo'
   | 'Vento'
   | 'Trovão'
+  | 'Trovao'
   | 'Terra'
   | 'Água'
+  | 'Agua'
   | 'Yin'
   | 'Yang'
   | 'Yin-Yang'
   | 'Nenhum'
+  | 'Som'
+  | 'Teia'
+  | 'Veneno'
 
 export type NarutodleAfiliacao =
   | 'Konoha'
@@ -73,7 +87,7 @@ export type NarutodleAfiliacao =
   | 'Nenhuma'
   | 'Outros'
 
-export type NarutodleGenero = 'M' | 'F' | 'Outro'
+export type NarutodleGenero = 'M' | 'F' | 'Outro' | 'divers'
 
 export type NarutodleFeedbackStatus = 'correct' | 'near' | 'wrong'
 
@@ -116,6 +130,8 @@ export interface NarutodleState {
   dateKey: string
   dayNumber: number
   history: string[]
+  /** Modo de jogo. 'classic' e 'silhouette' sao persistidos. */
+  mode?: 'classic' | 'silhouette'
 }
 
 export interface NarutodleProcessResult {

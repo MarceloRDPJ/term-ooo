@@ -508,8 +508,14 @@ function App() {
         <Route path="/quarteto" element={<Game />} />
         <Route path="/play/pitaco-cruzado" element={<PitacoCruzadoGame />} />
         <Route path="/play/loldle" element={<LoldleGame />} />
+        <Route path="/play/loldle-quote" element={<LoldleGame />} />
+        <Route path="/play/loldle-splash" element={<LoldleGame />} />
+        <Route path="/play/loldle-emoji" element={<LoldleGame />} />
+        <Route path="/play/loldle-ability" element={<LoldleGame />} />
         <Route path="/play/pitaco-atributos" element={<PitacoAtributosGame />} />
         <Route path="/play/narutodle" element={<NarutodleGame />} />
+        <Route path="/play/narutodle-silhouette" element={<NarutodleGame />} />
+        <Route path="/play/narutodle-jutsu" element={<NarutodleGame />} />
         <Route path="/salas" element={<RoomsHome />} />
         <Route path="/multi" element={<RoomsHome />} />
         <Route path="/mega" element={<RoomsHome />} />

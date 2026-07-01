@@ -34,7 +34,8 @@ import {
 export function createInitialNarutodleState(
   dateKey: string,
   dayNumber: number,
-  characters: NarutodleCharacter[]
+  characters: NarutodleCharacter[],
+  mode: 'classic' | 'silhouette' = 'classic'
 ): NarutodleState {
   if (characters.length === 0) {
     throw new Error('createInitialNarutodleState: lista de personagens vazia')
@@ -51,6 +52,7 @@ export function createInitialNarutodleState(
     dateKey,
     dayNumber,
     history: [],
+    mode,
   }
 }
 

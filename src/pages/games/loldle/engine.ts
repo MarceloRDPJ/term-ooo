@@ -118,7 +118,10 @@ export function computeFeedback(
 /**
  * Cria o estado inicial do jogo para um dado dia.
  */
-export function createInitialLoldleState(dateKey: string): LoldleState {
+export function createInitialLoldleState(
+  dateKey: string,
+  mode: 'classic' | 'quote' = 'classic'
+): LoldleState {
   const target = pickChampionForDate(dateKey)
   return {
     targetId: target.id,
@@ -130,6 +133,7 @@ export function createInitialLoldleState(dateKey: string): LoldleState {
     isWin: false,
     dateKey,
     history: [],
+    mode,
   }
 }
 
@@ -150,6 +154,8 @@ export function isLoldleWon(feedback: LoldleFeedback): boolean {
 /**
  * Processa um chute. Valida, calcula feedback, atualiza o estado.
  * Retorna { newState, error? }. Em caso de error, newState === state (sem mutacao).
+ *
+ * Modo quote: o feedback e apenas correct/wrong por id (sem atributos).
  */
 export function processLoldleGuess(
   state: LoldleState,
@@ -178,7 +184,17 @@ export function processLoldleGuess(
     return { newState: state, error: 'Alvo invalido' }
   }
 
-  const feedback = computeFeedback(guessed, target)
+  const isQuoteMode = state.mode === 'quote'
+  const feedback: LoldleFeedback = isQuoteMode
+    ? {
+        region: guessed.id === target.id ? 'correct' : 'wrong',
+        classe: guessed.id === target.id ? 'correct' : 'wrong',
+        recurso: guessed.id === target.id ? 'correct' : 'wrong',
+        alcance: guessed.id === target.id ? 'correct' : 'wrong',
+        genero: guessed.id === target.id ? 'correct' : 'wrong',
+        ano: guessed.id === target.id ? 'correct' : 'wrong',
+      }
+    : computeFeedback(guessed, target)
   const yearDelta = Math.abs(guessed.ano - target.ano)
 
   const guessRecord: LoldleGuess = {
@@ -187,7 +203,9 @@ export function processLoldleGuess(
     yearDelta,
   }
 
-  const won = isLoldleWon(feedback)
+  const won = isQuoteMode
+    ? guessed.id === target.id
+    : isLoldleWon(feedback)
   const newRow = state.currentRow + 1
   const gameOver = won || newRow >= state.maxAttempts
 
