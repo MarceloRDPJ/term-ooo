@@ -161,7 +161,7 @@ export function PitacoCruzadoGame() {
         <div className="max-w-7xl mx-auto px-2 py-2 sm:px-4 sm:py-3 flex items-center justify-between gap-2">
           <Link
             to="/"
-            className="flex min-h-[44px] items-center gap-1.5 px-2 text-[#94A3B8] hover:text-white font-mono text-xs sm:text-sm"
+            className="flex min-h-[44px] items-center gap-1.5 px-2 text-[#cbd5e1] hover:text-white font-mono text-xs sm:text-sm"
             aria-label="Voltar para o Hall"
           >
             <Home className="w-4 h-4" />
@@ -175,7 +175,7 @@ export function PitacoCruzadoGame() {
             >
               PITACO Cruzado
             </h1>
-            <div role="status" aria-live="polite" className="text-[10px] sm:text-xs text-[#94A3B8] font-mono">
+            <div role="status" aria-live="polite" className="text-[10px] sm:text-xs text-[#cbd5e1] font-mono">
               Dia #{state.dayNumber} · {completed}/4 boards · {state.currentRow}/{CROSSWORD_MAX_ATTEMPTS} tentativas
             </div>
           </div>
@@ -183,7 +183,7 @@ export function PitacoCruzadoGame() {
           <button
             type="button"
             onClick={handleReopen}
-            className="flex min-h-[44px] items-center gap-1.5 px-2 text-[#94A3B8] hover:text-white font-mono text-xs sm:text-sm"
+            className="flex min-h-[44px] items-center gap-1.5 px-2 text-[#cbd5e1] hover:text-white font-mono text-xs sm:text-sm"
             aria-label="Reabrir o dia (limpa o save atual)"
             title="Reabrir o dia (limpa o save atual)"
           >
@@ -271,7 +271,7 @@ export function PitacoCruzadoGame() {
                 ? `${state.currentRow} tentativa${state.currentRow === 1 ? '' : 's'} · 4/4 boards`
                 : `${completed}/4 boards em ${state.maxAttempts} tentativas`}
             </p>
-            <p className="text-xs text-[#94A3B8] font-mono mb-5">
+            <p className="text-xs text-[#cbd5e1] font-mono mb-5">
               {won
                 ? 'Pauta fechada. O RH vai te amar.'
                 : 'Amanha tem nova pauta. Abre o olho no stand-up.'}

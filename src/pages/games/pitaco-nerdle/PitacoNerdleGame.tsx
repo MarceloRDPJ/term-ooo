@@ -220,7 +220,7 @@ function EndDialog({
               >
                 {isWin ? 'CALCULADO!' : 'SEM SOLUCAO'}
               </h2>
-              <p className="text-sm text-[#94A3B8] font-mono">
+              <p className="text-sm text-[#cbd5e1] font-mono">
                 {isWin
                   ? `Resolveu em ${attempts}/${maxAttempts} tentativas.`
                   : `A equacao de hoje era:`}
@@ -420,7 +420,7 @@ export function PitacoNerdleGame() {
 
       <main className="flex-1 flex flex-col items-center justify-between px-2 py-2 sm:px-4 sm:py-4 max-w-2xl mx-auto w-full overflow-hidden">
         <div className="w-full flex items-center justify-between font-mono text-sm sm:text-base">
-          <div role="status" aria-live="polite" className="flex items-center gap-2 text-[#94A3B8]">
+          <div role="status" aria-live="polite" className="flex items-center gap-2 text-[#cbd5e1]">
             <span>Tentativas:</span>
             <span
               className={cn(
@@ -558,7 +558,7 @@ export function PitacoNerdleGame() {
         />
 
         <div className="fixed bottom-2 right-2 z-[5] pointer-events-none">
-          <span className="text-[8px] md:text-xs text-[#64748B]/50 font-mono">
+          <span className="text-[8px] md:text-xs text-[#94A3B8]/50 font-mono">
             v{APP_VERSION}
           </span>
         </div>

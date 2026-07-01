@@ -144,7 +144,7 @@ function CharacterAutocomplete({
           }}
           disabled={disabled}
           placeholder="Digite o nome do personagem (ex: Naruto, Sasuke)..."
-          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#94A3B8] outline-none font-mono caret-[#E3C275] min-h-[32px] cursor-text"
+          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#cbd5e1] outline-none font-mono caret-[#E3C275] min-h-[32px] cursor-text"
           aria-label="Chutar personagem"
         />
         <Button
@@ -177,7 +177,7 @@ function CharacterAutocomplete({
                     onChange('')
                     setOpen(false)
                   }}
-                  className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-slate-200 hover:bg-[#1A2C40] font-mono"
+                  className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-[#cbd5e1] hover:bg-[#1A2C40] hover:text-white font-mono"
                 >
                   <span>{c.name}</span>
                   <span className="text-[10px] uppercase tracking-wider text-slate-300">

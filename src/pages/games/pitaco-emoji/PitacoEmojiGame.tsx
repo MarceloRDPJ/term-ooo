@@ -106,7 +106,7 @@ function AuditorAutocomplete({
           }}
           disabled={disabled}
           placeholder="Digite o nome ou apelido..."
-          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#64748B] outline-none font-mono caret-[#00B2A9] min-h-[32px] cursor-text"
+          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#cbd5e1] outline-none font-mono caret-[#00B2A9] min-h-[32px] cursor-text"
           aria-label="Chutar auditor"
           aria-autocomplete="list"
           aria-expanded={open}
@@ -150,14 +150,14 @@ function AuditorAutocomplete({
                     onChange('')
                     setOpen(false)
                   }}
-                  className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-slate-200 hover:bg-[#1A2C40] font-mono"
+                  className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-[#cbd5e1] hover:bg-[#1A2C40] hover:text-white font-mono"
                 >
                   <span className="flex items-center gap-2">
                     <span className="text-base" aria-hidden="true">
                       {a.emojis[0]}
                     </span>
                     <span>{a.nickname}</span>
-                    <span className="text-[10px] text-[#94A3B8]">· {a.role}</span>
+                    <span className="text-[10px] text-[#cbd5e1]">· {a.role}</span>
                   </span>
                 </button>
               </li>
@@ -228,7 +228,7 @@ function GuessCard({ guess }: { guess: EmojiGuess }) {
         <span className="font-mono text-sm font-bold text-white sm:text-base">
           {guess.auditorName}
         </span>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8] sm:text-xs">
+        <span className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1] sm:text-xs">
           {auditor?.role ?? 'auditor'}
         </span>
       </div>
@@ -237,7 +237,7 @@ function GuessCard({ guess }: { guess: EmojiGuess }) {
           'flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider',
           isCorrect
             ? 'border-[#00B2A9]/60 bg-[#00B2A9]/20 text-[#5BE0D8]'
-            : 'border-[#2A4060]/60 bg-[#243447]/60 text-[#94A3B8]'
+            : 'border-[#2A4060]/60 bg-[#243447]/60 text-[#cbd5e1]'
         )}
       >
         {isCorrect ? (
@@ -291,7 +291,7 @@ function GameOverCard({
           <h2 id="emoji-gameover-title" className="font-mono text-lg font-black text-white sm:text-xl">
             {state.isWin ? 'HOMOLOGADO!' : 'PAUTA SEM CONSENSO'}
           </h2>
-          <p className="font-mono text-xs text-[#94A3B8] sm:text-sm">
+          <p className="font-mono text-xs text-[#cbd5e1] sm:text-sm">
             {state.isWin
               ? `Voce decifrou em ${state.currentRow}/${state.maxAttempts} tentativas.`
               : 'Amanha tem mais. Bora ler o chat?'}
@@ -301,7 +301,7 @@ function GameOverCard({
 
       {target && (
         <div className="mt-4 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/70 p-3">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">o auditor era</p>
+          <p className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">o auditor era</p>
           <div className="mt-2 flex items-center gap-3">
             <span className="text-3xl" aria-hidden="true">
               {target.emojis[0]}
@@ -310,12 +310,12 @@ function GameOverCard({
               <span className="font-mono text-sm font-bold text-white sm:text-base">
                 {target.name}
               </span>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8] sm:text-xs">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1] sm:text-xs">
                 {target.role}
               </span>
             </div>
           </div>
-          <p className="mt-2 font-mono text-[10px] italic text-[#94A3B8] sm:text-xs">
+          <p className="mt-2 font-mono text-[10px] italic text-[#cbd5e1] sm:text-xs">
             {target.emojiHint}
           </p>
         </div>
@@ -431,7 +431,7 @@ export function PitacoEmojiGame() {
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="flex min-h-[44px] items-center gap-1.5 px-2 text-sm text-[#94A3B8] hover:text-white font-mono"
+            className="flex min-h-[44px] items-center gap-1.5 px-2 text-sm text-[#cbd5e1] hover:text-white font-mono"
             aria-label="Voltar ao hall"
           >
             <ArrowLeft className="h-4 w-4" /> hall
@@ -442,7 +442,7 @@ export function PitacoEmojiGame() {
               PITACO <span style={{ color: '#00B2A9' }}>Emoji</span>
             </h1>
           </div>
-          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
+          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">
             dia #{dayNumber}
           </span>
         </div>
@@ -456,7 +456,7 @@ export function PitacoEmojiGame() {
               <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
                 emojis do dia
               </h2>
-              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#94A3B8]">
+              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#cbd5e1]">
                 {state.isGameOver
                   ? state.isWin
                     ? `${state.currentRow}/${state.maxAttempts}`
@@ -465,7 +465,7 @@ export function PitacoEmojiGame() {
               </span>
             </div>
             <EmojiDisplay emojis={target?.emojis ?? []} size="lg" revealed={state.isGameOver} />
-            <p className="mt-3 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
+            <p className="mt-3 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
               {state.isGameOver
                 ? state.isWin
                   ? 'Os emojis acima era o auditor que voce acertou.'
@@ -495,13 +495,13 @@ export function PitacoEmojiGame() {
                   error={error}
                 />
 
-                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
+                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
                   <p>
                     <Check className="mr-1 inline h-3 w-3 text-[#5BE0D8]" />
                     digite o <strong>nome</strong> ou o <strong>apelido</strong> do auditor.
                   </p>
                   <p>
-                    <ChevronDown className="mr-1 inline h-3 w-3 text-[#94A3B8]" />
+                    <ChevronDown className="mr-1 inline h-3 w-3 text-[#cbd5e1]" />
                     acerto = verde. erro = cinza. o auditor fica revelado no fim.
                   </p>
                 </div>
@@ -511,9 +511,9 @@ export function PitacoEmojiGame() {
         </div>
 
         <section className="mt-5">
-          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#94A3B8]">
+          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#cbd5e1]">
             tentativas
-            <span className="text-[#64748B]">
+            <span className="text-[#94A3B8]">
               ({guessedCount}/{state.maxAttempts})
             </span>
           </h3>
@@ -524,7 +524,7 @@ export function PitacoEmojiGame() {
             {Array.from({ length: emptyRows }).map((_, i) => (
               <div
                 key={`empty-${i}`}
-                className="flex items-center justify-center rounded-2xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 p-4 font-mono text-[10px] uppercase tracking-wider text-[#64748B]"
+                className="flex items-center justify-center rounded-2xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 p-4 font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]"
               >
                 tentativa {guessedCount + i + 1}
               </div>
@@ -532,8 +532,8 @@ export function PitacoEmojiGame() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-[#94A3B8] sm:text-sm">
-          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">
+        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-[#cbd5e1] sm:text-sm">
+          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#cbd5e1]">
             como jogar
           </h4>
           <ul className="space-y-1 font-mono">
@@ -542,10 +542,10 @@ export function PitacoEmojiGame() {
               <strong className="text-[#5BE0D8]">verde</strong> · acertou o auditor
             </li>
             <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-slate-500 align-middle" />
-              <strong className="text-[#94A3B8]">cinza</strong> · auditor diferente do alvo
+              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#94A3B8] align-middle" />
+              <strong className="text-[#cbd5e1]">cinza</strong> · auditor diferente do alvo
             </li>
-            <li className="text-[#94A3B8]">
+            <li className="text-[#cbd5e1]">
               cada emoji e uma pista. pense em hobby, funcao, manias do escritorio.
             </li>
           </ul>
@@ -558,7 +558,7 @@ export function PitacoEmojiGame() {
       />
 
       <div className="fixed bottom-2 right-2 z-[5] pointer-events-none">
-        <span className="font-mono text-[8px] text-[#64748B]/50 md:text-xs">v{APP_VERSION}</span>
+        <span className="font-mono text-[8px] text-[#94A3B8]/50 md:text-xs">v{APP_VERSION}</span>
       </div>
     </div>
   )

@@ -73,7 +73,7 @@ function statusClasses(status: LoldleFeedbackStatus): string {
       return 'bg-[#E25F38]/20 border-[#E25F38]/60 text-[#F1A28A]'
     case 'wrong':
     default:
-      return 'bg-[#243447] border-[#2A4060] text-[#94A3B8]'
+      return 'bg-[#243447] border-[#2A4060] text-[#cbd5e1]'
   }
 }
 
@@ -188,7 +188,7 @@ function ChampionAutocomplete({
           }}
           disabled={disabled}
           placeholder="Digite o nome do campeao (ex: Ahri, Yasuo)..."
-          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#94A3B8] outline-none font-mono caret-[#00B2A9] min-h-[32px] cursor-text"
+          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#cbd5e1] outline-none font-mono caret-[#00B2A9] min-h-[32px] cursor-text"
           aria-label="Chutar campeao"
           aria-autocomplete="list"
           aria-expanded={open}
@@ -240,7 +240,7 @@ function ChampionAutocomplete({
                     onChange('')
                     setOpen(false)
                   }}
-                  className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-slate-200 hover:bg-[#1A2C40] font-mono"
+                  className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-[#cbd5e1] hover:bg-[#1A2C40] hover:text-white font-mono"
                 >
                   <span className="flex items-center gap-2">
                     <span className="rounded-md bg-[#00B2A9]/15 px-1.5 py-0.5 text-[10px] font-bold text-[#5BE0D8]">
@@ -248,7 +248,7 @@ function ChampionAutocomplete({
                     </span>
                     <span>{c.name}</span>
                   </span>
-                  <span className="text-[10px] uppercase tracking-wider text-[#94A3B8]">
+                  <span className="text-[10px] uppercase tracking-wider text-[#cbd5e1]">
                     {c.region}
                   </span>
                 </button>
@@ -298,7 +298,7 @@ function GuessRow({
             {champion.name}
           </span>
         </div>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
+        <span className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">
           {champion.classe} · {champion.alcance}
         </span>
       </div>
@@ -341,7 +341,7 @@ function GuessRow({
 
 function EmptyRow({ index }: { index: number }) {
   return (
-    <div className="flex items-center justify-between gap-2 rounded-2xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 px-3 py-3 font-mono text-[10px] uppercase tracking-wider text-[#64748B]">
+    <div className="flex items-center justify-between gap-2 rounded-2xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 px-3 py-3 font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
       <span className="rounded-md bg-[#0F1A2E]/80 px-2 py-0.5 font-black text-slate-400">
         #{index + 1}
       </span>
@@ -388,7 +388,7 @@ function GameOverCard({
             <h2 id="loldle-gameover-title" className="font-mono text-lg font-black text-white sm:text-xl">
               {state.isWin ? 'PENTAKILL!' : 'GAME OVER'}
             </h2>
-            <p className="font-mono text-xs text-[#94A3B8] sm:text-sm">
+            <p className="font-mono text-xs text-[#cbd5e1] sm:text-sm">
               {state.isWin
                 ? `Voce acertou em ${state.currentRow}/${state.maxAttempts} tentativas.`
                 : 'Amanha tem mais. GG WP.'}
@@ -399,7 +399,7 @@ function GameOverCard({
 
       {target && (
         <div className="mt-4 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/70 p-3">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">o campeao era</p>
+          <p className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">o campeao era</p>
           <div className="mt-1 flex items-center gap-3">
             <span className="rounded-lg bg-[#00B2A9]/20 px-2.5 py-1 font-mono text-base font-black text-[#5BE0D8]">
               {target.name}
@@ -408,7 +408,7 @@ function GameOverCard({
               <span className="font-mono text-sm font-bold text-white">
                 {target.classe} · {target.alcance}
               </span>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">
                 {target.region} · {target.recurso} · {target.genero} · {target.ano}
               </span>
             </div>
@@ -529,7 +529,7 @@ export function LoldleGame() {
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="flex min-h-[44px] items-center gap-1.5 px-2 text-sm text-[#94A3B8] hover:text-white font-mono"
+            className="flex min-h-[44px] items-center gap-1.5 px-2 text-sm text-[#cbd5e1] hover:text-white font-mono"
             aria-label="Voltar ao hall"
           >
             <ArrowLeft className="h-4 w-4" /> hall
@@ -540,7 +540,7 @@ export function LoldleGame() {
               LOLDLE <span style={{ color: '#00B2A9' }}>Classic</span>
             </h1>
           </div>
-          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
+          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">
             {dateKey}
           </span>
         </div>
@@ -554,7 +554,7 @@ export function LoldleGame() {
               <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
                 alvo do dia
               </h2>
-              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#94A3B8]">
+              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#cbd5e1]">
                 {state.isGameOver
                   ? state.isWin
                     ? `${state.currentRow}/${state.maxAttempts}`
@@ -567,13 +567,13 @@ export function LoldleGame() {
               <p className="font-mono text-sm font-bold text-[#5BE0D8] sm:text-base">
                 Campeao oculto
               </p>
-              <p className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8] sm:text-xs">
+              <p className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1] sm:text-xs">
                 {state.isGameOver && target
                   ? 'spoiler abaixo'
                   : `pool: ${CHAMPIONS.length} campeoes`}
               </p>
             </div>
-            <p className="mt-3 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
+            <p className="mt-3 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
               Adivinhe o campeao pelos seus atributos. 6 atributos, 8 tentativas.
             </p>
           </section>
@@ -599,7 +599,7 @@ export function LoldleGame() {
                   error={error}
                 />
 
-                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
+                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
                   <p>
                     <Check className="mr-1 inline h-3 w-3 text-[#5BE0D8]" />
                     digite o <strong>nome</strong> do campeao (autocomplete sugere).
@@ -619,9 +619,9 @@ export function LoldleGame() {
         </div>
 
         <section className="mt-5">
-          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#94A3B8]">
+          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#cbd5e1]">
             tentativas
-            <span className="text-[#64748B]">
+            <span className="text-[#94A3B8]">
               ({guessedCount}/{state.maxAttempts})
             </span>
           </h3>
@@ -646,8 +646,8 @@ export function LoldleGame() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-[#94A3B8] sm:text-sm">
-          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">
+        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-[#cbd5e1] sm:text-sm">
+          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#cbd5e1]">
             legenda
           </h4>
           <ul className="space-y-1 font-mono">
@@ -660,8 +660,8 @@ export function LoldleGame() {
               <strong className="text-[#E3C275]">amarelo</strong> · ano proximo (±2)
             </li>
             <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-slate-500 align-middle" />
-              <strong className="text-[#94A3B8]">cinza</strong> · atributo errado
+              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#94A3B8] align-middle" />
+              <strong className="text-[#cbd5e1]">cinza</strong> · atributo errado
             </li>
             <li>
               <ArrowUp className="mr-1 inline h-3 w-3 text-[#E3C275] align-middle" />
@@ -678,7 +678,7 @@ export function LoldleGame() {
       />
 
       <div className="fixed bottom-2 right-2 z-[5] pointer-events-none">
-        <span className="font-mono text-[8px] text-[#64748B]/50 md:text-xs">v{APP_VERSION}</span>
+        <span className="font-mono text-[8px] text-[#94A3B8]/50 md:text-xs">v{APP_VERSION}</span>
       </div>
     </div>
   )

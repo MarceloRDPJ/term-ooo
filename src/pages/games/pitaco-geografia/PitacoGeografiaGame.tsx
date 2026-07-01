@@ -145,7 +145,7 @@ function StateAutocomplete({
           }}
           disabled={disabled}
           placeholder="Digite UF, nome do estado ou capital..."
-          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#64748B] outline-none font-mono caret-[#00B2A9] min-h-[32px] cursor-text"
+          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#cbd5e1] outline-none font-mono caret-[#00B2A9] min-h-[32px] cursor-text"
           aria-label="Chutar estado"
           aria-autocomplete="list"
           aria-expanded={open}
@@ -192,7 +192,7 @@ function StateAutocomplete({
                       onChange('')
                       setOpen(false)
                     }}
-                    className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-slate-200 hover:bg-[#1A2C40] font-mono"
+                    className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-[#cbd5e1] hover:bg-[#1A2C40] hover:text-white font-mono"
                   >
                     <span className="flex items-center gap-2">
                       <span className="rounded-md bg-[#00B2A9]/15 px-1.5 py-0.5 text-[10px] font-bold text-[#5BE0D8]">
@@ -200,7 +200,7 @@ function StateAutocomplete({
                       </span>
                       <span>{s.name}</span>
                     </span>
-                    <span className="text-[10px] uppercase tracking-wider text-[#94A3B8]">
+                    <span className="text-[10px] uppercase tracking-wider text-[#cbd5e1]">
                       {s.capital}
                     </span>
                   </button>
@@ -235,13 +235,13 @@ function SilhouettePlaceholder({ uf, size = 'lg' }: { uf: string; size?: 'sm' | 
         {state ? (
           <>
             <span className="font-mono text-sm font-bold text-[#5BE0D8] sm:text-base">{state.uf}</span>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8] sm:text-xs">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1] sm:text-xs">
               silhueta do estado
             </span>
-            <span className="font-mono text-[9px] text-[#64748B]">(placeholder — SVG em breve)</span>
+            <span className="font-mono text-[9px] text-[#94A3B8]">(placeholder — SVG em breve)</span>
           </>
         ) : (
-          <span className="font-mono text-xs text-[#94A3B8]">???</span>
+          <span className="font-mono text-xs text-[#cbd5e1]">???</span>
         )}
       </div>
     </div>
@@ -272,7 +272,7 @@ function GuessCard({ guess, index }: { guess: GeoGuess; index: number }) {
             <span className="font-mono text-sm font-bold text-white sm:text-base">
               {guess.name}
             </span>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8] sm:text-xs">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1] sm:text-xs">
               capital: {guess.capital}
             </span>
           </div>
@@ -290,20 +290,20 @@ function GuessCard({ guess, index }: { guess: GeoGuess; index: number }) {
 
       <div className="grid grid-cols-3 gap-2">
         <div className="rounded-lg bg-[#0F1A2E]/60 p-2 text-center">
-          <p className="font-mono text-[9px] uppercase tracking-wider text-[#94A3B8]">distancia</p>
+          <p className="font-mono text-[9px] uppercase tracking-wider text-[#cbd5e1]">distancia</p>
           <p className={cn('font-mono text-sm font-bold sm:text-base', colors.text)}>
             {formatDistance(guess.distance)}
           </p>
         </div>
         <div className="rounded-lg bg-[#0F1A2E]/60 p-2 text-center">
-          <p className="font-mono text-[9px] uppercase tracking-wider text-[#94A3B8]">direcao</p>
+          <p className="font-mono text-[9px] uppercase tracking-wider text-[#cbd5e1]">direcao</p>
           <p className={cn('flex items-center justify-center gap-1 font-mono text-sm font-bold sm:text-base', colors.text)}>
             <span aria-hidden="true" className="text-lg leading-none">{directionArrow(guess.bearing)}</span>
             <span>{guess.direction}</span>
           </p>
         </div>
         <div className="rounded-lg bg-[#0F1A2E]/60 p-2 text-center">
-          <p className="font-mono text-[9px] uppercase tracking-wider text-[#94A3B8]">proximidade</p>
+          <p className="font-mono text-[9px] uppercase tracking-wider text-[#cbd5e1]">proximidade</p>
           <p className={cn('font-mono text-sm font-bold sm:text-base', colors.text)}>
             {guess.proximity}%
           </p>
@@ -365,7 +365,7 @@ function GameOverCard({
             <h2 id="geografia-gameover-title" className="font-mono text-lg font-black text-white sm:text-xl">
               {state.isWin ? 'HOMOLOGADO!' : 'PAUTA SEM CONSENSO'}
             </h2>
-            <p className="font-mono text-xs text-[#94A3B8] sm:text-sm">
+            <p className="font-mono text-xs text-[#cbd5e1] sm:text-sm">
               {state.isWin
                 ? `Voce achou em ${state.currentRow}/${state.maxAttempts} tentativas.`
                 : 'Amanha tem mais. Bora estudar geografia?'}
@@ -376,14 +376,14 @@ function GameOverCard({
 
       {target && (
         <div className="mt-4 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/70 p-3">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">o estado era</p>
+          <p className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">o estado era</p>
           <div className="mt-1 flex items-center gap-3">
             <span className="rounded-lg bg-[#00B2A9]/20 px-2.5 py-1 font-mono text-base font-black text-[#5BE0D8]">
               {target.uf}
             </span>
             <div className="flex flex-col">
               <span className="font-mono text-sm font-bold text-white">{target.name}</span>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">
                 capital {target.capital} · {REGION_LABELS[target.region]}
               </span>
             </div>
@@ -475,7 +475,7 @@ export function PitacoGeografiaGame() {
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="flex min-h-[44px] items-center gap-1.5 px-2 text-sm text-[#94A3B8] hover:text-white font-mono"
+            className="flex min-h-[44px] items-center gap-1.5 px-2 text-sm text-[#cbd5e1] hover:text-white font-mono"
             aria-label="Voltar ao hall"
           >
             <ArrowLeft className="h-4 w-4" /> hall
@@ -486,7 +486,7 @@ export function PitacoGeografiaGame() {
               PITACO <span style={{ color: '#00B2A9' }}>Geografia</span>
             </h1>
           </div>
-          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
+          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">
             dia #{dayNumber}
           </span>
         </div>
@@ -500,7 +500,7 @@ export function PitacoGeografiaGame() {
               <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
                 silhueta do dia
               </h2>
-              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#94A3B8]">
+              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#cbd5e1]">
                 {state.isGameOver
                   ? state.isWin
                     ? `${state.currentRow}/${state.maxAttempts}`
@@ -509,14 +509,14 @@ export function PitacoGeografiaGame() {
               </span>
             </div>
             <SilhouettePlaceholder uf={state.isGameOver ? state.targetUf : '???'} size="lg" />
-            <p className="mt-3 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
+            <p className="mt-3 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
               {state.isGameOver
                 ? state.isWin
                   ? 'A silhueta acima era o estado que voce acertou.'
                   : 'A silhueta acima era a resposta. Bora estudar mais!'
                 : 'Adivinhe o estado pela silhueta. Vence quem acertar a UF ou o nome em ate 6 tentativas.'}
             </p>
-            <p className="mt-1 font-mono text-[9px] text-[#64748B]">
+            <p className="mt-1 font-mono text-[9px] text-[#94A3B8]">
               (placeholder: a silhueta real (SVG) entra em uma proxima iteracao)
             </p>
           </section>
@@ -542,20 +542,20 @@ export function PitacoGeografiaGame() {
                   error={error}
                 />
 
-                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
+                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
                   <p>
                     <Check className="mr-1 inline h-3 w-3 text-[#5BE0D8]" />
                     digite a <strong>UF</strong>, o <strong>nome do estado</strong> ou a
                     <strong> capital</strong>.
                   </p>
                   <p>
-                    <ChevronDown className="mr-1 inline h-3 w-3 text-[#94A3B8]" />
+                    <ChevronDown className="mr-1 inline h-3 w-3 text-[#cbd5e1]" />
                     feedback mostra distancia, direcao (seta) e % de proximidade.
                   </p>
                 </div>
 
                 {target && state.isGameOver && (
-                  <div className="mt-3 rounded-lg border border-[#2A4060] bg-[#0F1A2E]/60 p-2 font-mono text-[10px] text-[#94A3B8]">
+                  <div className="mt-3 rounded-lg border border-[#2A4060] bg-[#0F1A2E]/60 p-2 font-mono text-[10px] text-[#cbd5e1]">
                     alvo: {target.uf} · {target.name} · {target.capital}
                   </div>
                 )}
@@ -565,9 +565,9 @@ export function PitacoGeografiaGame() {
         </div>
 
         <section className="mt-5">
-          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#94A3B8]">
+          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#cbd5e1]">
             tentativas
-            <span className="text-[#64748B]">
+            <span className="text-[#94A3B8]">
               ({guessedCount}/{state.maxAttempts})
             </span>
           </h3>
@@ -578,7 +578,7 @@ export function PitacoGeografiaGame() {
             {Array.from({ length: emptyRows }).map((_, i) => (
               <div
                 key={`empty-${i}`}
-                className="flex items-center justify-center rounded-2xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 p-4 font-mono text-[10px] uppercase tracking-wider text-[#64748B]"
+                className="flex items-center justify-center rounded-2xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 p-4 font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]"
               >
                 tentativa {guessedCount + i + 1}
               </div>
@@ -586,8 +586,8 @@ export function PitacoGeografiaGame() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-[#94A3B8] sm:text-sm">
-          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">
+        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-[#cbd5e1] sm:text-sm">
+          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#cbd5e1]">
             legenda
           </h4>
           <ul className="space-y-1 font-mono">
@@ -613,7 +613,7 @@ export function PitacoGeografiaGame() {
       />
 
       <div className="fixed bottom-2 right-2 z-[5] pointer-events-none">
-        <span className="font-mono text-[8px] text-[#64748B]/50 md:text-xs">v{APP_VERSION}</span>
+        <span className="font-mono text-[8px] text-[#94A3B8]/50 md:text-xs">v{APP_VERSION}</span>
       </div>
     </div>
   )

@@ -565,7 +565,7 @@ function ThemeSelector({ onSelect, onBack }: ThemeSelectorProps) {
             type="button"
             variant="ghost"
             onClick={onBack}
-            className="min-h-[44px] text-[#94A3B8] hover:text-white font-mono text-xs"
+            className="min-h-[44px] text-[#cbd5e1] hover:text-white font-mono text-xs"
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> voltar ao hall
           </Button>
@@ -588,7 +588,7 @@ function ThemeSelector({ onSelect, onBack }: ThemeSelectorProps) {
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-mono">
             escolha um tema
           </h2>
-          <p className="mt-2 max-w-2xl text-sm sm:text-base text-[#94A3B8] leading-relaxed">
+          <p className="mt-2 max-w-2xl text-sm sm:text-base text-[#cbd5e1] leading-relaxed">
             o tabuleiro e o mesmo do <span style={{ color: '#00B2A9' }}>PITACO solo</span>, mas cada tema tem o proprio dicionario de 5 letras e a propria palavra do dia. inspirando no Loldle.
           </p>
         </section>
@@ -605,20 +605,20 @@ function ThemeSelector({ onSelect, onBack }: ThemeSelectorProps) {
 
         <section className="mt-10 grid gap-3 sm:grid-cols-3">
           <article className="rounded-xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4">
-            <p className="text-[10px] font-mono uppercase tracking-wider text-[#94A3B8]">1 · escolha</p>
-            <p className="mt-1 text-sm text-[#94A3B8]">
+            <p className="text-[10px] font-mono uppercase tracking-wider text-[#cbd5e1]">1 · escolha</p>
+            <p className="mt-1 text-sm text-[#cbd5e1]">
               selecione um dos 6 temas do hall.
             </p>
           </article>
           <article className="rounded-xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4">
-            <p className="text-[10px] font-mono uppercase tracking-wider text-[#94A3B8]">2 · jogue</p>
-            <p className="mt-1 text-sm text-[#94A3B8]">
+            <p className="text-[10px] font-mono uppercase tracking-wider text-[#cbd5e1]">2 · jogue</p>
+            <p className="mt-1 text-sm text-[#cbd5e1]">
               chute palavras de 5 letras do tema escolhido.
             </p>
           </article>
           <article className="rounded-xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4">
-            <p className="text-[10px] font-mono uppercase tracking-wider text-[#94A3B8]">3 · troque</p>
-            <p className="mt-1 text-sm text-[#94A3B8]">
+            <p className="text-[10px] font-mono uppercase tracking-wider text-[#cbd5e1]">3 · troque</p>
+            <p className="mt-1 text-sm text-[#cbd5e1]">
               botao "trocar tema" no header volta para esta tela.
             </p>
           </article>
@@ -664,10 +664,10 @@ function ThemeCard({ theme, onSelect }: ThemeCardProps) {
         >
           {theme.label}
         </h3>
-        <p className="mt-1 text-sm text-[#94A3B8] leading-relaxed">{theme.description}</p>
+        <p className="mt-1 text-sm text-[#cbd5e1] leading-relaxed">{theme.description}</p>
       </div>
 
-      <div className="flex items-center gap-2 text-[11px] font-mono text-[#94A3B8]">
+      <div className="flex items-center gap-2 text-[11px] font-mono text-[#cbd5e1]">
         <BookOpen className="h-3 w-3" />
         <span>5 letras &middot; 6 tentativas &middot; 1 palavra por dia</span>
       </div>

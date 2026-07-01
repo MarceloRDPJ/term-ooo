@@ -110,7 +110,7 @@ function AuthorAutocomplete({
           }}
           disabled={disabled}
           placeholder="Quem mandou essa citacao?..."
-          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#64748B] outline-none font-mono caret-[#E3C275] min-h-[32px] cursor-text"
+          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#cbd5e1] outline-none font-mono caret-[#E3C275] min-h-[32px] cursor-text"
           aria-label="Chutar autor"
           aria-autocomplete="list"
           aria-expanded={open}
@@ -154,14 +154,14 @@ function AuthorAutocomplete({
                     onChange('')
                     setOpen(false)
                   }}
-                  className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-slate-200 hover:bg-[#1A2C40] font-mono"
+                  className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-[#cbd5e1] hover:bg-[#1A2C40] hover:text-white font-mono"
                 >
                   <span className="flex items-center gap-2">
                     <span className="text-base" aria-hidden="true">
                       {a.emojis[0]}
                     </span>
                     <span>{a.nickname}</span>
-                    <span className="text-[10px] text-[#94A3B8]">· {a.role}</span>
+                    <span className="text-[10px] text-[#cbd5e1]">· {a.role}</span>
                   </span>
                 </button>
               </li>
@@ -197,15 +197,15 @@ function CitacaoCard({ citacao, revealed }: { citacao: Citacao; revealed: boolea
           <MessageSquare className="h-5 w-5 text-[#F59E0B]" />
         </div>
         <div className="flex-1">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">
             mensagem do chat
           </p>
           <blockquote className="mt-2 font-mono text-base font-medium italic leading-relaxed text-white sm:text-lg">
             “{citacao.text}”
           </blockquote>
-          <figcaption className="mt-3 flex items-center gap-2 font-mono text-xs text-[#94A3B8]">
+          <figcaption className="mt-3 flex items-center gap-2 font-mono text-xs text-[#cbd5e1]">
             <span>— contexto:</span>
-            <span className="rounded-full bg-[#0F1A2E]/70 px-2 py-0.5 text-[10px] uppercase tracking-wider text-[#94A3B8]">
+            <span className="rounded-full bg-[#0F1A2E]/70 px-2 py-0.5 text-[10px] uppercase tracking-wider text-[#cbd5e1]">
               {citacao.context}
             </span>
           </figcaption>
@@ -216,7 +216,7 @@ function CitacaoCard({ citacao, revealed }: { citacao: Citacao; revealed: boolea
               </span>
               <div className="flex flex-col">
                 <span className="font-mono text-sm font-bold text-white">{author.name}</span>
-                <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">
                   {author.role}
                 </span>
               </div>
@@ -250,7 +250,7 @@ function GuessCard({ guess }: { guess: QuoteGuess }) {
         <span className="font-mono text-sm font-bold text-white sm:text-base">
           {guess.authorName}
         </span>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8] sm:text-xs">
+        <span className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1] sm:text-xs">
           {auditor?.role ?? 'auditor'}
         </span>
       </div>
@@ -259,7 +259,7 @@ function GuessCard({ guess }: { guess: QuoteGuess }) {
           'flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider',
           isCorrect
             ? 'border-[#F59E0B]/60 bg-[#F59E0B]/20 text-[#E3C275]'
-            : 'border-[#2A4060]/60 bg-[#243447]/60 text-[#94A3B8]'
+            : 'border-[#2A4060]/60 bg-[#243447]/60 text-[#cbd5e1]'
         )}
       >
         {isCorrect ? (
@@ -313,7 +313,7 @@ function GameOverCard({
           <h2 id="citacao-gameover-title" className="font-mono text-lg font-black text-white sm:text-xl">
             {state.isWin ? 'CITACAO HOMOLOGADA!' : 'PAUTA SEM CONSENSO'}
           </h2>
-          <p className="font-mono text-xs text-[#94A3B8] sm:text-sm">
+          <p className="font-mono text-xs text-[#cbd5e1] sm:text-sm">
             {state.isWin
               ? `Voce achou o autor em ${state.currentRow}/${state.maxAttempts} tentativas.`
               : 'Amanha tem mais. Bora stalkear o chat?'}
@@ -437,7 +437,7 @@ export function PitacoCitacaoGame() {
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="flex min-h-[44px] items-center gap-1.5 px-2 text-sm text-[#94A3B8] hover:text-white font-mono"
+            className="flex min-h-[44px] items-center gap-1.5 px-2 text-sm text-[#cbd5e1] hover:text-white font-mono"
             aria-label="Voltar ao hall"
           >
             <ArrowLeft className="h-4 w-4" /> hall
@@ -448,7 +448,7 @@ export function PitacoCitacaoGame() {
               PITACO <span style={{ color: '#F59E0B' }}>Citacao</span>
             </h1>
           </div>
-          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
+          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">
             dia #{dayNumber}
           </span>
         </div>
@@ -462,7 +462,7 @@ export function PitacoCitacaoGame() {
               <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
                 citacao do dia
               </h2>
-              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#94A3B8]">
+              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#cbd5e1]">
                 {state.isGameOver
                   ? state.isWin
                     ? `${state.currentRow}/${state.maxAttempts}`
@@ -471,7 +471,7 @@ export function PitacoCitacaoGame() {
               </span>
             </div>
             {target && <CitacaoCard citacao={target} revealed={state.isGameOver} />}
-            <p className="mt-3 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
+            <p className="mt-3 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
               {state.isGameOver
                 ? state.isWin
                   ? 'Voce descobriu quem mandou essa mensagem.'
@@ -501,13 +501,13 @@ export function PitacoCitacaoGame() {
                   error={error}
                 />
 
-                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
+                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
                   <p>
                     <Check className="mr-1 inline h-3 w-3 text-[#E3C275]" />
                     digite o <strong>nome</strong> ou o <strong>apelido</strong> do autor.
                   </p>
                   <p>
-                    <ChevronDown className="mr-1 inline h-3 w-3 text-[#94A3B8]" />
+                    <ChevronDown className="mr-1 inline h-3 w-3 text-[#cbd5e1]" />
                     acerto = verde. erro = cinza. autor revelado no fim.
                   </p>
                 </div>
@@ -517,9 +517,9 @@ export function PitacoCitacaoGame() {
         </div>
 
         <section className="mt-5">
-          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#94A3B8]">
+          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#cbd5e1]">
             tentativas
-            <span className="text-[#64748B]">
+            <span className="text-[#94A3B8]">
               ({guessedCount}/{state.maxAttempts})
             </span>
           </h3>
@@ -530,7 +530,7 @@ export function PitacoCitacaoGame() {
             {Array.from({ length: emptyRows }).map((_, i) => (
               <div
                 key={`empty-${i}`}
-                className="flex items-center justify-center rounded-2xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 p-4 font-mono text-[10px] uppercase tracking-wider text-[#64748B]"
+                className="flex items-center justify-center rounded-2xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 p-4 font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]"
               >
                 tentativa {guessedCount + i + 1}
               </div>
@@ -538,8 +538,8 @@ export function PitacoCitacaoGame() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-[#94A3B8] sm:text-sm">
-          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">
+        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-[#cbd5e1] sm:text-sm">
+          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#cbd5e1]">
             como jogar
           </h4>
           <ul className="space-y-1 font-mono">
@@ -548,10 +548,10 @@ export function PitacoCitacaoGame() {
               <strong className="text-[#E3C275]">amarelo</strong> · acertou o autor da citacao
             </li>
             <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-slate-500 align-middle" />
-              <strong className="text-[#94A3B8]">cinza</strong> · autor diferente do alvo
+              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#94A3B8] align-middle" />
+              <strong className="text-[#cbd5e1]">cinza</strong> · autor diferente do alvo
             </li>
-            <li className="text-[#94A3B8]">
+            <li className="text-[#cbd5e1]">
               as citacoes sao ficticias, mas o tom e de escritorio mesmo. pense em quem fala assim.
             </li>
           </ul>
@@ -564,7 +564,7 @@ export function PitacoCitacaoGame() {
       />
 
       <div className="fixed bottom-2 right-2 z-[5] pointer-events-none">
-        <span className="font-mono text-[8px] text-[#64748B]/50 md:text-xs">v{APP_VERSION}</span>
+        <span className="font-mono text-[8px] text-[#94A3B8]/50 md:text-xs">v{APP_VERSION}</span>
       </div>
     </div>
   )
