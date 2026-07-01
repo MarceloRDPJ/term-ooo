@@ -35,6 +35,8 @@ export default [
         clearTimeout: 'readonly',
         TextEncoder: 'readonly',
         TextDecoder: 'readonly',
+        window: 'readonly',
+        document: 'readonly',
       },
     },
   },
