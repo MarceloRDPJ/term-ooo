@@ -8,6 +8,11 @@
 // engine (`isValidWord` usa `termoAllowed` + `accentMap`), portanto
 // toda palavra de tema precisa existir no dicionario do Term.ooo ou
 // ter mapeamento de acento.
+//
+// Cada tema tem um conjunto UNICO de palavras (sem duplicatas
+// internas). Palavras que apareciam em todos os 4 ultimos temas
+// (amigo, sagaz, verde) foram removidas para garantir
+// especializacao por categoria.
 
 import type { ThemeId } from '@/lib/multiplayer-types'
 
@@ -25,14 +30,14 @@ const CLASSIC_WORDS: string[] = [
   'corda', 'livro', 'balde', 'ponte', 'fundo', 'tarde', 'reino', 'sagaz',
   'nobre', 'fluir', 'firme', 'claro', 'leigo', 'cobra', 'cravo',
   'cobre', 'porta', 'metal', 'ideia', 'amplo', 'mamar', 'carro',
-  'lutar', 'torre', 'sagaz', 'lacos', 'rumor',
+  'lutar', 'torre', 'lacos', 'rumor',
 ]
 
 const FRUTAS_WORDS: string[] = [
   'manga', 'caqui', 'mamae', 'melao', 'limao', 'abaca', 'cajua', 'cajui',
   'cajus', 'butia', 'cereo', 'ceres', 'figos', 'goias', 'macaa', 'macao',
   'macar', 'mamas', 'mangu', 'melar', 'melas', 'gabar', 'abaco', 'araca',
-  'goiar', 'perau', 'peras', 'mango', 'cajao', 'cajas', 'lagoa', 'cajus',
+  'goiar', 'perau', 'peras', 'mango', 'cajao', 'cajas', 'lagoa',
   'fruta', 'fruto', 'mamao',
 ]
 
@@ -48,26 +53,23 @@ const OBJETOS_WORDS: string[] = [
 
 const FILMES_WORDS: string[] = [
   'rambo', 'drive', 'amore', 'termo', 'corvo', 'forca', 'lobos', 'lutar',
-  'morte', 'balde', 'cobra', 'cravo', 'firme', 'reino', 'valor', 'verde',
-  'vento', 'mundo', 'livro', 'ponte', 'deusa', 'sagaz', 'crava', 'lacos',
-  'cobre', 'porta', 'metal', 'ideia', 'amplo',
-  'fluir', 'firme', 'leigo', 'amigo',
+  'morte', 'balde', 'cobra', 'cravo', 'firme', 'reino', 'valor', 'ponte',
+  'deusa', 'crava', 'lacos', 'cobre', 'metal', 'ideia', 'amplo',
+  'fluir', 'leigo',
 ]
 
 const SERIES_WORDS: string[] = [
-  'drago', 'break', 'amigo', 'sagaz', 'reino', 'cravo', 'verde', 'mundo',
-  'cobra', 'crava', 'lacos', 'leigo', 'amplo',
-  'cobre', 'porta', 'metal', 'ideia', 'corda', 'livro', 'balde', 'ponte',
-  'fundo', 'tarde', 'fluir', 'firme', 'claro', 'cravo', 'vento', 'valor',
-  'nobre', 'leigo', 'cobra',
+  'drago', 'break', 'reino', 'cravo', 'mundo', 'cobra', 'crava', 'lacos',
+  'leigo', 'amplo', 'cobre', 'porta', 'metal', 'ideia', 'corda', 'livro',
+  'balde', 'ponte', 'fundo', 'tarde', 'fluir', 'firme', 'claro', 'vento',
+  'valor', 'nobre',
 ]
 
 const ANIMES_WORDS: string[] = [
-  'drago', 'sagaz', 'reino', 'cravo', 'verde', 'mundo', 'cobra', 'crava',
-  'lacos', 'leigo', 'amplo', 'cobre', 'porta',
-  'metal', 'ideia', 'corda', 'livro', 'balde', 'ponte', 'fundo', 'tarde',
-  'fluir', 'firme', 'claro', 'amigo', 'nobre', 'cravo', 'vento', 'valor',
-  'leigo', 'cobra', 'crava',
+  'drago', 'reino', 'cravo', 'mundo', 'cobra', 'crava', 'lacos', 'leigo',
+  'amplo', 'cobre', 'porta', 'metal', 'ideia', 'corda', 'livro', 'balde',
+  'ponte', 'fundo', 'tarde', 'fluir', 'firme', 'claro', 'nobre', 'vento',
+  'valor',
 ]
 
 export const THEMES: Record<ThemeId, ThemeConfig> = {

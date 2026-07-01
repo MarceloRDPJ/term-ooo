@@ -32,10 +32,10 @@ import { useDialogManager } from '@/hooks/useDialogManager'
 import { useGameAnimations } from '@/hooks/useGameAnimations'
 import { useKeyboardInput } from '@/hooks/useKeyboardInput'
 import { GameState, Settings } from '@/game/types'
-import { processGuess, getDayNumber } from '@/game/engine'
+import { processGuess, getDayNumber, isValidWord } from '@/game/engine'
 import { getTodayDateKey } from '@/lib/utils'
 import { useSoundEffects } from '@/lib/sounds/useSoundEffects'
-import { THEME_LIST, getDailyWord, isValidThemeWord } from './themes'
+import { THEME_LIST, getDailyWord, isValidThemeWord, THEMES } from './themes'
 import type { ThemeId } from '@/lib/multiplayer-types'
 
 const STORAGE_PREFIX_THEME = 'pitaco:tematico:theme'
@@ -142,7 +142,7 @@ function persistStats(stats: StoredStats): void {
 }
 
 function buildInitialState(theme: ThemeId, dayNumber: number, dateKey: string): GameState {
-  const solution = getDailyWord(theme, dayNumber)
+  const solution = pickValidThemeWord(theme, dayNumber)
   return {
     mode: 'termo',
     boards: [
@@ -163,6 +163,27 @@ function buildInitialState(theme: ThemeId, dayNumber: number, dateKey: string): 
   }
 }
 
+/**
+ * Sorteia uma palavra do tema que esteja no dicionario principal.
+ * O engine valida `isValidWord` no chute, entao a solucao precisa
+ * existir em `termoAllowed` (ou `accentMap`). Se o sorteio padrao
+ * cair numa palavra nao suportada pelo engine, tenta o proximo
+ * indice ate achar uma valida. Cae no sorteio original em ultimo
+ * caso (defensivo).
+ */
+function pickValidThemeWord(theme: ThemeId, dayNumber: number): string {
+  const words = THEMES[theme]?.words ?? THEMES.classic.words
+  if (words.length === 0) {
+    return getDailyWord(theme, dayNumber)
+  }
+  for (let attempt = 0; attempt < words.length; attempt++) {
+    const index = ((dayNumber + attempt) % words.length + words.length) % words.length
+    const candidate = words[index]
+    if (candidate && isValidWord(candidate, 'termo')) return candidate
+  }
+  return getDailyWord(theme, dayNumber)
+}
+
 export function PitacoTematicoGame() {
   const navigate = useNavigate()
   const [settings] = useState<Settings>({
@@ -174,7 +195,9 @@ export function PitacoTematicoGame() {
   const [error, setError] = useState<string>('')
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [stats, setStats] = useState<StoredStats>(() => loadStoredStats())
-  const helpDialogShownRef = useRef<string>('')
+  // Flag absoluta: garante que o help dialog so apareca UMA vez no app.
+  // Nao deve ser resetado quando o usuario troca de tema.
+  const hasShownHelpRef = useRef<boolean>(false)
 
   const dialogManager = useDialogManager()
   const { play: playSound } = useSoundEffects({ settings })
@@ -210,38 +233,44 @@ export function PitacoTematicoGame() {
       animActions.setCursorPosition(firstEmpty === -1 ? 5 : firstEmpty)
 
       if (saved.isGameOver) {
-        helpDialogShownRef.current = `${selectedTheme}-${dateKey}`
         setTimeout(() => dialogManager.openDialog('stats'), 800)
-      } else {
-        helpDialogShownRef.current = ''
       }
     } else {
       const initial = buildInitialState(selectedTheme, dayNumber, dateKey)
       setGameState(initial)
       persistState(selectedTheme, initial)
       animActions.setCursorPosition(0)
-      helpDialogShownRef.current = ''
     }
   }, [selectedTheme, dateKey, dayNumber, animActions, dialogManager])
 
-  // Help dialog automatico na primeira vez
+  // Help dialog automatico APENAS na primeira vez absoluta (uma vez por app).
+  // O ref nao e resetado quando o tema muda, entao trocar de tema nao reabre.
   useEffect(() => {
     if (!gameState || !selectedTheme) return
-    const stateKey = `${selectedTheme}-${gameState.dateKey}`
-    if (gameState.currentRow === 0 && helpDialogShownRef.current !== stateKey) {
-      const timer = setTimeout(() => {
-        dialogManager.openDialog('help')
-        helpDialogShownRef.current = stateKey
-      }, 500)
-      return () => clearTimeout(timer)
-    }
-  }, [gameState?.currentRow, gameState?.dateKey, selectedTheme, dialogManager])
+    if (hasShownHelpRef.current) return
+    if (gameState.currentRow !== 0) return
+    const timer = setTimeout(() => {
+      dialogManager.openDialog('help')
+      hasShownHelpRef.current = true
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [gameState?.currentRow, selectedTheme, dialogManager])
 
   const handleChangeTheme = useCallback(() => {
     setSelectedTheme(null)
     setGameState(null)
     setError('')
   }, [])
+
+  const handleReopen = useCallback(() => {
+    if (!selectedTheme || !dateKey) return
+    try {
+      localStorage.removeItem(stateStorageKey(selectedTheme, dateKey))
+    } catch {
+      // ignore
+    }
+    window.location.reload()
+  }, [selectedTheme, dateKey])
 
   const handleSelectTheme = useCallback((theme: ThemeId) => {
     setSelectedTheme(theme)
@@ -407,20 +436,35 @@ export function PitacoTematicoGame() {
             dia #{dayNumber}
           </span>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleChangeTheme}
-          className="border-[#2A4060] bg-transparent text-slate-200 font-mono text-[11px] h-8"
-          aria-label="Trocar tema"
-        >
-          <RefreshCcw className="w-3 h-3 mr-1" /> trocar tema
-        </Button>
+        <div className="flex items-center gap-2">
+          {gameState.isGameOver && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleReopen}
+              className="min-h-[44px] border-[#2A4060] bg-transparent text-slate-200 font-mono text-[11px]"
+              aria-label="Reabrir o dia (limpa o save atual)"
+            >
+              reabrir o dia
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleChangeTheme}
+            className="min-h-[44px] border-[#2A4060] bg-transparent text-slate-200 font-mono text-[11px] h-8"
+            aria-label="Trocar tema"
+          >
+            <RefreshCcw className="w-3 h-3 mr-1" /> trocar tema
+          </Button>
+        </div>
       </div>
 
       <main className="flex-1 flex flex-col items-center justify-between px-2 py-2 sm:px-4 sm:py-4 md:py-6 max-w-7xl mx-auto w-full overflow-hidden">
         {error && (
-          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#E25F38] text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-pulse">
+          <div role="alert" className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#E25F38] text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-pulse">
             {error}
           </div>
         )}
@@ -518,9 +562,10 @@ function ThemeSelector({ onSelect, onBack }: ThemeSelectorProps) {
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <Button
+            type="button"
             variant="ghost"
             onClick={onBack}
-            className="text-slate-300 hover:text-white font-mono text-xs"
+            className="min-h-[44px] text-[#94A3B8] hover:text-white font-mono text-xs"
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> voltar ao hall
           </Button>
@@ -543,7 +588,7 @@ function ThemeSelector({ onSelect, onBack }: ThemeSelectorProps) {
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-mono">
             escolha um tema
           </h2>
-          <p className="mt-2 max-w-2xl text-sm sm:text-base text-slate-300 leading-relaxed">
+          <p className="mt-2 max-w-2xl text-sm sm:text-base text-[#94A3B8] leading-relaxed">
             o tabuleiro e o mesmo do <span style={{ color: '#00B2A9' }}>PITACO solo</span>, mas cada tema tem o proprio dicionario de 5 letras e a propria palavra do dia. inspirando no Loldle.
           </p>
         </section>
@@ -560,20 +605,20 @@ function ThemeSelector({ onSelect, onBack }: ThemeSelectorProps) {
 
         <section className="mt-10 grid gap-3 sm:grid-cols-3">
           <article className="rounded-xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4">
-            <p className="text-[10px] font-mono uppercase tracking-wider text-slate-300">1 · escolha</p>
-            <p className="mt-1 text-sm text-slate-300">
+            <p className="text-[10px] font-mono uppercase tracking-wider text-[#94A3B8]">1 · escolha</p>
+            <p className="mt-1 text-sm text-[#94A3B8]">
               selecione um dos 6 temas do hall.
             </p>
           </article>
           <article className="rounded-xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4">
-            <p className="text-[10px] font-mono uppercase tracking-wider text-slate-300">2 · jogue</p>
-            <p className="mt-1 text-sm text-slate-300">
+            <p className="text-[10px] font-mono uppercase tracking-wider text-[#94A3B8]">2 · jogue</p>
+            <p className="mt-1 text-sm text-[#94A3B8]">
               chute palavras de 5 letras do tema escolhido.
             </p>
           </article>
           <article className="rounded-xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4">
-            <p className="text-[10px] font-mono uppercase tracking-wider text-slate-300">3 · troque</p>
-            <p className="mt-1 text-sm text-slate-300">
+            <p className="text-[10px] font-mono uppercase tracking-wider text-[#94A3B8]">3 · troque</p>
+            <p className="mt-1 text-sm text-[#94A3B8]">
               botao "trocar tema" no header volta para esta tela.
             </p>
           </article>
@@ -619,10 +664,10 @@ function ThemeCard({ theme, onSelect }: ThemeCardProps) {
         >
           {theme.label}
         </h3>
-        <p className="mt-1 text-sm text-slate-300 leading-relaxed">{theme.description}</p>
+        <p className="mt-1 text-sm text-[#94A3B8] leading-relaxed">{theme.description}</p>
       </div>
 
-      <div className="flex items-center gap-2 text-[11px] font-mono text-slate-300">
+      <div className="flex items-center gap-2 text-[11px] font-mono text-[#94A3B8]">
         <BookOpen className="h-3 w-3" />
         <span>5 letras &middot; 6 tentativas &middot; 1 palavra por dia</span>
       </div>

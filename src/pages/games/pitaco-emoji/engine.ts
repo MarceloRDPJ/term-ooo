@@ -56,7 +56,7 @@ export function processEmojiGuess(state: EmojiState, rawGuess: string): EmojiPro
   const won = guessed.id === state.targetId
   const guessRecord: EmojiGuess = {
     auditorId: guessed.id,
-    auditorName: guessed.nickname,
+    auditorName: guessed.name,
     status: won ? 'correct' : 'wrong',
   }
 

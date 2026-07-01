@@ -61,7 +61,7 @@ export function processCitacaoGuess(state: CitacaoState, rawGuess: string): Cita
   const won = guessed.id === target.authorId
   const guessRecord: QuoteGuess = {
     authorId: guessed.id,
-    authorName: guessed.nickname,
+    authorName: guessed.name,
     status: won ? 'correct' : 'wrong',
   }
 

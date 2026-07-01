@@ -29,11 +29,10 @@ import { getTodayDateKey, getDayNumber } from '@/lib/dates'
 import { BRAZILIAN_STATES, REGION_LABELS, findStateByUf, type RegionCode } from './states'
 import {
   createInitialGeoState,
-  pickTargetForDay,
   processGeoGuess,
   proximityBand,
 } from './engine'
-import { loadGeoState, saveGeoState } from './storage'
+import { clearGeoState, loadGeoState, saveGeoState } from './storage'
 import type { GeoGuess, GeoState } from './types'
 import { normalizeString } from '@/lib/utils'
 import { cn } from '@/lib/utils'
@@ -77,15 +76,18 @@ function StateAutocomplete({
   onSubmit,
   disabled,
   history,
+  error,
 }: {
   value: string
   onChange: (v: string) => void
   onSubmit: (uf: string) => void
   disabled: boolean
   history: string[]
+  error?: string | null
 }) {
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   const matches = useMemo(() => {
     const norm = normalizeString(value)
@@ -114,9 +116,13 @@ function StateAutocomplete({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <div className="flex items-center gap-2 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/80 px-3 py-2 shadow-lg focus-within:border-[#00B2A9]">
-        <MapPin className="h-4 w-4 text-[#00B2A9]" />
+      <div
+        className="flex items-center gap-2 rounded-xl border-2 border-[#2A4060] bg-[#0F1A2E]/90 px-3 py-3 shadow-lg focus-within:border-[#00B2A9] focus-within:ring-2 focus-within:ring-[#00B2A9]/30"
+        onClick={() => inputRef.current?.focus()}
+      >
+        <MapPin className="h-5 w-5" style={{ color: '#00B2A9' }} />
         <input
+          ref={inputRef}
           type="text"
           value={value}
           onChange={(e) => {
@@ -128,19 +134,35 @@ function StateAutocomplete({
             if (e.key === 'Enter') {
               e.preventDefault()
               if (value.trim()) onSubmit(value.trim())
+              return
+            }
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+              e.preventDefault()
+              setOpen(true)
+            } else if (e.key === 'Escape') {
+              setOpen(false)
             }
           }}
           disabled={disabled}
           placeholder="Digite UF, nome do estado ou capital..."
-          className="flex-1 bg-transparent text-sm text-white placeholder:text-slate-500 outline-none font-mono"
+          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#64748B] outline-none font-mono caret-[#00B2A9] min-h-[32px] cursor-text"
           aria-label="Chutar estado"
+          aria-autocomplete="list"
+          aria-expanded={open}
+          aria-controls="geografia-listbox"
+          aria-invalid={!!error}
+          autoComplete="off"
+          spellCheck={false}
+          inputMode="search"
+          maxLength={30}
         />
         <Button
+          type="button"
           size="icon"
           variant="ghost"
           onClick={() => value.trim() && onSubmit(value.trim())}
           disabled={disabled || !value.trim()}
-          className="h-8 w-8 text-[#00B2A9] hover:text-[#5BE0D8]"
+          className="h-11 w-11 text-[#00B2A9] hover:text-[#5BE0D8]"
           aria-label="Enviar chute"
         >
           <Send className="h-4 w-4" />
@@ -149,39 +171,51 @@ function StateAutocomplete({
 
       <AnimatePresence>
         {open && matches.length > 0 && (
-          <motion.ul
+          <motion.div
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.12 }}
-            className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-[#2A4060] bg-[#0F1A2E]/95 shadow-2xl backdrop-blur"
+            className="absolute z-30 mt-1 w-full"
           >
-            {matches.map((s) => (
-              <li key={s.uf}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSubmit(s.uf)
-                    onChange('')
-                    setOpen(false)
-                  }}
-                  className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-slate-200 hover:bg-[#1A2C40] font-mono"
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="rounded-md bg-[#00B2A9]/15 px-1.5 py-0.5 text-[10px] font-bold text-[#5BE0D8]">
-                      {s.uf}
+            <ul
+              id="geografia-listbox"
+              role="listbox"
+              className="max-h-64 w-full overflow-auto rounded-xl border border-[#2A4060] bg-[#0F1A2E]/95 shadow-2xl backdrop-blur"
+            >
+              {matches.map((s) => (
+                <li key={s.uf} role="option" aria-selected={value === s.uf || value === s.name}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSubmit(s.uf)
+                      onChange('')
+                      setOpen(false)
+                    }}
+                    className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-slate-200 hover:bg-[#1A2C40] font-mono"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="rounded-md bg-[#00B2A9]/15 px-1.5 py-0.5 text-[10px] font-bold text-[#5BE0D8]">
+                        {s.uf}
+                      </span>
+                      <span>{s.name}</span>
                     </span>
-                    <span>{s.name}</span>
-                  </span>
-                  <span className="text-[10px] uppercase tracking-wider text-slate-300">
-                    {s.capital}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </motion.ul>
+                    <span className="text-[10px] uppercase tracking-wider text-[#94A3B8]">
+                      {s.capital}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
         )}
       </AnimatePresence>
+
+      {error && (
+        <div role="alert" className="mt-2 rounded-lg border border-[#E25F38]/50 bg-[#E25F38]/10 p-2 font-mono text-xs text-[#F1A28A]">
+          {error}
+        </div>
+      )}
     </div>
   )
 }
@@ -201,13 +235,13 @@ function SilhouettePlaceholder({ uf, size = 'lg' }: { uf: string; size?: 'sm' | 
         {state ? (
           <>
             <span className="font-mono text-sm font-bold text-[#5BE0D8] sm:text-base">{state.uf}</span>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300 sm:text-xs">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8] sm:text-xs">
               silhueta do estado
             </span>
-            <span className="font-mono text-[9px] text-slate-500">(placeholder — SVG em breve)</span>
+            <span className="font-mono text-[9px] text-[#64748B]">(placeholder — SVG em breve)</span>
           </>
         ) : (
-          <span className="font-mono text-xs text-slate-300">???</span>
+          <span className="font-mono text-xs text-[#94A3B8]">???</span>
         )}
       </div>
     </div>
@@ -238,7 +272,7 @@ function GuessCard({ guess, index }: { guess: GeoGuess; index: number }) {
             <span className="font-mono text-sm font-bold text-white sm:text-base">
               {guess.name}
             </span>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300 sm:text-xs">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8] sm:text-xs">
               capital: {guess.capital}
             </span>
           </div>
@@ -256,20 +290,20 @@ function GuessCard({ guess, index }: { guess: GeoGuess; index: number }) {
 
       <div className="grid grid-cols-3 gap-2">
         <div className="rounded-lg bg-[#0F1A2E]/60 p-2 text-center">
-          <p className="font-mono text-[9px] uppercase tracking-wider text-slate-300">distancia</p>
+          <p className="font-mono text-[9px] uppercase tracking-wider text-[#94A3B8]">distancia</p>
           <p className={cn('font-mono text-sm font-bold sm:text-base', colors.text)}>
             {formatDistance(guess.distance)}
           </p>
         </div>
         <div className="rounded-lg bg-[#0F1A2E]/60 p-2 text-center">
-          <p className="font-mono text-[9px] uppercase tracking-wider text-slate-300">direcao</p>
+          <p className="font-mono text-[9px] uppercase tracking-wider text-[#94A3B8]">direcao</p>
           <p className={cn('flex items-center justify-center gap-1 font-mono text-sm font-bold sm:text-base', colors.text)}>
             <span aria-hidden="true" className="text-lg leading-none">{directionArrow(guess.bearing)}</span>
             <span>{guess.direction}</span>
           </p>
         </div>
         <div className="rounded-lg bg-[#0F1A2E]/60 p-2 text-center">
-          <p className="font-mono text-[9px] uppercase tracking-wider text-slate-300">proximidade</p>
+          <p className="font-mono text-[9px] uppercase tracking-wider text-[#94A3B8]">proximidade</p>
           <p className={cn('font-mono text-sm font-bold sm:text-base', colors.text)}>
             {guess.proximity}%
           </p>
@@ -296,15 +330,23 @@ function GuessCard({ guess, index }: { guess: GeoGuess; index: number }) {
 function GameOverCard({
   state,
   onBack,
+  onReopen,
 }: {
   state: GeoState
   onBack: () => void
+  onReopen: () => void
 }) {
   const target = findStateByUf(state.targetUf)
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="geografia-gameover-title"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onBack()
+      }}
       className={cn(
         'rounded-2xl border-2 p-5 shadow-2xl sm:p-6',
         state.isWin
@@ -320,10 +362,10 @@ function GameOverCard({
             <X className="h-7 w-7 text-[#F1A28A]" />
           )}
           <div>
-            <h2 className="font-mono text-lg font-black text-white sm:text-xl">
+            <h2 id="geografia-gameover-title" className="font-mono text-lg font-black text-white sm:text-xl">
               {state.isWin ? 'HOMOLOGADO!' : 'PAUTA SEM CONSENSO'}
             </h2>
-            <p className="font-mono text-xs text-slate-300 sm:text-sm">
+            <p className="font-mono text-xs text-[#94A3B8] sm:text-sm">
               {state.isWin
                 ? `Voce achou em ${state.currentRow}/${state.maxAttempts} tentativas.`
                 : 'Amanha tem mais. Bora estudar geografia?'}
@@ -334,14 +376,14 @@ function GameOverCard({
 
       {target && (
         <div className="mt-4 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/70 p-3">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-slate-300">o estado era</p>
+          <p className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">o estado era</p>
           <div className="mt-1 flex items-center gap-3">
             <span className="rounded-lg bg-[#00B2A9]/20 px-2.5 py-1 font-mono text-base font-black text-[#5BE0D8]">
               {target.uf}
             </span>
             <div className="flex flex-col">
               <span className="font-mono text-sm font-bold text-white">{target.name}</span>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
                 capital {target.capital} · {REGION_LABELS[target.region]}
               </span>
             </div>
@@ -351,13 +393,22 @@ function GameOverCard({
 
       <div className="mt-4 flex flex-wrap gap-2">
         <Button
+          type="button"
           onClick={onBack}
           variant="outline"
-          className="border-[#2A4060] bg-transparent font-mono text-xs text-slate-200"
+          className="min-h-[44px] border-[#2A4060] bg-transparent font-mono text-xs text-slate-200"
           size="lg"
-          style={{ minHeight: 44 }}
         >
           <ArrowLeft className="mr-2 h-3.5 w-3.5" /> voltar ao hall
+        </Button>
+        <Button
+          type="button"
+          onClick={onReopen}
+          variant="outline"
+          className="min-h-[44px] border-[#2A4060] bg-transparent font-mono text-xs text-slate-200"
+          size="lg"
+        >
+          reabrir o dia
         </Button>
       </div>
     </motion.div>
@@ -377,11 +428,17 @@ export function PitacoGeografiaGame() {
   const [input, setInput] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  const target = useMemo(() => findStateByUf(state.targetUf) ?? pickTargetForDay(state.dayNumber), [state.targetUf, state.dayNumber])
+  const target = useMemo(() => findStateByUf(state.targetUf), [state.targetUf])
 
   useEffect(() => {
     saveGeoState(dateKey, state)
   }, [state, dateKey])
+
+  useEffect(() => {
+    if (!error) return
+    const t = setTimeout(() => setError(null), 2500)
+    return () => clearTimeout(t)
+  }, [error])
 
   const attemptsLeft = state.maxAttempts - state.currentRow
 
@@ -395,6 +452,11 @@ export function PitacoGeografiaGame() {
     }
     setState(result.newState)
     setInput('')
+  }
+
+  function handleReopen() {
+    clearGeoState(dateKey)
+    window.location.reload()
   }
 
   const guessedCount = state.guesses.length
@@ -411,8 +473,9 @@ export function PitacoGeografiaGame() {
       >
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-3 py-3 sm:px-4 sm:py-4">
           <button
+            type="button"
             onClick={() => navigate('/')}
-            className="flex items-center gap-1.5 text-sm text-slate-300 hover:text-white font-mono"
+            className="flex min-h-[44px] items-center gap-1.5 px-2 text-sm text-[#94A3B8] hover:text-white font-mono"
             aria-label="Voltar ao hall"
           >
             <ArrowLeft className="h-4 w-4" /> hall
@@ -423,7 +486,7 @@ export function PitacoGeografiaGame() {
               PITACO <span style={{ color: '#00B2A9' }}>Geografia</span>
             </h1>
           </div>
-          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-slate-300">
+          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
             dia #{dayNumber}
           </span>
         </div>
@@ -437,7 +500,7 @@ export function PitacoGeografiaGame() {
               <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
                 silhueta do dia
               </h2>
-              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-slate-300">
+              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#94A3B8]">
                 {state.isGameOver
                   ? state.isWin
                     ? `${state.currentRow}/${state.maxAttempts}`
@@ -446,14 +509,14 @@ export function PitacoGeografiaGame() {
               </span>
             </div>
             <SilhouettePlaceholder uf={state.isGameOver ? state.targetUf : '???'} size="lg" />
-            <p className="mt-3 font-mono text-[10px] text-slate-300 sm:text-xs">
+            <p className="mt-3 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
               {state.isGameOver
                 ? state.isWin
                   ? 'A silhueta acima era o estado que voce acertou.'
                   : 'A silhueta acima era a resposta. Bora estudar mais!'
                 : 'Adivinhe o estado pela silhueta. Vence quem acertar a UF ou o nome em ate 6 tentativas.'}
             </p>
-            <p className="mt-1 font-mono text-[9px] text-slate-500">
+            <p className="mt-1 font-mono text-[9px] text-[#64748B]">
               (placeholder: a silhueta real (SVG) entra em uma proxima iteracao)
             </p>
           </section>
@@ -467,7 +530,7 @@ export function PitacoGeografiaGame() {
             </div>
 
             {state.isGameOver ? (
-              <GameOverCard state={state} onBack={() => navigate('/')} />
+              <GameOverCard state={state} onBack={() => navigate('/')} onReopen={handleReopen} />
             ) : (
               <>
                 <StateAutocomplete
@@ -476,27 +539,23 @@ export function PitacoGeografiaGame() {
                   onSubmit={handleSubmit}
                   disabled={state.isGameOver}
                   history={state.history}
+                  error={error}
                 />
-                {error && (
-                  <div className="mt-2 rounded-lg border border-[#E25F38]/50 bg-[#E25F38]/10 p-2 font-mono text-xs text-[#F1A28A]">
-                    {error}
-                  </div>
-                )}
 
-                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-slate-300 sm:text-xs">
+                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
                   <p>
                     <Check className="mr-1 inline h-3 w-3 text-[#5BE0D8]" />
                     digite a <strong>UF</strong>, o <strong>nome do estado</strong> ou a
                     <strong> capital</strong>.
                   </p>
                   <p>
-                    <ChevronDown className="mr-1 inline h-3 w-3 text-slate-300" />
+                    <ChevronDown className="mr-1 inline h-3 w-3 text-[#94A3B8]" />
                     feedback mostra distancia, direcao (seta) e % de proximidade.
                   </p>
                 </div>
 
                 {target && state.isGameOver && (
-                  <div className="mt-3 rounded-lg border border-[#2A4060] bg-[#0F1A2E]/60 p-2 font-mono text-[10px] text-slate-300">
+                  <div className="mt-3 rounded-lg border border-[#2A4060] bg-[#0F1A2E]/60 p-2 font-mono text-[10px] text-[#94A3B8]">
                     alvo: {target.uf} · {target.name} · {target.capital}
                   </div>
                 )}
@@ -506,9 +565,9 @@ export function PitacoGeografiaGame() {
         </div>
 
         <section className="mt-5">
-          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#94A3B8]">
             tentativas
-            <span className="text-slate-500">
+            <span className="text-[#64748B]">
               ({guessedCount}/{state.maxAttempts})
             </span>
           </h3>
@@ -519,7 +578,7 @@ export function PitacoGeografiaGame() {
             {Array.from({ length: emptyRows }).map((_, i) => (
               <div
                 key={`empty-${i}`}
-                className="flex items-center justify-center rounded-2xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 p-4 font-mono text-[10px] uppercase tracking-wider text-slate-500"
+                className="flex items-center justify-center rounded-2xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 p-4 font-mono text-[10px] uppercase tracking-wider text-[#64748B]"
               >
                 tentativa {guessedCount + i + 1}
               </div>
@@ -527,8 +586,8 @@ export function PitacoGeografiaGame() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-slate-300 sm:text-sm">
-          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-slate-300">
+        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-[#94A3B8] sm:text-sm">
+          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">
             legenda
           </h4>
           <ul className="space-y-1 font-mono">
@@ -554,7 +613,7 @@ export function PitacoGeografiaGame() {
       />
 
       <div className="fixed bottom-2 right-2 z-[5] pointer-events-none">
-        <span className="font-mono text-[8px] text-slate-500/50 md:text-xs">v{APP_VERSION}</span>
+        <span className="font-mono text-[8px] text-[#64748B]/50 md:text-xs">v{APP_VERSION}</span>
       </div>
     </div>
   )

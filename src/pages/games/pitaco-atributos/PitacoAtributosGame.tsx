@@ -38,7 +38,7 @@ import {
   createInitialAtributosState,
   processAtributosGuess,
 } from './engine'
-import { loadAtributosState, saveAtributosState } from './storage'
+import { clearAtributosState, loadAtributosState, saveAtributosState } from './storage'
 import {
   ATRIBUTOS_CARGO_LABELS,
   ATRIBUTOS_CIDADE_LABELS,
@@ -77,7 +77,7 @@ const TILE_STYLES: Record<TileColor, { bg: string; border: string; text: string 
   gray: {
     bg: 'bg-[#94A3B8]/40',
     border: 'border-[#94A3B8]/50',
-    text: 'text-slate-300',
+    text: 'text-[#94A3B8]',
   },
 }
 
@@ -149,15 +149,18 @@ function AuditorAutocomplete({
   onSubmit,
   disabled,
   history,
+  error,
 }: {
   value: string
   onChange: (v: string) => void
   onSubmit: (auditor: Auditor) => void
   disabled: boolean
   history: string[]
+  error?: string | null
 }) {
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   const matches = useMemo(() => {
     const norm = value
@@ -193,9 +196,13 @@ function AuditorAutocomplete({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <div className="flex items-center gap-2 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/80 px-3 py-2 shadow-lg focus-within:border-[#00B2A9]">
-        <Search className="h-4 w-4 text-[#A78BFA]" />
+      <div
+        className="flex items-center gap-2 rounded-xl border-2 border-[#2A4060] bg-[#0F1A2E]/90 px-3 py-3 shadow-lg focus-within:border-[#00B2A9] focus-within:ring-2 focus-within:ring-[#00B2A9]/30"
+        onClick={() => inputRef.current?.focus()}
+      >
+        <Search className="h-5 w-5 text-[#00B2A9]" />
         <input
+          ref={inputRef}
           type="text"
           value={value}
           onChange={(e) => {
@@ -224,12 +231,27 @@ function AuditorAutocomplete({
                   emoji: '👤',
                 })
               }
+              return
+            }
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+              e.preventDefault()
+              setOpen(true)
+            } else if (e.key === 'Escape') {
+              setOpen(false)
             }
           }}
           disabled={disabled}
           placeholder="Digite o nome ou apelido do auditor..."
-          className="flex-1 bg-transparent text-sm text-white placeholder:text-slate-500 outline-none font-mono"
+          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#64748B] outline-none font-mono caret-[#00B2A9] min-h-[32px] cursor-text"
           aria-label="Chutar auditor"
+          aria-autocomplete="list"
+          aria-expanded={open}
+          aria-controls="atributos-listbox"
+          aria-invalid={!!error}
+          autoComplete="off"
+          spellCheck={false}
+          inputMode="search"
+          maxLength={30}
         />
         <button
           type="button"
@@ -238,9 +260,26 @@ function AuditorAutocomplete({
               onSubmit(matches[0])
               onChange('')
               setOpen(false)
+            } else if (value.trim()) {
+              // Sem match: deixa o engine validar. So fica habilitado
+              // quando o usuario tem texto digitado.
+              onSubmit({
+                id: 'raw',
+                nome: value.trim(),
+                apelido: value.trim(),
+                cargo: 'Estagiario',
+                equipe: 'Plataforma',
+                senioridade: 1,
+                turno: 'manha',
+                cidade: 'SP',
+                hobby: 'cafe',
+                emoji: '👤',
+              })
+              onChange('')
+              setOpen(false)
             }
           }}
-          disabled={disabled || matches.length === 0}
+          disabled={disabled || !value.trim()}
           className="flex h-8 w-8 items-center justify-center rounded-md text-[#A78BFA] hover:text-white disabled:opacity-30"
           aria-label="Enviar chute"
         >
@@ -251,6 +290,8 @@ function AuditorAutocomplete({
       <AnimatePresence>
         {open && matches.length > 0 && (
           <motion.ul
+            id="atributos-listbox"
+            role="listbox"
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
@@ -258,7 +299,7 @@ function AuditorAutocomplete({
             className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-[#2A4060] bg-[#0F1A2E]/95 shadow-2xl backdrop-blur"
           >
             {matches.map((a) => (
-              <li key={a.id}>
+              <li key={a.id} role="option" aria-selected={value === a.nome || value === a.apelido}>
                 <button
                   type="button"
                   onClick={() => {
@@ -276,13 +317,13 @@ function AuditorAutocomplete({
                       <span className="text-sm font-bold text-white">
                         {a.nome}
                       </span>
-                      <span className="text-[10px] uppercase tracking-wider text-slate-300">
+                      <span className="text-[10px] uppercase tracking-wider text-[#94A3B8]">
                         {a.apelido} · {ATRIBUTOS_CARGO_LABELS[a.cargo]} ·{' '}
                         {ATRIBUTOS_EQUIPE_LABELS[a.equipe]}
                       </span>
                     </span>
                   </span>
-                  <span className="text-[10px] uppercase tracking-wider text-slate-300">
+                  <span className="text-[10px] uppercase tracking-wider text-[#94A3B8]">
                     {ATRIBUTOS_CIDADE_LABELS[a.cidade]}
                   </span>
                 </button>
@@ -291,6 +332,12 @@ function AuditorAutocomplete({
           </motion.ul>
         )}
       </AnimatePresence>
+
+      {error && (
+        <div role="alert" className="mt-2 rounded-lg border border-[#E25F38]/50 bg-[#E25F38]/10 p-2 font-mono text-xs text-[#F1A28A]">
+          {error}
+        </div>
+      )}
     </div>
   )
 }
@@ -311,7 +358,7 @@ function GuessRow({ guess, index }: { guess: AtributosGuess; index: number }) {
           <span className="truncate text-[11px] font-bold text-white sm:text-xs">
             {guess.auditorNome}
           </span>
-          <span className="truncate text-[9px] uppercase tracking-wider text-slate-300 sm:text-[10px]">
+          <span className="truncate text-[9px] uppercase tracking-wider text-[#94A3B8] sm:text-[10px]">
             {guess.auditorApelido}
           </span>
         </div>
@@ -329,15 +376,23 @@ function GuessRow({ guess, index }: { guess: AtributosGuess; index: number }) {
 function GameOverCard({
   state,
   onBack,
+  onReopen,
 }: {
   state: AtributosState
   onBack: () => void
+  onReopen: () => void
 }) {
   const target = findAuditorById(state.targetId)
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="atributos-gameover-title"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onBack()
+      }}
       className={cn(
         'rounded-2xl border-2 p-5 shadow-2xl sm:p-6',
         state.isWin
@@ -353,10 +408,10 @@ function GameOverCard({
             <X className="h-7 w-7 text-[#F1A28A]" />
           )}
           <div>
-            <h2 className="font-mono text-lg font-black text-white sm:text-xl">
+            <h2 id="atributos-gameover-title" className="font-mono text-lg font-black text-white sm:text-xl">
               {state.isWin ? 'AUDITOR IDENTIFICADO!' : 'FICOU PRA PROXIMA'}
             </h2>
-            <p className="font-mono text-xs text-slate-300 sm:text-sm">
+            <p className="font-mono text-xs text-[#94A3B8] sm:text-sm">
               {state.isWin
                 ? `Voce achou em ${state.currentRow}/${state.maxAttempts} tentativas.`
                 : 'Amanha tem mais um(a) auditor(a) misterioso(a).'}
@@ -367,7 +422,7 @@ function GameOverCard({
 
       {target && (
         <div className="mt-4 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/70 p-3">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-slate-300">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
             o auditor era
           </p>
           <div className="mt-1 flex items-center gap-3">
@@ -378,12 +433,12 @@ function GameOverCard({
               <span className="font-mono text-base font-bold text-white">
                 {target.nome}
               </span>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
                 {target.apelido} · {ATRIBUTOS_CARGO_LABELS[target.cargo]} ·{' '}
                 {ATRIBUTOS_EQUIPE_LABELS[target.equipe]} ·{' '}
                 {ATRIBUTOS_SENIORIDADE_LABELS[target.senioridade]}
               </span>
-              <span className="font-mono text-[10px] text-slate-300">
+              <span className="font-mono text-[10px] text-[#94A3B8]">
                 {ATRIBUTOS_TURNO_LABELS[target.turno]} ·{' '}
                 {ATRIBUTOS_CIDADE_LABELS[target.cidade]} ·{' '}
                 {ATRIBUTOS_HOBBY_LABELS[target.hobby]}
@@ -397,10 +452,16 @@ function GameOverCard({
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-1.5 rounded-lg border border-[#2A4060] bg-transparent px-4 py-2 font-mono text-xs text-slate-200 hover:bg-[#1A2C40]"
-          style={{ minHeight: 44 }}
+          className="flex min-h-[44px] items-center gap-1.5 rounded-lg border border-[#2A4060] bg-transparent px-4 py-2 font-mono text-xs text-slate-200 hover:bg-[#1A2C40]"
         >
           <ArrowLeft className="mr-1 h-3.5 w-3.5" /> voltar ao hall
+        </button>
+        <button
+          type="button"
+          onClick={onReopen}
+          className="flex min-h-[44px] items-center gap-1.5 rounded-lg border border-[#2A4060] bg-transparent px-4 py-2 font-mono text-xs text-slate-200 hover:bg-[#1A2C40]"
+        >
+          reabrir o dia
         </button>
       </div>
     </motion.div>
@@ -424,9 +485,29 @@ export function PitacoAtributosGame() {
   const [input, setInput] = useState('')
   const [error, setError] = useState<string | null>(null)
 
+  // Debounce 100ms para evitar travamento em trocas rapidas de state.
+  const saveDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
-    saveAtributosState(dateKey, state)
+    if (saveDebounceRef.current) {
+      clearTimeout(saveDebounceRef.current)
+    }
+    saveDebounceRef.current = setTimeout(() => {
+      saveAtributosState(dateKey, state)
+      saveDebounceRef.current = null
+    }, 100)
+    return () => {
+      if (saveDebounceRef.current) {
+        clearTimeout(saveDebounceRef.current)
+        saveDebounceRef.current = null
+      }
+    }
   }, [state, dateKey])
+
+  useEffect(() => {
+    if (!error) return
+    const t = setTimeout(() => setError(null), 2500)
+    return () => clearTimeout(t)
+  }, [error])
 
   const attemptsLeft = state.maxAttempts - state.currentRow
 
@@ -445,6 +526,11 @@ export function PitacoAtributosGame() {
     setInput('')
   }
 
+  function handleReopen() {
+    clearAtributosState(dateKey)
+    window.location.reload()
+  }
+
   const guessedCount = state.guesses.length
   const emptyRows = Math.max(0, state.maxAttempts - guessedCount)
 
@@ -459,8 +545,9 @@ export function PitacoAtributosGame() {
       >
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-3 py-3 sm:px-4 sm:py-4">
           <button
+            type="button"
             onClick={() => navigate('/')}
-            className="flex items-center gap-1.5 text-sm text-slate-300 hover:text-white font-mono"
+            className="flex min-h-[44px] items-center gap-1.5 px-2 text-sm text-[#94A3B8] hover:text-white font-mono"
             aria-label="Voltar ao hall"
           >
             <ArrowLeft className="h-4 w-4" /> hall
@@ -471,7 +558,7 @@ export function PitacoAtributosGame() {
               PITACO <span style={{ color: '#A78BFA' }}>Atributos</span>
             </h1>
           </div>
-          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-slate-300">
+          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
             dia #{dayNumber}
           </span>
         </div>
@@ -485,7 +572,7 @@ export function PitacoAtributosGame() {
               <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
                 auditor misterioso
               </h2>
-              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-slate-300">
+              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#94A3B8]">
                 {state.isGameOver
                   ? state.isWin
                     ? `${state.currentRow}/${state.maxAttempts}`
@@ -499,16 +586,16 @@ export function PitacoAtributosGame() {
                   ? findAuditorById(state.targetId)?.emoji
                   : '❔'}
               </span>
-              <span className="font-mono text-xs uppercase tracking-wider text-slate-300 sm:text-sm">
+              <span className="font-mono text-xs uppercase tracking-wider text-[#94A3B8] sm:text-sm">
                 {state.isGameOver
                   ? 'identidade revelada'
                   : 'quem e esse auditor?'}
               </span>
-              <span className="font-mono text-[9px] text-slate-500">
+              <span className="font-mono text-[9px] text-[#64748B]">
                 6 atributos · 8 tentativas
               </span>
             </div>
-            <p className="mt-3 font-mono text-[10px] text-slate-300 sm:text-xs">
+            <p className="mt-3 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
               Chute auditores do escritorio. A cada rodada voce recebe
               feedback colorido por atributo: verde, amarelo, vermelho ou
               cinza.
@@ -524,7 +611,7 @@ export function PitacoAtributosGame() {
             </div>
 
             {state.isGameOver ? (
-              <GameOverCard state={state} onBack={() => navigate('/')} />
+              <GameOverCard state={state} onBack={() => navigate('/')} onReopen={handleReopen} />
             ) : (
               <>
                 <AuditorAutocomplete
@@ -533,20 +620,16 @@ export function PitacoAtributosGame() {
                   onSubmit={handleSubmit}
                   disabled={state.isGameOver}
                   history={state.history}
+                  error={error}
                 />
-                {error && (
-                  <div className="mt-2 rounded-lg border border-[#E25F38]/50 bg-[#E25F38]/10 p-2 font-mono text-xs text-[#F1A28A]">
-                    {error}
-                  </div>
-                )}
 
-                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-slate-300 sm:text-xs">
+                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
                   <p>
                     <Check className="mr-1 inline h-3 w-3 text-[#5BE0D8]" />
                     digite o <strong>nome</strong> ou <strong>apelido</strong> do auditor.
                   </p>
                   <p>
-                    <ChevronDown className="mr-1 inline h-3 w-3 text-slate-300" />
+                    <ChevronDown className="mr-1 inline h-3 w-3 text-[#94A3B8]" />
                     a tabela abaixo mostra a cor do feedback por atributo.
                   </p>
                 </div>
@@ -556,34 +639,34 @@ export function PitacoAtributosGame() {
         </div>
 
         <section className="mt-5">
-          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#94A3B8]">
             <Tag className="h-3.5 w-3.5" />
             tentativas
-            <span className="text-slate-500">
+            <span className="text-[#64748B]">
               ({guessedCount}/{state.maxAttempts})
             </span>
           </h3>
 
           <div className="mb-2 grid grid-cols-[1.4fr_0.9fr_0.9fr_0.7fr_0.7fr_0.7fr_0.7fr] gap-1.5 sm:gap-2">
-            <div className="font-mono text-[9px] uppercase tracking-wider text-slate-300 sm:text-[10px]">
+            <div className="font-mono text-[9px] uppercase tracking-wider text-[#94A3B8] sm:text-[10px]">
               auditor
             </div>
-            <div className="text-center font-mono text-[9px] uppercase tracking-wider text-slate-300 sm:text-[10px]">
+            <div className="text-center font-mono text-[9px] uppercase tracking-wider text-[#94A3B8] sm:text-[10px]">
               cargo
             </div>
-            <div className="text-center font-mono text-[9px] uppercase tracking-wider text-slate-300 sm:text-[10px]">
+            <div className="text-center font-mono text-[9px] uppercase tracking-wider text-[#94A3B8] sm:text-[10px]">
               equipe
             </div>
-            <div className="text-center font-mono text-[9px] uppercase tracking-wider text-slate-300 sm:text-[10px]">
+            <div className="text-center font-mono text-[9px] uppercase tracking-wider text-[#94A3B8] sm:text-[10px]">
               senior.
             </div>
-            <div className="text-center font-mono text-[9px] uppercase tracking-wider text-slate-300 sm:text-[10px]">
+            <div className="text-center font-mono text-[9px] uppercase tracking-wider text-[#94A3B8] sm:text-[10px]">
               turno
             </div>
-            <div className="text-center font-mono text-[9px] uppercase tracking-wider text-slate-300 sm:text-[10px]">
+            <div className="text-center font-mono text-[9px] uppercase tracking-wider text-[#94A3B8] sm:text-[10px]">
               cidade
             </div>
-            <div className="text-center font-mono text-[9px] uppercase tracking-wider text-slate-300 sm:text-[10px]">
+            <div className="text-center font-mono text-[9px] uppercase tracking-wider text-[#94A3B8] sm:text-[10px]">
               hobby
             </div>
           </div>
@@ -597,7 +680,7 @@ export function PitacoAtributosGame() {
                 key={`empty-${i}`}
                 className="grid grid-cols-[1.4fr_0.9fr_0.9fr_0.7fr_0.7fr_0.7fr_0.7fr] gap-1.5 sm:gap-2"
               >
-                <div className="flex items-center gap-2 rounded-md border border-dashed border-[#2A4060]/40 bg-[#0F1A2E]/30 px-2 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+                <div className="flex items-center gap-2 rounded-md border border-dashed border-[#2A4060]/40 bg-[#0F1A2E]/30 px-2 py-2 font-mono text-[10px] uppercase tracking-wider text-[#64748B]">
                   <span aria-hidden="true">👤</span>
                   tentativa {guessedCount + i + 1}
                 </div>
@@ -613,8 +696,8 @@ export function PitacoAtributosGame() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-slate-300 sm:text-sm">
-          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-slate-300">
+        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-[#94A3B8] sm:text-sm">
+          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">
             legenda
           </h4>
           <ul className="space-y-1 font-mono">
@@ -632,7 +715,7 @@ export function PitacoAtributosGame() {
             </li>
             <li className="flex items-center gap-2">
               <span className="inline-block h-3 w-3 rounded bg-[#94A3B8]/40" />
-              <span className="text-slate-300">cinza</span> · atributo errado
+              <span className="text-[#94A3B8]">cinza</span> · atributo errado
             </li>
           </ul>
         </section>
@@ -644,7 +727,7 @@ export function PitacoAtributosGame() {
       />
 
       <div className="fixed bottom-2 right-2 z-[5] pointer-events-none">
-        <span className="font-mono text-[8px] text-slate-500/50 md:text-xs">v{APP_VERSION}</span>
+        <span className="font-mono text-[8px] text-[#64748B]/50 md:text-xs">v{APP_VERSION}</span>
       </div>
     </div>
   )

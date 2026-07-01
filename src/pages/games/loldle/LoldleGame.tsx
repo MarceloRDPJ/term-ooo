@@ -37,7 +37,7 @@ import {
   processLoldleGuess,
   yearArrow,
 } from './engine'
-import { loadLoldleState, saveLoldleState } from './storage'
+import { clearLoldleState, loadLoldleState, saveLoldleState } from './storage'
 import type { LoldleFeedback, LoldleFeedbackStatus, LoldleState } from './types'
 import type { LoldleChampion } from './types'
 
@@ -73,7 +73,7 @@ function statusClasses(status: LoldleFeedbackStatus): string {
       return 'bg-[#E25F38]/20 border-[#E25F38]/60 text-[#F1A28A]'
     case 'wrong':
     default:
-      return 'bg-[#243447] border-[#2A4060] text-slate-300'
+      return 'bg-[#243447] border-[#2A4060] text-[#94A3B8]'
   }
 }
 
@@ -130,6 +130,7 @@ function ChampionAutocomplete({
 }) {
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   const matches = useMemo(() => {
     const norm = normalizeString(value)
@@ -149,9 +150,13 @@ function ChampionAutocomplete({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <div className="flex items-center gap-2 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/80 px-3 py-2 shadow-lg focus-within:border-[#00B2A9]">
-        <Search className="h-4 w-4 text-[#00B2A9]" />
+      <div
+        className="flex items-center gap-2 rounded-xl border-2 border-[#2A4060] bg-[#0F1A2E]/90 px-3 py-3 shadow-lg focus-within:border-[#00B2A9] focus-within:ring-2 focus-within:ring-[#00B2A9]/30"
+        onClick={() => inputRef.current?.focus()}
+      >
+        <Search className="h-5 w-5 text-[#00B2A9]" />
         <input
+          ref={inputRef}
           type="text"
           value={value}
           onChange={(e) => {
@@ -169,14 +174,33 @@ function ChampionAutocomplete({
               } else if (value.trim()) {
                 onSubmit(value.trim())
               }
+              return
+            }
+            if (e.key === 'ArrowDown') {
+              e.preventDefault()
+              setOpen(true)
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault()
+              setOpen(true)
+            } else if (e.key === 'Escape') {
+              setOpen(false)
             }
           }}
           disabled={disabled}
           placeholder="Digite o nome do campeao (ex: Ahri, Yasuo)..."
-          className="flex-1 bg-transparent text-sm text-white placeholder:text-slate-500 outline-none font-mono"
+          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#94A3B8] outline-none font-mono caret-[#00B2A9] min-h-[32px] cursor-text"
           aria-label="Chutar campeao"
+          aria-autocomplete="list"
+          aria-expanded={open}
+          aria-controls="loldle-listbox"
+          aria-invalid={!!error}
+          autoComplete="off"
+          spellCheck={false}
+          inputMode="search"
+          maxLength={30}
         />
         <Button
+          type="button"
           size="icon"
           variant="ghost"
           onClick={() => {
@@ -189,7 +213,7 @@ function ChampionAutocomplete({
             }
           }}
           disabled={disabled || !value.trim()}
-          className="h-8 w-8 text-[#00B2A9] hover:text-[#5BE0D8]"
+          className="h-11 w-11 text-[#00B2A9] hover:text-[#5BE0D8]"
           aria-label="Enviar chute"
         >
           <Send className="h-4 w-4" />
@@ -199,6 +223,8 @@ function ChampionAutocomplete({
       <AnimatePresence>
         {open && matches.length > 0 && (
           <motion.ul
+            id="loldle-listbox"
+            role="listbox"
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
@@ -206,7 +232,7 @@ function ChampionAutocomplete({
             className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-[#2A4060] bg-[#0F1A2E]/95 shadow-2xl backdrop-blur"
           >
             {matches.map((c) => (
-              <li key={c.id}>
+              <li key={c.id} role="option" aria-selected={value === c.name}>
                 <button
                   type="button"
                   onClick={() => {
@@ -222,7 +248,7 @@ function ChampionAutocomplete({
                     </span>
                     <span>{c.name}</span>
                   </span>
-                  <span className="text-[10px] uppercase tracking-wider text-slate-300">
+                  <span className="text-[10px] uppercase tracking-wider text-[#94A3B8]">
                     {c.region}
                   </span>
                 </button>
@@ -233,7 +259,7 @@ function ChampionAutocomplete({
       </AnimatePresence>
 
       {error && (
-        <div className="mt-2 rounded-lg border border-[#E25F38]/50 bg-[#E25F38]/10 p-2 font-mono text-xs text-[#F1A28A]">
+        <div role="alert" className="mt-2 rounded-lg border border-[#E25F38]/50 bg-[#E25F38]/10 p-2 font-mono text-xs text-[#F1A28A]">
           {error}
         </div>
       )}
@@ -272,7 +298,7 @@ function GuessRow({
             {champion.name}
           </span>
         </div>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300">
+        <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
           {champion.classe} · {champion.alcance}
         </span>
       </div>
@@ -292,16 +318,16 @@ function GuessRow({
               )}
               title={`${ATTRIBUTE_LABELS[k]}: ${value} (${statusText(status)})`}
             >
-              <span className="font-mono text-[8px] uppercase tracking-wider opacity-70 sm:text-[9px]">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-wider sm:text-[11px]">
                 {ATTRIBUTE_SHORT[k]}
               </span>
-              <span className="flex items-center gap-1 font-mono text-[11px] font-bold sm:text-xs">
+              <span className="flex items-center gap-1 font-mono text-xs font-bold sm:text-sm">
                 {value}
                 {arrow === 'up' && <ArrowUp className="h-3 w-3" aria-label="ano alvo e maior" />}
                 {arrow === 'down' && <ArrowDown className="h-3 w-3" aria-label="ano alvo e menor" />}
               </span>
               {k === 'ano' && yearDelta !== undefined && status !== 'correct' && (
-                <span className="font-mono text-[8px] opacity-70 sm:text-[9px]">
+                <span className="font-mono text-[10px] sm:text-[11px]">
                   {status === 'near' ? `±${yearDelta}` : `Δ${yearDelta}`}
                 </span>
               )}
@@ -315,7 +341,7 @@ function GuessRow({
 
 function EmptyRow({ index }: { index: number }) {
   return (
-    <div className="flex items-center justify-between gap-2 rounded-2xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 px-3 py-3 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+    <div className="flex items-center justify-between gap-2 rounded-2xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 px-3 py-3 font-mono text-[10px] uppercase tracking-wider text-[#64748B]">
       <span className="rounded-md bg-[#0F1A2E]/80 px-2 py-0.5 font-black text-slate-400">
         #{index + 1}
       </span>
@@ -327,15 +353,23 @@ function EmptyRow({ index }: { index: number }) {
 function GameOverCard({
   state,
   onBack,
+  onReopen,
 }: {
   state: LoldleState
   onBack: () => void
+  onReopen: () => void
 }) {
   const target = findChampionById(state.targetId)
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="loldle-gameover-title"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onBack()
+      }}
       className={cn(
         'rounded-2xl border-2 p-5 shadow-2xl sm:p-6',
         state.isWin
@@ -351,10 +385,10 @@ function GameOverCard({
             <X className="h-7 w-7 text-[#F1A28A]" />
           )}
           <div>
-            <h2 className="font-mono text-lg font-black text-white sm:text-xl">
+            <h2 id="loldle-gameover-title" className="font-mono text-lg font-black text-white sm:text-xl">
               {state.isWin ? 'PENTAKILL!' : 'GAME OVER'}
             </h2>
-            <p className="font-mono text-xs text-slate-300 sm:text-sm">
+            <p className="font-mono text-xs text-[#94A3B8] sm:text-sm">
               {state.isWin
                 ? `Voce acertou em ${state.currentRow}/${state.maxAttempts} tentativas.`
                 : 'Amanha tem mais. GG WP.'}
@@ -365,7 +399,7 @@ function GameOverCard({
 
       {target && (
         <div className="mt-4 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/70 p-3">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-slate-300">o campeao era</p>
+          <p className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">o campeao era</p>
           <div className="mt-1 flex items-center gap-3">
             <span className="rounded-lg bg-[#00B2A9]/20 px-2.5 py-1 font-mono text-base font-black text-[#5BE0D8]">
               {target.name}
@@ -374,7 +408,7 @@ function GameOverCard({
               <span className="font-mono text-sm font-bold text-white">
                 {target.classe} · {target.alcance}
               </span>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
                 {target.region} · {target.recurso} · {target.genero} · {target.ano}
               </span>
             </div>
@@ -384,13 +418,22 @@ function GameOverCard({
 
       <div className="mt-4 flex flex-wrap gap-2">
         <Button
+          type="button"
           onClick={onBack}
           variant="outline"
-          className="border-[#2A4060] bg-transparent font-mono text-xs text-slate-200"
+          className="min-h-[44px] border-[#2A4060] bg-transparent font-mono text-xs text-slate-200"
           size="lg"
-          style={{ minHeight: 44 }}
         >
           <ArrowLeft className="mr-2 h-3.5 w-3.5" /> voltar ao hall
+        </Button>
+        <Button
+          type="button"
+          onClick={onReopen}
+          variant="outline"
+          className="min-h-[44px] border-[#2A4060] bg-transparent font-mono text-xs text-slate-200"
+          size="lg"
+        >
+          reabrir o dia
         </Button>
       </div>
     </motion.div>
@@ -399,12 +442,13 @@ function GameOverCard({
 
 export function LoldleGame() {
   const navigate = useNavigate()
-  const dateKey = useMemo(() => getTodayDateKey(), [])
+  const [dateKey, setDateKey] = useState<string>(() => getTodayDateKey())
 
   const [state, setState] = useState<LoldleState>(() => {
-    const persisted = loadLoldleState(dateKey)
+    const initialKey = getTodayDateKey()
+    const persisted = loadLoldleState(initialKey)
     if (persisted) return persisted
-    return createInitialLoldleState(dateKey)
+    return createInitialLoldleState(initialKey)
   })
   const [input, setInput] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -420,6 +464,36 @@ export function LoldleGame() {
     saveLoldleState(dateKey, state)
   }, [state, dateKey])
 
+  // Recarrega o estado quando o dia muda (usuario deixou a aba aberta
+  // ate a meia-noite, ou voltou a tab apos virar o dia). Sem isso,
+  // a `dateKey` inicial congelava e o jogador chutava no dia errado.
+  useEffect(() => {
+    function checkDateChange() {
+      const today = getTodayDateKey()
+      if (today !== dateKey) {
+        setDateKey(today)
+        const persisted = loadLoldleState(today)
+        if (persisted) {
+          setState(persisted)
+        } else {
+          setState(createInitialLoldleState(today))
+        }
+      }
+    }
+    const interval = setInterval(checkDateChange, 60_000)
+    document.addEventListener('visibilitychange', checkDateChange)
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', checkDateChange)
+    }
+  }, [dateKey])
+
+  useEffect(() => {
+    if (!error) return
+    const t = setTimeout(() => setError(null), 2500)
+    return () => clearTimeout(t)
+  }, [error])
+
   const attemptsLeft = state.maxAttempts - state.currentRow
 
   function handleSubmit(rawGuess: string) {
@@ -432,6 +506,11 @@ export function LoldleGame() {
     }
     setState(result.newState)
     setInput('')
+  }
+
+  function handleReopen() {
+    clearLoldleState(dateKey)
+    window.location.reload()
   }
 
   const guessedCount = state.guesses.length
@@ -448,8 +527,9 @@ export function LoldleGame() {
       >
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-3 py-3 sm:px-4 sm:py-4">
           <button
+            type="button"
             onClick={() => navigate('/')}
-            className="flex items-center gap-1.5 text-sm text-slate-300 hover:text-white font-mono"
+            className="flex min-h-[44px] items-center gap-1.5 px-2 text-sm text-[#94A3B8] hover:text-white font-mono"
             aria-label="Voltar ao hall"
           >
             <ArrowLeft className="h-4 w-4" /> hall
@@ -460,7 +540,7 @@ export function LoldleGame() {
               LOLDLE <span style={{ color: '#00B2A9' }}>Classic</span>
             </h1>
           </div>
-          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-slate-300">
+          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
             {dateKey}
           </span>
         </div>
@@ -474,7 +554,7 @@ export function LoldleGame() {
               <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
                 alvo do dia
               </h2>
-              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-slate-300">
+              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#94A3B8]">
                 {state.isGameOver
                   ? state.isWin
                     ? `${state.currentRow}/${state.maxAttempts}`
@@ -487,13 +567,13 @@ export function LoldleGame() {
               <p className="font-mono text-sm font-bold text-[#5BE0D8] sm:text-base">
                 Campeao oculto
               </p>
-              <p className="font-mono text-[10px] uppercase tracking-wider text-slate-300 sm:text-xs">
+              <p className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8] sm:text-xs">
                 {state.isGameOver && target
                   ? 'spoiler abaixo'
                   : `pool: ${CHAMPIONS.length} campeoes`}
               </p>
             </div>
-            <p className="mt-3 font-mono text-[10px] text-slate-300 sm:text-xs">
+            <p className="mt-3 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
               Adivinhe o campeao pelos seus atributos. 6 atributos, 8 tentativas.
             </p>
           </section>
@@ -507,7 +587,7 @@ export function LoldleGame() {
             </div>
 
             {state.isGameOver ? (
-              <GameOverCard state={state} onBack={() => navigate('/')} />
+              <GameOverCard state={state} onBack={() => navigate('/')} onReopen={handleReopen} />
             ) : (
               <>
                 <ChampionAutocomplete
@@ -519,7 +599,7 @@ export function LoldleGame() {
                   error={error}
                 />
 
-                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-slate-300 sm:text-xs">
+                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
                   <p>
                     <Check className="mr-1 inline h-3 w-3 text-[#5BE0D8]" />
                     digite o <strong>nome</strong> do campeao (autocomplete sugere).
@@ -539,9 +619,9 @@ export function LoldleGame() {
         </div>
 
         <section className="mt-5">
-          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#94A3B8]">
             tentativas
-            <span className="text-slate-500">
+            <span className="text-[#64748B]">
               ({guessedCount}/{state.maxAttempts})
             </span>
           </h3>
@@ -566,8 +646,8 @@ export function LoldleGame() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-slate-300 sm:text-sm">
-          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-slate-300">
+        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-[#94A3B8] sm:text-sm">
+          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">
             legenda
           </h4>
           <ul className="space-y-1 font-mono">
@@ -581,7 +661,7 @@ export function LoldleGame() {
             </li>
             <li>
               <span className="mr-2 inline-block h-2 w-2 rounded-full bg-slate-500 align-middle" />
-              <strong className="text-slate-300">cinza</strong> · atributo errado
+              <strong className="text-[#94A3B8]">cinza</strong> · atributo errado
             </li>
             <li>
               <ArrowUp className="mr-1 inline h-3 w-3 text-[#E3C275] align-middle" />
@@ -598,7 +678,7 @@ export function LoldleGame() {
       />
 
       <div className="fixed bottom-2 right-2 z-[5] pointer-events-none">
-        <span className="font-mono text-[8px] text-slate-500/50 md:text-xs">v{APP_VERSION}</span>
+        <span className="font-mono text-[8px] text-[#64748B]/50 md:text-xs">v{APP_VERSION}</span>
       </div>
     </div>
   )

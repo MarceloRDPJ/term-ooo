@@ -30,10 +30,9 @@ import {
 } from './data'
 import {
   createInitialEmojiState,
-  pickEmojiTargetForDay,
   processEmojiGuess,
 } from './engine'
-import { loadEmojiState, saveEmojiState } from './storage'
+import { clearEmojiState, loadEmojiState, saveEmojiState } from './storage'
 import type { EmojiAuditor, EmojiGuess, EmojiState } from './types'
 
 function AuditorAutocomplete({
@@ -42,15 +41,18 @@ function AuditorAutocomplete({
   onSubmit,
   disabled,
   history,
+  error,
 }: {
   value: string
   onChange: (v: string) => void
   onSubmit: (auditorId: string) => void
   disabled: boolean
   history: string[]
+  error?: string | null
 }) {
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   const matches = useMemo(() => {
     const norm = normalizeString(value)
@@ -75,9 +77,13 @@ function AuditorAutocomplete({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <div className="flex items-center gap-2 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/80 px-3 py-2 shadow-lg focus-within:border-[#00B2A9]">
-        <Smile className="h-4 w-4 text-[#00B2A9]" />
+      <div
+        className="flex items-center gap-2 rounded-xl border-2 border-[#2A4060] bg-[#0F1A2E]/90 px-3 py-3 shadow-lg focus-within:border-[#00B2A9] focus-within:ring-2 focus-within:ring-[#00B2A9]/30"
+        onClick={() => inputRef.current?.focus()}
+      >
+        <Smile className="h-5 w-5" style={{ color: '#00B2A9' }} />
         <input
+          ref={inputRef}
           type="text"
           value={value}
           onChange={(e) => {
@@ -89,19 +95,35 @@ function AuditorAutocomplete({
             if (e.key === 'Enter') {
               e.preventDefault()
               if (value.trim()) onSubmit(value.trim())
+              return
+            }
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+              e.preventDefault()
+              setOpen(true)
+            } else if (e.key === 'Escape') {
+              setOpen(false)
             }
           }}
           disabled={disabled}
           placeholder="Digite o nome ou apelido..."
-          className="flex-1 bg-transparent text-sm text-white placeholder:text-slate-500 outline-none font-mono"
+          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#64748B] outline-none font-mono caret-[#00B2A9] min-h-[32px] cursor-text"
           aria-label="Chutar auditor"
+          aria-autocomplete="list"
+          aria-expanded={open}
+          aria-controls="emoji-listbox"
+          aria-invalid={!!error}
+          autoComplete="off"
+          spellCheck={false}
+          inputMode="search"
+          maxLength={30}
         />
         <Button
+          type="button"
           size="icon"
           variant="ghost"
           onClick={() => value.trim() && onSubmit(value.trim())}
           disabled={disabled || !value.trim()}
-          className="h-8 w-8 text-[#00B2A9] hover:text-[#5BE0D8]"
+          className="h-11 w-11 text-[#00B2A9] hover:text-[#5BE0D8]"
           aria-label="Enviar chute"
         >
           <Send className="h-4 w-4" />
@@ -111,6 +133,8 @@ function AuditorAutocomplete({
       <AnimatePresence>
         {open && matches.length > 0 && (
           <motion.ul
+            id="emoji-listbox"
+            role="listbox"
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
@@ -118,7 +142,7 @@ function AuditorAutocomplete({
             className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-[#2A4060] bg-[#0F1A2E]/95 shadow-2xl backdrop-blur"
           >
             {matches.map((a) => (
-              <li key={a.id}>
+              <li key={a.id} role="option" aria-selected={value === a.nickname}>
                 <button
                   type="button"
                   onClick={() => {
@@ -133,7 +157,7 @@ function AuditorAutocomplete({
                       {a.emojis[0]}
                     </span>
                     <span>{a.nickname}</span>
-                    <span className="text-[10px] text-slate-300">· {a.role}</span>
+                    <span className="text-[10px] text-[#94A3B8]">· {a.role}</span>
                   </span>
                 </button>
               </li>
@@ -141,6 +165,12 @@ function AuditorAutocomplete({
           </motion.ul>
         )}
       </AnimatePresence>
+
+      {error && (
+        <div role="alert" className="mt-2 rounded-lg border border-[#E25F38]/50 bg-[#E25F38]/10 p-2 font-mono text-xs text-[#F1A28A]">
+          {error}
+        </div>
+      )}
     </div>
   )
 }
@@ -198,7 +228,7 @@ function GuessCard({ guess }: { guess: EmojiGuess }) {
         <span className="font-mono text-sm font-bold text-white sm:text-base">
           {guess.auditorName}
         </span>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300 sm:text-xs">
+        <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8] sm:text-xs">
           {auditor?.role ?? 'auditor'}
         </span>
       </div>
@@ -207,7 +237,7 @@ function GuessCard({ guess }: { guess: EmojiGuess }) {
           'flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider',
           isCorrect
             ? 'border-[#00B2A9]/60 bg-[#00B2A9]/20 text-[#5BE0D8]'
-            : 'border-[#2A4060]/60 bg-[#243447]/60 text-slate-300'
+            : 'border-[#2A4060]/60 bg-[#243447]/60 text-[#94A3B8]'
         )}
       >
         {isCorrect ? (
@@ -227,15 +257,23 @@ function GuessCard({ guess }: { guess: EmojiGuess }) {
 function GameOverCard({
   state,
   onBack,
+  onReopen,
 }: {
   state: EmojiState
   onBack: () => void
+  onReopen: () => void
 }) {
   const target = findAuditorById(state.targetId)
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="emoji-gameover-title"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onBack()
+      }}
       className={cn(
         'rounded-2xl border-2 p-5 shadow-2xl sm:p-6',
         state.isWin
@@ -250,10 +288,10 @@ function GameOverCard({
           <X className="h-7 w-7 text-[#F1A28A]" />
         )}
         <div>
-          <h2 className="font-mono text-lg font-black text-white sm:text-xl">
+          <h2 id="emoji-gameover-title" className="font-mono text-lg font-black text-white sm:text-xl">
             {state.isWin ? 'HOMOLOGADO!' : 'PAUTA SEM CONSENSO'}
           </h2>
-          <p className="font-mono text-xs text-slate-300 sm:text-sm">
+          <p className="font-mono text-xs text-[#94A3B8] sm:text-sm">
             {state.isWin
               ? `Voce decifrou em ${state.currentRow}/${state.maxAttempts} tentativas.`
               : 'Amanha tem mais. Bora ler o chat?'}
@@ -263,7 +301,7 @@ function GameOverCard({
 
       {target && (
         <div className="mt-4 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/70 p-3">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-slate-300">o auditor era</p>
+          <p className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">o auditor era</p>
           <div className="mt-2 flex items-center gap-3">
             <span className="text-3xl" aria-hidden="true">
               {target.emojis[0]}
@@ -272,12 +310,12 @@ function GameOverCard({
               <span className="font-mono text-sm font-bold text-white sm:text-base">
                 {target.name}
               </span>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300 sm:text-xs">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[#94A3B8] sm:text-xs">
                 {target.role}
               </span>
             </div>
           </div>
-          <p className="mt-2 font-mono text-[10px] italic text-slate-300 sm:text-xs">
+          <p className="mt-2 font-mono text-[10px] italic text-[#94A3B8] sm:text-xs">
             {target.emojiHint}
           </p>
         </div>
@@ -285,13 +323,22 @@ function GameOverCard({
 
       <div className="mt-4 flex flex-wrap gap-2">
         <Button
+          type="button"
           onClick={onBack}
           variant="outline"
-          className="border-[#2A4060] bg-transparent font-mono text-xs text-slate-200"
+          className="min-h-[44px] border-[#2A4060] bg-transparent font-mono text-xs text-slate-200"
           size="lg"
-          style={{ minHeight: 44 }}
         >
           <ArrowLeft className="mr-2 h-3.5 w-3.5" /> voltar ao hall
+        </Button>
+        <Button
+          type="button"
+          onClick={onReopen}
+          variant="outline"
+          className="min-h-[44px] border-[#2A4060] bg-transparent font-mono text-xs text-slate-200"
+          size="lg"
+        >
+          reabrir o dia
         </Button>
       </div>
     </motion.div>
@@ -312,13 +359,33 @@ export function PitacoEmojiGame() {
   const [error, setError] = useState<string | null>(null)
 
   const target: EmojiAuditor | undefined = useMemo(
-    () => findAuditorById(state.targetId) ?? pickEmojiTargetForDay(state.dayNumber),
-    [state.targetId, state.dayNumber]
+    () => findAuditorById(state.targetId),
+    [state.targetId]
   )
 
+  // Debounce 100ms para evitar travamento em trocas rapidas de state.
+  const saveDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
-    saveEmojiState(dateKey, state)
+    if (saveDebounceRef.current) {
+      clearTimeout(saveDebounceRef.current)
+    }
+    saveDebounceRef.current = setTimeout(() => {
+      saveEmojiState(dateKey, state)
+      saveDebounceRef.current = null
+    }, 100)
+    return () => {
+      if (saveDebounceRef.current) {
+        clearTimeout(saveDebounceRef.current)
+        saveDebounceRef.current = null
+      }
+    }
   }, [state, dateKey])
+
+  useEffect(() => {
+    if (!error) return
+    const t = setTimeout(() => setError(null), 2500)
+    return () => clearTimeout(t)
+  }, [error])
 
   const attemptsLeft = state.maxAttempts - state.currentRow
 
@@ -337,10 +404,15 @@ export function PitacoEmojiGame() {
   function handleAutocompleteSubmit(value: string) {
     const found = findAuditorByQuery(value)
     if (found) {
-      handleSubmit(found.nickname)
+      handleSubmit(found.name)
     } else {
       handleSubmit(value)
     }
+  }
+
+  function handleReopen() {
+    clearEmojiState(dateKey)
+    window.location.reload()
   }
 
   const guessedCount = state.guesses.length
@@ -357,8 +429,9 @@ export function PitacoEmojiGame() {
       >
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-3 py-3 sm:px-4 sm:py-4">
           <button
+            type="button"
             onClick={() => navigate('/')}
-            className="flex items-center gap-1.5 text-sm text-slate-300 hover:text-white font-mono"
+            className="flex min-h-[44px] items-center gap-1.5 px-2 text-sm text-[#94A3B8] hover:text-white font-mono"
             aria-label="Voltar ao hall"
           >
             <ArrowLeft className="h-4 w-4" /> hall
@@ -369,7 +442,7 @@ export function PitacoEmojiGame() {
               PITACO <span style={{ color: '#00B2A9' }}>Emoji</span>
             </h1>
           </div>
-          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-slate-300">
+          <span className="rounded-full border border-[#2A4060] bg-[#0F1A2E]/70 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#94A3B8]">
             dia #{dayNumber}
           </span>
         </div>
@@ -383,7 +456,7 @@ export function PitacoEmojiGame() {
               <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
                 emojis do dia
               </h2>
-              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-slate-300">
+              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-[#94A3B8]">
                 {state.isGameOver
                   ? state.isWin
                     ? `${state.currentRow}/${state.maxAttempts}`
@@ -392,7 +465,7 @@ export function PitacoEmojiGame() {
               </span>
             </div>
             <EmojiDisplay emojis={target?.emojis ?? []} size="lg" revealed={state.isGameOver} />
-            <p className="mt-3 font-mono text-[10px] text-slate-300 sm:text-xs">
+            <p className="mt-3 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
               {state.isGameOver
                 ? state.isWin
                   ? 'Os emojis acima era o auditor que voce acertou.'
@@ -410,7 +483,7 @@ export function PitacoEmojiGame() {
             </div>
 
             {state.isGameOver ? (
-              <GameOverCard state={state} onBack={() => navigate('/')} />
+              <GameOverCard state={state} onBack={() => navigate('/')} onReopen={handleReopen} />
             ) : (
               <>
                 <AuditorAutocomplete
@@ -419,20 +492,16 @@ export function PitacoEmojiGame() {
                   onSubmit={handleAutocompleteSubmit}
                   disabled={state.isGameOver}
                   history={state.history}
+                  error={error}
                 />
-                {error && (
-                  <div className="mt-2 rounded-lg border border-[#E25F38]/50 bg-[#E25F38]/10 p-2 font-mono text-xs text-[#F1A28A]">
-                    {error}
-                  </div>
-                )}
 
-                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-slate-300 sm:text-xs">
+                <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#94A3B8] sm:text-xs">
                   <p>
                     <Check className="mr-1 inline h-3 w-3 text-[#5BE0D8]" />
                     digite o <strong>nome</strong> ou o <strong>apelido</strong> do auditor.
                   </p>
                   <p>
-                    <ChevronDown className="mr-1 inline h-3 w-3 text-slate-300" />
+                    <ChevronDown className="mr-1 inline h-3 w-3 text-[#94A3B8]" />
                     acerto = verde. erro = cinza. o auditor fica revelado no fim.
                   </p>
                 </div>
@@ -442,9 +511,9 @@ export function PitacoEmojiGame() {
         </div>
 
         <section className="mt-5">
-          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+          <h3 className="mb-2 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#94A3B8]">
             tentativas
-            <span className="text-slate-500">
+            <span className="text-[#64748B]">
               ({guessedCount}/{state.maxAttempts})
             </span>
           </h3>
@@ -455,7 +524,7 @@ export function PitacoEmojiGame() {
             {Array.from({ length: emptyRows }).map((_, i) => (
               <div
                 key={`empty-${i}`}
-                className="flex items-center justify-center rounded-2xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 p-4 font-mono text-[10px] uppercase tracking-wider text-slate-500"
+                className="flex items-center justify-center rounded-2xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 p-4 font-mono text-[10px] uppercase tracking-wider text-[#64748B]"
               >
                 tentativa {guessedCount + i + 1}
               </div>
@@ -463,8 +532,8 @@ export function PitacoEmojiGame() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-slate-300 sm:text-sm">
-          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-slate-300">
+        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-[#94A3B8] sm:text-sm">
+          <h4 className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">
             como jogar
           </h4>
           <ul className="space-y-1 font-mono">
@@ -474,9 +543,9 @@ export function PitacoEmojiGame() {
             </li>
             <li>
               <span className="mr-2 inline-block h-2 w-2 rounded-full bg-slate-500 align-middle" />
-              <strong className="text-slate-300">cinza</strong> · auditor diferente do alvo
+              <strong className="text-[#94A3B8]">cinza</strong> · auditor diferente do alvo
             </li>
-            <li className="text-slate-300">
+            <li className="text-[#94A3B8]">
               cada emoji e uma pista. pense em hobby, funcao, manias do escritorio.
             </li>
           </ul>
@@ -489,7 +558,7 @@ export function PitacoEmojiGame() {
       />
 
       <div className="fixed bottom-2 right-2 z-[5] pointer-events-none">
-        <span className="font-mono text-[8px] text-slate-500/50 md:text-xs">v{APP_VERSION}</span>
+        <span className="font-mono text-[8px] text-[#64748B]/50 md:text-xs">v{APP_VERSION}</span>
       </div>
     </div>
   )

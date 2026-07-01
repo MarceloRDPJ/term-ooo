@@ -96,6 +96,7 @@ function CharacterAutocomplete({
 }) {
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   const matches = useMemo(() => {
     const norm = normalizeString(value)
@@ -121,9 +122,13 @@ function CharacterAutocomplete({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <div className="flex items-center gap-2 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/80 px-3 py-2 shadow-lg focus-within:border-[#F59E0B]">
-        <Target className="h-4 w-4" style={{ color: '#F59E0B' }} />
+      <div
+        className="flex items-center gap-2 rounded-xl border-2 border-[#2A4060] bg-[#0F1A2E]/90 px-3 py-3 shadow-lg focus-within:border-[#E3C275] focus-within:ring-2 focus-within:ring-[#E3C275]/30"
+        onClick={() => inputRef.current?.focus()}
+      >
+        <Target className="h-5 w-5" style={{ color: '#E3C275' }} />
         <input
+          ref={inputRef}
           type="text"
           value={value}
           onChange={(e) => {
@@ -139,7 +144,7 @@ function CharacterAutocomplete({
           }}
           disabled={disabled}
           placeholder="Digite o nome do personagem (ex: Naruto, Sasuke)..."
-          className="flex-1 bg-transparent text-sm text-white placeholder:text-slate-500 outline-none font-mono"
+          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#94A3B8] outline-none font-mono caret-[#E3C275] min-h-[32px] cursor-text"
           aria-label="Chutar personagem"
         />
         <Button

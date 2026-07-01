@@ -129,7 +129,7 @@ function NerdleKeyButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      aria-label={label}
+      aria-label={label === 'BACKSPACE' ? 'Apagar' : label === 'ENTER' ? 'Enviar' : label}
       className={cn(
         'h-11 sm:h-12 md:h-14 font-mono font-bold text-base sm:text-lg border-2 rounded-md transition-all duration-200 flex items-center justify-center',
         'hover:brightness-110 active:scale-95',
@@ -157,6 +157,7 @@ function EndDialog({
   maxAttempts,
   onPlayAgain,
   onHome,
+  onClose,
 }: {
   open: boolean
   isWin: boolean
@@ -165,6 +166,7 @@ function EndDialog({
   maxAttempts: number
   onPlayAgain: () => void
   onHome: () => void
+  onClose: () => void
 }) {
   return (
     <AnimatePresence>
@@ -177,7 +179,7 @@ function EndDialog({
         >
           <div
             className="absolute inset-0 bg-black/60"
-            onClick={onHome}
+            onClick={onClose}
             aria-hidden="true"
           />
           <motion.div
@@ -186,6 +188,13 @@ function EndDialog({
               background: 'linear-gradient(to bottom, #1A2C40, #243447)',
               borderColor: isWin ? 'rgba(0,178,169,0.5)' : 'rgba(167,139,250,0.5)',
             }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="nerdle-gameover-title"
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') onHome()
+            }}
+            tabIndex={-1}
             initial={{ scale: 0.85, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.85, opacity: 0, y: 20 }}
@@ -205,12 +214,13 @@ function EndDialog({
                 )}
               </div>
               <h2
+                id="nerdle-gameover-title"
                 className="font-mono text-xl font-black"
                 style={{ color: isWin ? '#00B2A9' : '#A78BFA' }}
               >
                 {isWin ? 'CALCULADO!' : 'SEM SOLUCAO'}
               </h2>
-              <p className="text-sm text-slate-300 font-mono">
+              <p className="text-sm text-[#94A3B8] font-mono">
                 {isWin
                   ? `Resolveu em ${attempts}/${maxAttempts} tentativas.`
                   : `A equacao de hoje era:`}
@@ -225,16 +235,18 @@ function EndDialog({
               )}
               <div className="mt-3 flex w-full gap-2">
                 <Button
+                  type="button"
                   variant="outline"
                   onClick={onHome}
-                  className="flex-1 font-mono"
+                  className="min-h-[44px] flex-1 font-mono"
                 >
                   <Home className="mr-2 h-4 w-4" />
                   hall
                 </Button>
                 <Button
+                  type="button"
                   onClick={onPlayAgain}
-                  className="flex-1 font-mono"
+                  className="min-h-[44px] flex-1 font-mono"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   reabrir
@@ -408,7 +420,7 @@ export function PitacoNerdleGame() {
 
       <main className="flex-1 flex flex-col items-center justify-between px-2 py-2 sm:px-4 sm:py-4 max-w-2xl mx-auto w-full overflow-hidden">
         <div className="w-full flex items-center justify-between font-mono text-sm sm:text-base">
-          <div className="flex items-center gap-2 text-slate-300">
+          <div role="status" aria-live="polite" className="flex items-center gap-2 text-[#94A3B8]">
             <span>Tentativas:</span>
             <span
               className={cn(
@@ -427,6 +439,7 @@ export function PitacoNerdleGame() {
           </div>
           {state.isGameOver && (
             <Button
+              type="button"
               size="sm"
               variant="outline"
               onClick={() => setDialogOpen(true)}
@@ -444,6 +457,7 @@ export function PitacoNerdleGame() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-[#E25F38] text-white px-4 py-2 rounded-lg shadow-lg z-50 font-mono text-sm"
+            role="alert"
           >
             {error}
           </motion.div>
@@ -544,7 +558,7 @@ export function PitacoNerdleGame() {
         />
 
         <div className="fixed bottom-2 right-2 z-[5] pointer-events-none">
-          <span className="text-[8px] md:text-xs text-slate-500/50 font-mono">
+          <span className="text-[8px] md:text-xs text-[#64748B]/50 font-mono">
             v{APP_VERSION}
           </span>
         </div>
@@ -558,6 +572,7 @@ export function PitacoNerdleGame() {
         maxAttempts={NERDLE_MAX_ATTEMPTS}
         onPlayAgain={handlePlayAgain}
         onHome={handleHome}
+        onClose={() => setDialogOpen(false)}
       />
     </div>
   )

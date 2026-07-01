@@ -8,7 +8,7 @@
 // A renderizacao reutiliza os componentes visuais do app (GameBoard +
 // Keyboard) - so a logica de coordenacao e especifica do Cruzado.
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Home, RefreshCw, Trophy, Skull } from 'lucide-react'
 import { GameBoard } from '@/components/new/GameBoard'
@@ -29,6 +29,9 @@ export function PitacoCruzadoGame() {
   const [state, setState] = useState<CrosswordState | null>(null)
   const [error, setError] = useState<string>('')
   const [shake, setShake] = useState<number>(0)
+  // Pula o auto-save na primeira renderizacao para nao sobrescrever o
+  // estado limpo que acabou de ser persistido pelo mount effect.
+  const initialMountRef = useRef(false)
 
   // Carrega (ou cria) o estado do dia. Roda uma vez no mount.
   useEffect(() => {
@@ -38,6 +41,7 @@ export function PitacoCruzadoGame() {
 
     if (saved) {
       setState(saved)
+      initialMountRef.current = true
       return
     }
 
@@ -45,11 +49,14 @@ export function PitacoCruzadoGame() {
     const fresh = createInitialCrosswordState(dateKey, dayNumber, words)
     setState(fresh)
     crosswordStorage.save(dateKey, fresh)
+    initialMountRef.current = true
   }, [])
 
-  // Auto-save sempre que o estado muda (inclui o primeiro set acima).
+  // Auto-save sempre que o estado muda, exceto na primeira renderizacao
+  // (o mount effect ja cuidou de criar/salvar o estado inicial).
   useEffect(() => {
     if (!state) return
+    if (!initialMountRef.current) return
     crosswordStorage.save(state.dateKey, state)
   }, [state])
 
@@ -122,6 +129,10 @@ export function PitacoCruzadoGame() {
     window.location.reload()
   }
 
+  const handleCloseEndOverlay = () => {
+    window.location.href = '/'
+  }
+
   if (!state) {
     return (
       <div
@@ -150,7 +161,7 @@ export function PitacoCruzadoGame() {
         <div className="max-w-7xl mx-auto px-2 py-2 sm:px-4 sm:py-3 flex items-center justify-between gap-2">
           <Link
             to="/"
-            className="flex items-center gap-1.5 text-slate-300 hover:text-white font-mono text-xs sm:text-sm"
+            className="flex min-h-[44px] items-center gap-1.5 px-2 text-[#94A3B8] hover:text-white font-mono text-xs sm:text-sm"
             aria-label="Voltar para o Hall"
           >
             <Home className="w-4 h-4" />
@@ -164,14 +175,15 @@ export function PitacoCruzadoGame() {
             >
               PITACO Cruzado
             </h1>
-            <div className="text-[10px] sm:text-xs text-slate-300 font-mono">
+            <div role="status" aria-live="polite" className="text-[10px] sm:text-xs text-[#94A3B8] font-mono">
               Dia #{state.dayNumber} · {completed}/4 boards · {state.currentRow}/{CROSSWORD_MAX_ATTEMPTS} tentativas
             </div>
           </div>
 
           <button
+            type="button"
             onClick={handleReopen}
-            className="flex items-center gap-1.5 text-slate-300 hover:text-white font-mono text-xs sm:text-sm"
+            className="flex min-h-[44px] items-center gap-1.5 px-2 text-[#94A3B8] hover:text-white font-mono text-xs sm:text-sm"
             aria-label="Reabrir o dia (limpa o save atual)"
             title="Reabrir o dia (limpa o save atual)"
           >
@@ -183,7 +195,7 @@ export function PitacoCruzadoGame() {
 
       {/* Mensagem de erro flutuante. Some apos 1.5s. */}
       {error && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-[#E25F38] text-white px-4 py-2 rounded-lg shadow-lg z-50 font-mono text-sm animate-pulse">
+        <div role="alert" className="fixed top-20 left-1/2 -translate-x-1/2 bg-[#E25F38] text-white px-4 py-2 rounded-lg shadow-lg z-50 font-mono text-sm animate-pulse">
           {error}
         </div>
       )}
@@ -227,6 +239,11 @@ export function PitacoCruzadoGame() {
           style={{ background: 'rgba(15,26,46,0.85)', backdropFilter: 'blur(4px)' }}
           role="dialog"
           aria-modal="true"
+          aria-labelledby="cruzado-gameover-title"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') handleCloseEndOverlay()
+          }}
+          tabIndex={-1}
         >
           <div
             className="w-full max-w-sm rounded-2xl border p-6 text-center shadow-2xl"
@@ -243,6 +260,7 @@ export function PitacoCruzadoGame() {
               )}
             </div>
             <h2
+              id="cruzado-gameover-title"
               className="text-2xl font-black font-mono uppercase tracking-wider mb-2"
               style={{ color: won ? '#00B2A9' : '#f87171' }}
             >
@@ -253,7 +271,7 @@ export function PitacoCruzadoGame() {
                 ? `${state.currentRow} tentativa${state.currentRow === 1 ? '' : 's'} · 4/4 boards`
                 : `${completed}/4 boards em ${state.maxAttempts} tentativas`}
             </p>
-            <p className="text-xs text-slate-300 font-mono mb-5">
+            <p className="text-xs text-[#94A3B8] font-mono mb-5">
               {won
                 ? 'Pauta fechada. O RH vai te amar.'
                 : 'Amanha tem nova pauta. Abre o olho no stand-up.'}
@@ -261,15 +279,16 @@ export function PitacoCruzadoGame() {
 
             <div className="flex flex-col gap-2">
               <button
+                type="button"
                 onClick={handleReopen}
-                className="w-full px-4 py-2.5 rounded-lg font-mono text-sm font-bold transition-colors"
+                className="w-full min-h-[44px] px-4 py-2.5 rounded-lg font-mono text-sm font-bold transition-colors"
                 style={{ background: '#00B2A9', color: '#0F1A2E' }}
               >
                 reabrir o dia
               </button>
               <Link
                 to="/"
-                className="w-full px-4 py-2.5 rounded-lg font-mono text-sm border border-slate-500 text-slate-200 hover:bg-slate-700/40 transition-colors inline-block"
+                className="w-full min-h-[44px] px-4 py-2.5 rounded-lg font-mono text-sm border border-slate-500 text-slate-200 hover:bg-slate-700/40 transition-colors inline-block"
               >
                 voltar para o hall
               </Link>
