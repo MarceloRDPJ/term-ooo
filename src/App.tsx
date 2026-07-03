@@ -38,6 +38,7 @@ import { CHAT_CONFIG } from './lib/chat-config'
 import { PitacoCruzadoGame } from './pages/games/pitaco-cruzado/PitacoCruzadoGame'
 import { PitacoAtributosGame } from './pages/games/pitaco-atributos/PitacoAtributosGame'
 import { NarutodleGame } from './pages/games/narutodle/NarutodleGame'
+import { NarutodleLandingPage } from './pages/games/narutodle/NarutodleLandingPage'
 import { StarsBackground } from './components/animate-ui/components/backgrounds/stars'
 import { APP_VERSION } from './lib/version'
 import { useSoundEffects } from './lib/sounds/useSoundEffects'
@@ -516,6 +517,9 @@ function App() {
         <Route path="/play/narutodle" element={<NarutodleGame />} />
         <Route path="/play/narutodle-silhouette" element={<NarutodleGame />} />
         <Route path="/play/narutodle-jutsu" element={<NarutodleGame />} />
+        <Route path="/play/narutodle-quote" element={<NarutodleGame />} />
+        <Route path="/play/narutodle-eye" element={<NarutodleGame />} />
+        <Route path="/narutodle/landing" element={<NarutodleLandingPage />} />
         <Route path="/salas" element={<RoomsHome />} />
         <Route path="/multi" element={<RoomsHome />} />
         <Route path="/mega" element={<RoomsHome />} />

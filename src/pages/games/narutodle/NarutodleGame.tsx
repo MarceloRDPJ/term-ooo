@@ -14,7 +14,9 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import {
+  ArrowDown,
   ArrowLeft,
+  ArrowUp,
   Check,
   ChevronDown,
   Send,
@@ -55,18 +57,19 @@ import {
   type NarutodleMode,
 } from './modes'
 
-// Cores do tema Naruto (laranja + preto, paleta da roupa do protagonista).
-// Tile feedback:
-//  - correct: verde
-//  - near (rank only): laranja
-//  - wrong: cinza
+// Cores do tema Naruto (paleta extraida do narutodle.net, §1 do audit).
+//   Laranja Naruto  #FF601B — logo, hover, focus, borda de vitoria
+//   Verde feedback  #24D475 — atributo correto
+//   Amarelo feedbk. #F6D44E — perto (apenas rank, diferenca de 1 nivel)
+//   Cinza feedback  #737373 — errado
+//   Background      #181C20 com gradient teal #78CED7 no topo
 const THEME = {
-  accent: '#F59E0B',
-  accentSoft: '#FBBF24',
-  near: '#F97316',
-  nearText: '#FDBA74',
-  wrong: '#475569',
-  wrongText: '#94A3B8',
+  accent: '#FF601B',
+  accentSoft: '#FDBA74',
+  near: '#F6D44E',
+  nearText: '#FACC15',
+  wrong: '#737373',
+  wrongText: '#A3A3A3',
 }
 
 function feedbackClasses(status: NarutodleFeedbackStatus): {
@@ -76,22 +79,22 @@ function feedbackClasses(status: NarutodleFeedbackStatus): {
 } {
   if (status === 'correct') {
     return {
-      bg: 'bg-[#16a34a]/25',
-      border: 'border-[#16a34a]/70',
+      bg: 'bg-[#24D475]/25',
+      border: 'border-[#24D475]/70',
       text: 'text-[#86efac]',
     }
   }
   if (status === 'near') {
     return {
-      bg: 'bg-[#F97316]/20',
-      border: 'border-[#F97316]/70',
-      text: 'text-[#FDBA74]',
+      bg: 'bg-[#F6D44E]/20',
+      border: 'border-[#F6D44E]/70',
+      text: 'text-[#F6D44E]',
     }
   }
   return {
-    bg: 'bg-[#475569]/25',
-    border: 'border-[#475569]/60',
-    text: 'text-[#94A3B8]',
+    bg: 'bg-[#737373]/25',
+    border: 'border-[#737373]/60',
+    text: 'text-[#A3A3A3]',
   }
 }
 
@@ -137,10 +140,10 @@ function CharacterAutocomplete({
   return (
     <div ref={containerRef} className="relative w-full">
       <div
-        className="flex items-center gap-2 rounded-xl border-2 border-[#2A4060] bg-[#0F1A2E]/90 px-3 py-3 shadow-lg focus-within:border-[#F97316] focus-within:ring-2 focus-within:ring-[#F97316]/30"
+        className="flex items-center gap-2 rounded-xl border-2 border-[#2A4060] bg-[#0F1A2E]/90 px-3 py-3 shadow-lg focus-within:border-[#FF601B] focus-within:ring-2 focus-within:ring-[#FF601B]/30"
         onClick={() => inputRef.current?.focus()}
       >
-        <Target className="h-5 w-5" style={{ color: '#F97316' }} />
+        <Target className="h-5 w-5" style={{ color: '#FF601B' }} />
         <input
           ref={inputRef}
           type="text"
@@ -158,7 +161,7 @@ function CharacterAutocomplete({
           }}
           disabled={disabled}
           placeholder="Digite o nome do personagem (ex: Naruto, Sasuke)..."
-          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#cbd5e1] outline-none font-mono caret-[#F97316] min-h-[32px] cursor-text"
+          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#cbd5e1] outline-none font-mono caret-[#FF601B] min-h-[32px] cursor-text"
           aria-label="Chutar personagem"
         />
         <Button
@@ -166,7 +169,7 @@ function CharacterAutocomplete({
           variant="ghost"
           onClick={() => value.trim() && onSubmit(value.trim())}
           disabled={disabled || !value.trim()}
-          className="h-8 w-8 text-[#F59E0B] hover:text-[#F97316]"
+          className="h-8 w-8 text-[#FF601B] hover:text-[#FDBA74]"
           aria-label="Enviar chute"
         >
           <Send className="h-4 w-4" />
@@ -336,14 +339,14 @@ function GameOverCard({
       className={cn(
         'rounded-2xl border-2 p-5 shadow-2xl sm:p-6',
         state.isWin
-          ? 'border-[#F97316] bg-[#F97316]/10'
-          : 'border-[#475569]/60 bg-[#475569]/20'
+          ? 'border-[#FF601B] bg-[#FF601B]/10'
+          : 'border-[#737373]/60 bg-[#737373]/20'
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           {state.isWin ? (
-            <Trophy className="h-7 w-7 text-[#F97316]" />
+            <Trophy className="h-7 w-7 text-[#FF601B]" />
           ) : (
             <X className="h-7 w-7" style={{ color: THEME.wrongText }} />
           )}
@@ -476,16 +479,19 @@ export function NarutodleGame() {
 
   const guessedCount = state.guesses.length
   const emptyRows = Math.max(0, state.maxAttempts - guessedCount)
-  const modeLabel = effectiveMode === 'silhouette' ? 'Silhueta' : 'Classic'
+  const modeLabel = effectiveMode === 'silhouette' ? 'Eye' : 'Clássico'
 
   return (
     <div
       className="min-h-screen w-full"
-      style={{ background: 'linear-gradient(to bottom, #0F1A2E, #1A2C40, #243447)' }}
+      style={{
+        background:
+          'linear-gradient(180deg, #78CED7 0%, #3A6B7A 12%, #181C20 28%, #181C20 100%)',
+      }}
     >
       <header
         className="border-b border-[#2A4060]/40"
-        style={{ background: 'rgba(15,26,46,0.85)', backdropFilter: 'blur(8px)' }}
+        style={{ background: 'rgba(24,28,32,0.85)', backdropFilter: 'blur(8px)' }}
       >
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-3 py-3 sm:px-4 sm:py-4">
           <button
@@ -497,12 +503,20 @@ export function NarutodleGame() {
           </button>
           <div className="flex items-center gap-2">
             <span className="text-xl sm:text-2xl" aria-hidden="true">🍥</span>
-            <h1 className="font-mono text-base font-black tracking-tight text-white sm:text-xl">
-              <span style={{ color: '#F59E0B' }}>NARUTO</span>
-              <span style={{ color: '#FCD34D' }}>DLE</span>
+            <h1
+              className="font-mono text-base font-black tracking-tight sm:text-xl"
+              style={{ color: '#FF601B' }}
+            >
+              NARUTODLE
               <span
-                className="ml-1 text-[10px] sm:text-xs"
-                style={{ color: '#F59E0B' }}
+                className="ml-2 font-mono text-[9px] font-normal uppercase tracking-[0.25em] sm:text-[10px]"
+                style={{ color: '#FDBA74' }}
+              >
+                daily naruto game
+              </span>
+              <span
+                className="ml-2 text-[10px] sm:text-xs"
+                style={{ color: '#FF601B' }}
               >
                 · {modeLabel}
               </span>
@@ -514,7 +528,7 @@ export function NarutodleGame() {
               className={cn(
                 'rounded-full border bg-[#0F1A2E]/70 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider',
                 state.isWin
-                  ? 'border-[#F97316] text-[#FDBA74]'
+                  ? 'border-[#FF601B] text-[#FDBA74]'
                   : 'border-[#2A4060] text-slate-300'
               )}
               title={`Data: ${dateKey}`}
@@ -532,14 +546,14 @@ export function NarutodleGame() {
               className="mb-3 flex items-center gap-2 rounded-lg border px-3 py-1.5"
               style={{
                 background:
-                  'linear-gradient(90deg, rgba(15,26,46,0.6) 0%, rgba(245,158,11,0.15) 100%)',
-                borderColor: 'rgba(245,158,11,0.4)',
+                  'linear-gradient(90deg, rgba(24,28,32,0.85) 0%, rgba(255,96,27,0.15) 100%)',
+                borderColor: 'rgba(255,96,27,0.4)',
               }}
             >
-              <Target className="h-4 w-4" style={{ color: '#F59E0B' }} />
-              <h2 className="font-mono text-lg font-black uppercase tracking-wider text-white sm:text-xl">
-                <span style={{ color: '#FCD34D' }}>NINJA</span>
-                <span className="ml-1 text-[10px] sm:text-xs" style={{ color: '#F59E0B' }}>
+              <Target className="h-4 w-4" style={{ color: '#FF601B' }} />
+              <h2 className="font-mono text-lg font-black uppercase tracking-wider sm:text-xl">
+                <span style={{ color: '#FF601B' }}>NINJA</span>
+                <span className="ml-1 text-[10px] sm:text-xs" style={{ color: '#FDBA74' }}>
                   DO DIA
                 </span>
               </h2>
@@ -560,16 +574,16 @@ export function NarutodleGame() {
               <div
                 className="relative w-full overflow-hidden rounded-2xl border-2 border-dashed p-5 sm:p-6"
                 style={{
-                  borderColor: state.isGameOver ? 'rgba(245,158,11,0.5)' : 'rgba(42,64,96,0.8)',
+                  borderColor: state.isGameOver ? 'rgba(255,96,27,0.55)' : 'rgba(255,96,27,0.35)',
                   background:
-                    'linear-gradient(160deg, #0F1A2E 0%, #1A2C40 50%, rgba(245,158,11,0.08) 100%)',
+                    'linear-gradient(160deg, rgba(24,28,32,0.95) 0%, rgba(26,44,64,0.85) 50%, rgba(255,96,27,0.06) 100%)',
                   minHeight: 180,
                 }}
               >
                 <div className="flex flex-col items-center justify-center gap-2 text-center">
                   <span
                     className="font-mono text-6xl font-black leading-none sm:text-7xl"
-                    style={{ color: state.isGameOver ? '#FCD34D' : '#F97316' }}
+                    style={{ color: state.isGameOver ? '#F6D44E' : '#FF601B' }}
                     aria-hidden="true"
                   >
                     {state.isGameOver ? '🍥' : '?'}
@@ -578,7 +592,7 @@ export function NarutodleGame() {
                     <>
                       <span
                         className="font-mono text-lg font-black sm:text-xl"
-                        style={{ color: '#FCD34D' }}
+                        style={{ color: '#F6D44E' }}
                       >
                         {target.name}
                       </span>
@@ -596,13 +610,13 @@ export function NarutodleGame() {
                     <>
                       <span
                         className="font-mono text-sm font-bold uppercase tracking-wider sm:text-base"
-                        style={{ color: '#F97316' }}
+                        style={{ color: '#FF601B' }}
                       >
                         ninja oculto
                       </span>
                       <span
                         className="font-mono text-[10px] uppercase tracking-wider sm:text-xs"
-                        style={{ color: '#F59E0B' }}
+                        style={{ color: '#F6D44E' }}
                       >
                         pool: {NARUTO_CHARACTERS.length} personagens
                       </span>
@@ -625,13 +639,13 @@ export function NarutodleGame() {
               className="mb-3 flex items-center gap-2 rounded-lg border px-3 py-1.5"
               style={{
                 background:
-                  'linear-gradient(90deg, rgba(15,26,46,0.6) 0%, rgba(249,115,22,0.15) 100%)',
-                borderColor: 'rgba(249,115,22,0.4)',
+                  'linear-gradient(90deg, rgba(24,28,32,0.85) 0%, rgba(246,212,78,0.15) 100%)',
+                borderColor: 'rgba(246,212,78,0.4)',
               }}
             >
-              <Sparkles className="h-4 w-4" style={{ color: '#F97316' }} />
-              <h2 className="font-mono text-lg font-black uppercase tracking-wider text-white sm:text-xl">
-                <span style={{ color: '#FDBA74' }}>CHUTE</span>
+              <Sparkles className="h-4 w-4" style={{ color: '#F6D44E' }} />
+              <h2 className="font-mono text-lg font-black uppercase tracking-wider sm:text-xl">
+                <span style={{ color: '#F6D44E' }}>CHUTE</span>
               </h2>
             </div>
 
@@ -651,7 +665,7 @@ export function NarutodleGame() {
                   history={state.history}
                 />
                 {error && (
-                  <div className="mt-2 rounded-lg border border-[#475569]/50 bg-[#475569]/20 p-2 font-mono text-xs" style={{ color: THEME.wrongText }}>
+                  <div className="mt-2 rounded-lg border border-[#737373]/50 bg-[#737373]/20 p-2 font-mono text-xs" style={{ color: THEME.wrongText }}>
                     {error}
                   </div>
                 )}
@@ -662,8 +676,8 @@ export function NarutodleGame() {
                     digite o <strong>nome do personagem</strong> (autocomplete aparece).
                   </p>
                   <p>
-                    <ChevronDown className="mr-1 inline h-3 w-3 text-slate-300" />
-                    feedback mostra 7 atributos: <strong className="text-[#86efac]">verde</strong> = certo, <strong style={{ color: '#FDBA74' }}>laranja</strong> = perto (so no rank), cinza = errado.
+                    <ChevronDown className="mr-1 inline h-3 w-3 text-[#F6D44E]" />
+                    feedback mostra 7 atributos: <strong className="text-[#86efac]">verde</strong> = certo, <strong style={{ color: '#F6D44E' }}>amarelo</strong> = perto (so no rank), cinza = errado.
                   </p>
                 </div>
               </>
@@ -708,23 +722,69 @@ export function NarutodleGame() {
         </section>
 
         <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-slate-300 sm:text-sm">
-          <h4 className="mb-2 font-mono text-base font-bold uppercase tracking-wider text-slate-300">
+          <h4 className="mb-3 font-mono text-base font-bold uppercase tracking-wider text-slate-300">
             legenda
           </h4>
-          <ul className="space-y-1 font-mono">
-            <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#16a34a] align-middle" />
-              <strong className="text-[#86efac]">correto</strong> · atributo bate com o alvo
-            </li>
-            <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#F97316] align-middle" />
-              <strong style={{ color: '#FDBA74' }}>perto</strong> · apenas no rank (diferenca de 1 nivel)
-            </li>
-            <li>
-              <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#475569] align-middle" />
-              <strong className="text-[#94A3B8]">errado</strong> · atributo nao bate
-            </li>
-          </ul>
+          <div className="grid grid-cols-1 gap-2 font-mono sm:grid-cols-3">
+            <div
+              className="flex items-center gap-2 rounded-lg border-2 px-2.5 py-2"
+              style={{
+                background: 'rgba(36,212,117,0.15)',
+                borderColor: 'rgba(36,212,117,0.6)',
+              }}
+            >
+              <span
+                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-sm font-black"
+                style={{ background: '#24D475', color: '#0E1E25' }}
+                aria-hidden="true"
+              >
+                ✓
+              </span>
+              <span>
+                <strong className="text-[#86efac]">correto</strong>
+                <span className="block text-[10px] text-slate-400">atributo bate</span>
+              </span>
+            </div>
+            <div
+              className="flex items-center gap-2 rounded-lg border-2 px-2.5 py-2"
+              style={{
+                background: 'rgba(246,212,78,0.15)',
+                borderColor: 'rgba(246,212,78,0.6)',
+              }}
+            >
+              <span
+                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-sm font-black"
+                style={{ background: '#F6D44E', color: '#0E1E25' }}
+                aria-hidden="true"
+              >
+                <ArrowUp className="h-3.5 w-3.5" strokeWidth={3} />
+                <ArrowDown className="h-3.5 w-3.5" strokeWidth={3} />
+              </span>
+              <span>
+                <strong style={{ color: '#F6D44E' }}>perto</strong>
+                <span className="block text-[10px] text-slate-400">rank ±1 nivel</span>
+              </span>
+            </div>
+            <div
+              className="flex items-center gap-2 rounded-lg border-2 px-2.5 py-2"
+              style={{
+                background: 'rgba(115,115,115,0.15)',
+                borderColor: 'rgba(115,115,115,0.6)',
+              }}
+            >
+              <span
+                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-sm font-black"
+                style={{ background: '#737373', color: '#FFFFFF' }}
+                aria-hidden="true"
+              >
+                ✗
+              </span>
+              <span>
+                <strong className="text-[#A3A3A3]">errado</strong>
+                <span className="block text-[10px] text-slate-400">nao bate</span>
+              </span>
+            </div>
+          </div>
         </section>
       </main>
 

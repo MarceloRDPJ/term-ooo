@@ -59,6 +59,13 @@ const PARTNER_GAMES: readonly PartnerGame[] = [
   },
 ]
 
+/** Redirecionamentos de path para jogos que tem uma landing page
+ *  intermediaria antes de cair no jogo. Hoje apenas o narutodle,
+ *  que abre um hall proprio (4 modos) em /narutodle/landing. */
+const GAME_PATH_OVERRIDES: Readonly<Record<string, string>> = {
+  narutodle: '/narutodle/landing',
+}
+
 export function HallOfGames() {
   const navigate = useNavigate()
   const auth = useSupabaseAuth()
@@ -150,7 +157,11 @@ export function HallOfGames() {
             </header>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {enabled.map((game) => (
-                <GameCard key={game.slug} game={game} />
+                <GameCard
+                  key={game.slug}
+                  game={game}
+                  pathOverride={GAME_PATH_OVERRIDES[game.slug]}
+                />
               ))}
             </div>
           </section>

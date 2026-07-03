@@ -14,6 +14,9 @@ import {
 
 interface GameCardProps {
   game: GameDefinition
+  /** Override da rota de navegacao. Util para redirecionar jogos
+   *  para uma landing page intermediaria (ex: /narutodle/landing). */
+  pathOverride?: string
 }
 
 function DifficultyStars({ level }: { level: number }) {
@@ -33,14 +36,15 @@ function DifficultyStars({ level }: { level: number }) {
   )
 }
 
-export function GameCard({ game }: GameCardProps) {
+export function GameCard({ game, pathOverride }: GameCardProps) {
   const navigate = useNavigate()
   const cat = CATEGORY_COLORS[game.category]
   const label = CATEGORY_LABELS[game.category]
+  const targetPath = pathOverride ?? game.path
 
   const handleClick = () => {
     if (!game.enabled) return
-    navigate(game.path)
+    navigate(targetPath)
   }
 
   return (
