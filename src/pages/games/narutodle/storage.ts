@@ -1,43 +1,26 @@
 // src/pages/games/narutodle/storage.ts
-//
-// Persistencia do Narutodle no localStorage.
-// Chave: `narutodle:state:${mode}:${dateKey}`. O mode entra na chave
-// para que o save de cada modo seja independente.
-//
-// Padrao igual ao PITACO Geografia (`pitaco:geografia:state:${dateKey}`) e
-// PITACO Cruzado (`pitaco:crossword:state:${dateKey}`) — escopo proprio
-// nao colide com outros jogos do app.
 
-import type { NarutodleState } from './types'
+import type { NarutodleMode, NarutodleState } from './types'
 
-const STORAGE_KEY_PREFIX = 'narutodle:state'
+const STORAGE_KEY_PREFIX = 'narutodle:state:v2'
 
-export function narutodleStorageKey(
-  dateKey: string,
-  mode: 'classic' | 'silhouette' = 'classic'
-): string {
+export function narutodleStorageKey(dateKey: string, mode: NarutodleMode = 'classic'): string {
   return `${STORAGE_KEY_PREFIX}:${mode}:${dateKey}`
 }
 
-export function loadNarutodleState(
-  dateKey: string,
-  mode: 'classic' | 'silhouette' = 'classic'
-): NarutodleState | null {
+export function loadNarutodleState(dateKey: string, mode: NarutodleMode = 'classic'): NarutodleState | null {
   try {
     const data = localStorage.getItem(narutodleStorageKey(dateKey, mode))
     if (!data) return null
-    return JSON.parse(data) as NarutodleState
+    const parsed = JSON.parse(data) as NarutodleState
+    return parsed.mode === mode ? parsed : null
   } catch (e) {
     console.error('[narutodle] erro ao carregar estado:', e)
     return null
   }
 }
 
-export function saveNarutodleState(
-  dateKey: string,
-  state: NarutodleState,
-  mode: 'classic' | 'silhouette' = 'classic'
-): void {
+export function saveNarutodleState(dateKey: string, state: NarutodleState, mode: NarutodleMode = 'classic'): void {
   try {
     localStorage.setItem(narutodleStorageKey(dateKey, mode), JSON.stringify(state))
   } catch (e) {
@@ -45,10 +28,7 @@ export function saveNarutodleState(
   }
 }
 
-export function clearNarutodleState(
-  dateKey: string,
-  mode: 'classic' | 'silhouette' = 'classic'
-): void {
+export function clearNarutodleState(dateKey: string, mode: NarutodleMode = 'classic'): void {
   try {
     localStorage.removeItem(narutodleStorageKey(dateKey, mode))
   } catch (e) {

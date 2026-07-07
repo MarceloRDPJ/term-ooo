@@ -1,18 +1,19 @@
 // src/pages/games/loldle/storage.ts
 //
 // Persistencia do Loldle no localStorage. Chave: loldle:state:${mode}:${dateKey}.
-// O mode ('classic' | 'quote') entra na chave para que o save de cada
+// O mode entra na chave para que o save de cada
 // modo seja independente.
 
+import type { LoldleMode } from './modes'
 import type { LoldleState } from './types'
 
 const STORAGE_KEY_PREFIX = 'loldle:state'
 
-export function loldleStorageKey(dateKey: string, mode: 'classic' | 'quote' = 'classic'): string {
+export function loldleStorageKey(dateKey: string, mode: LoldleMode = 'classic'): string {
   return `${STORAGE_KEY_PREFIX}:${mode}:${dateKey}`
 }
 
-export function loadLoldleState(dateKey: string, mode: 'classic' | 'quote' = 'classic'): LoldleState | null {
+export function loadLoldleState(dateKey: string, mode: LoldleMode = 'classic'): LoldleState | null {
   try {
     const raw = localStorage.getItem(loldleStorageKey(dateKey, mode))
     if (!raw) return null
@@ -25,7 +26,7 @@ export function loadLoldleState(dateKey: string, mode: 'classic' | 'quote' = 'cl
   }
 }
 
-export function saveLoldleState(dateKey: string, state: LoldleState, mode: 'classic' | 'quote' = 'classic'): void {
+export function saveLoldleState(dateKey: string, state: LoldleState, mode: LoldleMode = 'classic'): void {
   try {
     localStorage.setItem(loldleStorageKey(dateKey, mode), JSON.stringify(state))
   } catch (e) {
@@ -33,7 +34,7 @@ export function saveLoldleState(dateKey: string, state: LoldleState, mode: 'clas
   }
 }
 
-export function clearLoldleState(dateKey: string, mode: 'classic' | 'quote' = 'classic'): void {
+export function clearLoldleState(dateKey: string, mode: LoldleMode = 'classic'): void {
   try {
     localStorage.removeItem(loldleStorageKey(dateKey, mode))
   } catch (e) {

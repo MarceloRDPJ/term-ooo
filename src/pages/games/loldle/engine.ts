@@ -20,6 +20,7 @@
 //  - cada dia tem um alvo diferente (boa probabilidade, mesmo com 40 campeoes)
 
 import { CHAMPIONS, findChampionById, searchChampions } from './champions'
+import type { LoldleMode } from './modes'
 import type {
   LoldleChampion,
   LoldleFeedback,
@@ -120,7 +121,7 @@ export function computeFeedback(
  */
 export function createInitialLoldleState(
   dateKey: string,
-  mode: 'classic' | 'quote' = 'classic'
+  mode: LoldleMode = 'classic'
 ): LoldleState {
   const target = pickChampionForDate(dateKey)
   return {
@@ -184,8 +185,8 @@ export function processLoldleGuess(
     return { newState: state, error: 'Alvo invalido' }
   }
 
-  const isQuoteMode = state.mode === 'quote'
-  const feedback: LoldleFeedback = isQuoteMode
+  const isGuessOnlyMode = state.mode === 'quote' || state.mode === 'splash'
+  const feedback: LoldleFeedback = isGuessOnlyMode
     ? {
         region: guessed.id === target.id ? 'correct' : 'wrong',
         classe: guessed.id === target.id ? 'correct' : 'wrong',
@@ -203,7 +204,7 @@ export function processLoldleGuess(
     yearDelta,
   }
 
-  const won = isQuoteMode
+  const won = isGuessOnlyMode
     ? guessed.id === target.id
     : isLoldleWon(feedback)
   const newRow = state.currentRow + 1

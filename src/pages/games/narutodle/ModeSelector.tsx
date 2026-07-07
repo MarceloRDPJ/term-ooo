@@ -1,13 +1,10 @@
 // src/pages/games/narutodle/ModeSelector.tsx
 //
-// Pills horizontais com 4 modos (classic, eye, jutsu, quote).
-// Apenas 'classic' e 'silhouette' sao funcionais. Os outros mostram
-// "em breve" com cadeado. Visual inspirado em narutodle.net:
-// cada modo tem a sua cor (azul/magenta/verde/amarelo) e o icone
-// representativo (🔍, 👁, 🌀, 💬) ao lado do nome.
+// Pills horizontais com 4 modos jogaveis (classic, jutsu, quote, eye).
 
 import { Lock } from 'lucide-react'
-import { NARUTODLE_MODES, NARUTODLE_MODE_COLORS, type NarutodleMode } from './modes'
+import { NARUTODLE_MODES, NARUTODLE_MODE_COLORS } from './modes'
+import type { NarutodleMode } from './types'
 import { cn } from '@/lib/utils'
 
 export function NarutodleModeSelector({

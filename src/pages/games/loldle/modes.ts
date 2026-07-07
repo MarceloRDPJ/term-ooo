@@ -1,14 +1,13 @@
 // src/pages/games/loldle/modes.ts
 //
-// Definicao dos modos extras do Loldle. Apenas 'classic' e 'quote'
-// estao implementados por enquanto. Os outros ficam como 'em breve'.
+// Definicao dos modos extras do Loldle.
 
 export type LoldleMode = 'classic' | 'quote' | 'splash' | 'emoji' | 'ability'
 
 export const LOLDLE_MODES: { id: LoldleMode; label: string; available: boolean }[] = [
   { id: 'classic', label: 'Classic', available: true },
   { id: 'quote', label: 'Quote', available: true },
-  { id: 'splash', label: 'Splash', available: false },
+  { id: 'splash', label: 'Splash', available: true },
   { id: 'emoji', label: 'Emoji', available: false },
   { id: 'ability', label: 'Ability', available: false },
 ]

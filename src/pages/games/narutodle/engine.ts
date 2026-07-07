@@ -1,46 +1,29 @@
 // src/pages/games/narutodle/engine.ts
-//
-// Engine pura do Narutodle. Responsavel por:
-//  - selecionar o personagem-alvo do dia de forma deterministica
-//  - processar um chute (buscar personagem, calcular feedback, detectar vitoria)
-//  - calcular feedback por atributo (correct/near/wrong)
-//
-// Feedback por atributo:
-//  - clan, vila, kekkeiGenkai, elemento, afiliacao, genero: 'correct' ou 'wrong'
-//  - rank: 'correct' se igual, 'near' se a diferenca for exatamente 1 nivel,
-//    'wrong' caso contrario (baseado em RANK_ORDER).
-//
-// O alvo do dia e derivado do dayNumber: `dayNumber % characters.length`.
-// Para uma experiencia tipo Worldle, todos os jogadores do escritorio
-// recebem o mesmo personagem no mesmo dia.
 
 import { normalizeString } from '@/lib/utils'
 import {
+  DEBUT_ARCS,
   MAX_NARUTODLE_ATTEMPTS,
-  RANK_ORDER,
+  NARUTODLE_ATTRIBUTES,
+  type NarutodleAttributeKey,
   type NarutodleCharacter,
   type NarutodleFeedback,
   type NarutodleFeedbackStatus,
-  type NarutodleGuess,
+  type NarutodleMode,
   type NarutodleProcessResult,
-  type NarutodleRank,
   type NarutodleState,
 } from './types'
 
-/**
- * Cria o estado inicial do dia. Seleciona o alvo determinsticamente
- * pelo dayNumber.
- */
 export function createInitialNarutodleState(
   dateKey: string,
   dayNumber: number,
   characters: NarutodleCharacter[],
-  mode: 'classic' | 'silhouette' = 'classic'
+  mode: NarutodleMode = 'classic'
 ): NarutodleState {
   if (characters.length === 0) {
     throw new Error('createInitialNarutodleState: lista de personagens vazia')
   }
-  const target = pickTargetForDay(dayNumber, characters)
+  const target = pickTargetForDay(dayNumber, characters, mode)
   return {
     targetId: target.id,
     guesses: [],
@@ -56,155 +39,126 @@ export function createInitialNarutodleState(
   }
 }
 
-/**
- * Escolhe o personagem-alvo do dia pelo dayNumber.
- * `((n % len) + len) % len` garante comportamento positivo mesmo
- * se dayNumber for negativo (defensivo).
- */
 export function pickTargetForDay(
   dayNumber: number,
-  characters: NarutodleCharacter[]
+  characters: NarutodleCharacter[],
+  mode: NarutodleMode = 'classic'
 ): NarutodleCharacter {
   if (characters.length === 0) {
     throw new Error('pickTargetForDay: lista de personagens vazia')
   }
-  const index = ((dayNumber % characters.length) + characters.length) % characters.length
+  const modeOffset = { classic: 0, jutsu: 11, quote: 23, eye: 37 }[mode]
+  const index = (((dayNumber * 17 + modeOffset) % characters.length) + characters.length) % characters.length
   return characters[index]
 }
 
-/**
- * Verifica se um chute representa vitoria (id igual ao target).
- */
-export function isNarutodleWon(
-  state: NarutodleState,
-  guess: NarutodleCharacter
-): boolean {
-  return state.targetId === guess.id
-}
-
-/**
- * Busca um personagem por id.
- */
-export function findCharacterById(
-  id: string,
-  characters: NarutodleCharacter[]
-): NarutodleCharacter | undefined {
+export function findCharacterById(id: string, characters: NarutodleCharacter[]): NarutodleCharacter | undefined {
   return characters.find((c) => c.id === id)
 }
 
-/**
- * Busca personagem por texto livre. Aceita:
- *  - id exato (case-insensitive)
- *  - nome exato normalizado (sem acento, lowercase)
- *  - nome contendo o termo (substring)
- *
- * Inspirado em findStateByQuery de pitaco-geografia/states.ts.
- */
-export function findCharacterByQuery(
-  query: string,
-  characters: NarutodleCharacter[]
-): NarutodleCharacter | undefined {
+export function findCharacterByQuery(query: string, characters: NarutodleCharacter[]): NarutodleCharacter | undefined {
   const normalized = normalizeString(query)
   if (!normalized) return undefined
-
-  // 1) match exato por id
-  const byId = characters.find((c) => c.id.toLowerCase() === normalized)
-  if (byId) return byId
-
-  // 2) match exato por nome normalizado
-  const byName = characters.find((c) => normalizeString(c.name) === normalized)
-  if (byName) return byName
-
-  // 3) match por substring no nome (autocomplete)
-  return characters.find((c) => normalizeString(c.name).includes(normalized))
+  return (
+    characters.find((c) => c.id.toLowerCase() === normalized) ??
+    characters.find((c) => normalizeString(c.name) === normalized) ??
+    characters.find((c) => normalizeString(c.name).includes(normalized))
+  )
 }
 
-/**
- * Processa um chute. Retorna novo estado + (opcionalmente) erro.
- *
- * Erros:
- *  - 'Jogo encerrado'   se isGameOver
- *  - 'Selecione um personagem' se chute vazio
- *  - 'Personagem nao reconhecido' se nao encontrar
- *  - 'Voce ja chutou esse personagem' se duplicado
- *  - 'Alvo invalido' se state.targetId nao bate com nenhum personagem
- */
 export function processNarutodleGuess(
   state: NarutodleState,
   rawGuess: string,
   characters: NarutodleCharacter[]
 ): NarutodleProcessResult {
-  if (state.isGameOver) {
-    return { newState: state, error: 'Jogo encerrado' }
-  }
+  if (state.isGameOver) return { newState: state, error: 'Jogo encerrado' }
 
-  const trimmed = rawGuess.trim()
-  if (!trimmed) {
-    return { newState: state, error: 'Selecione um personagem' }
-  }
-
-  const guessed = findCharacterByQuery(trimmed, characters)
-  if (!guessed) {
-    return { newState: state, error: 'Personagem nao reconhecido' }
-  }
-
-  if (state.history.includes(guessed.id)) {
-    return { newState: state, error: 'Voce ja chutou esse personagem' }
-  }
+  const guessed = findCharacterByQuery(rawGuess.trim(), characters)
+  if (!guessed) return { newState: state, error: 'No character found.' }
+  if (state.history.includes(guessed.id)) return { newState: state, error: 'Voce ja tentou esse personagem.' }
 
   const target = findCharacterById(state.targetId, characters)
-  if (!target) {
-    return { newState: state, error: 'Alvo invalido' }
-  }
+  if (!target) return { newState: state, error: 'Alvo invalido' }
 
-  const feedback = computeFeedback(guessed, target)
-  const guessRecord: NarutodleGuess = {
-    characterId: guessed.id,
-    characterName: guessed.name,
-    feedback,
-  }
-
-  const won = isNarutodleWon(state, guessed)
+  const won = guessed.id === target.id
   const newRow = state.currentRow + 1
-  const gameOver = won || newRow >= state.maxAttempts
+  const isGameOver = won || newRow >= state.maxAttempts
 
-  const newState: NarutodleState = {
-    ...state,
-    guesses: [...state.guesses, guessRecord],
-    currentGuess: '',
-    currentRow: newRow,
-    isGameOver: gameOver,
-    isWin: won,
-    history: [...state.history, guessed.id],
+  return {
+    newState: {
+      ...state,
+      guesses: [
+        ...state.guesses,
+        {
+          characterId: guessed.id,
+          characterName: guessed.name,
+          feedback: computeFeedback(guessed, target),
+        },
+      ],
+      currentGuess: '',
+      currentRow: newRow,
+      isGameOver,
+      isWin: won,
+      history: [...state.history, guessed.id],
+    },
   }
-
-  return { newState }
 }
 
-/**
- * Calcula o feedback por atributo comparando chute vs alvo.
- * Para o rank, usa a ordem canonica (RANK_ORDER): diferenca de 1 = 'near'.
- */
-export function computeFeedback(
+export function computeFeedback(guessed: NarutodleCharacter, target: NarutodleCharacter): NarutodleFeedback {
+  return NARUTODLE_ATTRIBUTES.reduce((acc, attr) => {
+    acc[attr] = attributeStatus(attr, guessed, target)
+    return acc
+  }, {} as NarutodleFeedback)
+}
+
+export function formatAttributeValue(character: NarutodleCharacter, attr: NarutodleAttributeKey): string {
+  const value = character[attr]
+  return Array.isArray(value) ? value.join(', ') : String(value)
+}
+
+export function clueForMode(character: NarutodleCharacter, mode: NarutodleMode, dateKey: string): string {
+  if (mode === 'jutsu') return pickDated(character.jutsuClues, dateKey, character.id)
+  if (mode === 'quote') return pickDated(character.quoteClues, dateKey, character.id)
+  if (mode === 'eye') return character.eyeHint
+  return "Guess today's character from Naruto!"
+}
+
+function attributeStatus(
+  attr: NarutodleAttributeKey,
   guessed: NarutodleCharacter,
   target: NarutodleCharacter
-): NarutodleFeedback {
-  return {
-    clan: guessed.clan === target.clan ? 'correct' : 'wrong',
-    vila: guessed.vila === target.vila ? 'correct' : 'wrong',
-    rank: rankStatus(guessed.rank, target.rank),
-    kekkeiGenkai: guessed.kekkeiGenkai === target.kekkeiGenkai ? 'correct' : 'wrong',
-    elemento: guessed.elemento === target.elemento ? 'correct' : 'wrong',
-    afiliacao: guessed.afiliacao === target.afiliacao ? 'correct' : 'wrong',
-    genero: guessed.genero === target.genero ? 'correct' : 'wrong',
-  }
+): NarutodleFeedbackStatus {
+  if (attr === 'debut') return debutStatus(guessed.debut, target.debut)
+  const guessedValue = guessed[attr]
+  const targetValue = target[attr]
+  if (Array.isArray(guessedValue) && Array.isArray(targetValue)) return listStatus(guessedValue, targetValue)
+  return guessedValue === targetValue ? 'correct' : 'wrong'
 }
 
-function rankStatus(
-  guessed: NarutodleRank,
-  target: NarutodleRank
-): NarutodleFeedbackStatus {
+function listStatus(guessed: string[], target: string[]): NarutodleFeedbackStatus {
+  const cleanGuess = guessed.filter((v) => v !== 'None')
+  const cleanTarget = target.filter((v) => v !== 'None')
+  if (sameSet(cleanGuess, cleanTarget)) return 'correct'
+  if (cleanGuess.some((v) => cleanTarget.includes(v))) return 'near'
+  if (cleanGuess.length === 0 && cleanTarget.length === 0) return 'correct'
+  return 'wrong'
+}
+
+function debutStatus(guessed: string, target: string): NarutodleFeedbackStatus {
   if (guessed === target) return 'correct'
-  const diff = Math.abs(RANK_ORDER[guessed] - RANK_ORDER[target])
-  return diff === 1 ? 'near' : 'wrong'
+  const guessedIndex = DEBUT_ARCS.indexOf(guessed)
+  const targetIndex = DEBUT_ARCS.indexOf(target)
+  if (guessedIndex >= 0 && targetIndex >= 0 && Math.abs(guessedIndex - targetIndex) <= 1) return 'near'
+  return 'wrong'
+}
+
+function sameSet(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((item) => b.includes(item))
+}
+
+function pickDated(values: string[], dateKey: string, seed: string): string {
+  if (values.length === 0) return 'No clue available.'
+  let hash = 0
+  for (const char of `${dateKey}:${seed}`) hash = (hash * 31 + char.charCodeAt(0)) >>> 0
+  return values[hash % values.length]
 }

@@ -1,473 +1,249 @@
 // src/pages/games/narutodle/NarutodleGame.tsx
-//
-// Tela principal do Narutodle. Inspirado em narutodle.net (modo classico):
-// 8 tentativas para adivinhar um personagem de Naruto Shippuden a partir
-// de 7 atributos categoricos (cla, vila, rank, kekkei genkai, elemento,
-// afiliacao, genero). Feedback colorido por atributo (verde = correto,
-// laranja = perto apenas no rank, cinza = errado).
-//
-// Persistencia: localStorage com chave `narutodle:state:${mode}:${dateKey}`.
-// Auto-save em todo useEffect de mudanca de state.
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import confetti from 'canvas-confetti'
-import {
-  ArrowDown,
-  ArrowLeft,
-  ArrowUp,
-  Check,
-  ChevronDown,
-  Send,
-  Sparkles,
-  Target,
-  Trophy,
-  X,
-} from 'lucide-react'
+import { ArrowLeft, Check, ChevronDown, Send, Sparkles, Target, Trophy, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { StarsBackground } from '@/components/animate-ui/components/backgrounds/stars'
 import { APP_VERSION } from '@/lib/version'
-import { getTodayDateKey, getDayNumber } from '@/lib/dates'
-import { normalizeString, cn } from '@/lib/utils'
+import { getDayNumber, getTodayDateKey } from '@/lib/dates'
+import { cn, normalizeString } from '@/lib/utils'
 import { NARUTO_CHARACTERS } from './characters'
-import {
-  createInitialNarutodleState,
-  processNarutodleGuess,
-} from './engine'
-import {
-  loadNarutodleState,
-  saveNarutodleState,
-} from './storage'
-import {
-  ATTRIBUTE_LABELS,
-  NARUTODLE_ATTRIBUTES,
-  type NarutodleAttributeKey,
-  type NarutodleCharacter,
-  type NarutodleFeedbackStatus,
-  type NarutodleGuess,
-  type NarutodleState,
-} from './types'
+import { clueForMode, createInitialNarutodleState, formatAttributeValue, processNarutodleGuess } from './engine'
+import { loadNarutodleState, saveNarutodleState } from './storage'
+import { ATTRIBUTE_LABELS, NARUTODLE_ATTRIBUTES, type NarutodleAttributeKey, type NarutodleCharacter, type NarutodleFeedbackStatus, type NarutodleGuess, type NarutodleMode, type NarutodleState } from './types'
+import { DEFAULT_NARUTODLE_MODE, NARUTODLE_MODES, parseNarutodleModeFromPathname, parseNarutodleModeFromUrl } from './modes'
 import { NarutodleModeSelector } from './ModeSelector'
-import { NarutodleSilhouettePanel } from './silhouette/SilhouettePanel'
-import {
-  DEFAULT_NARUTODLE_MODE,
-  parseNarutodleModeFromPathname,
-  parseNarutodleModeFromUrl,
-  type NarutodleMode,
-} from './modes'
+import { getNarutoCharacterImageUrl, getNarutoCharacterInitials } from './naruto-assets'
 
-// Cores do tema Naruto (paleta extraida do narutodle.net, §1 do audit).
-//   Laranja Naruto  #FF601B — logo, hover, focus, borda de vitoria
-//   Verde feedback  #24D475 — atributo correto
-//   Amarelo feedbk. #F6D44E — perto (apenas rank, diferenca de 1 nivel)
-//   Cinza feedback  #737373 — errado
-//   Background      #181C20 com gradient teal #78CED7 no topo
-const THEME = {
-  accent: '#FF601B',
-  accentSoft: '#FDBA74',
-  near: '#F6D44E',
-  nearText: '#FACC15',
-  wrong: '#737373',
-  wrongText: '#A3A3A3',
+const MODE_COPY: Record<NarutodleMode, { title: string; desc: string; end: string }> = {
+  classic: { title: 'Classic', desc: "Guess today's character from Naruto!", end: 'in classic mode' },
+  jutsu: { title: 'Jutsu', desc: 'Guess with a jutsu clue.', end: 'with a Jutsu' },
+  quote: { title: 'Quote', desc: 'Guess with a dialogue.', end: 'with a quote' },
+  eye: { title: 'Eye', desc: 'Guess with an eye clue.', end: 'with an eye' },
 }
 
-function feedbackClasses(status: NarutodleFeedbackStatus): {
-  bg: string
-  border: string
-  text: string
-} {
-  if (status === 'correct') {
-    return {
-      bg: 'bg-[#24D475]/25',
-      border: 'border-[#24D475]/70',
-      text: 'text-[#86efac]',
-    }
-  }
-  if (status === 'near') {
-    return {
-      bg: 'bg-[#F6D44E]/20',
-      border: 'border-[#F6D44E]/70',
-      text: 'text-[#F6D44E]',
-    }
-  }
-  return {
-    bg: 'bg-[#737373]/25',
-    border: 'border-[#737373]/60',
-    text: 'text-[#A3A3A3]',
-  }
+function statusClasses(status: NarutodleFeedbackStatus): string {
+  if (status === 'correct') return 'border-[#24D475]/80 bg-[#24D475]/25 text-[#86efac]'
+  if (status === 'near') return 'border-[#F6D44E]/80 bg-[#F6D44E]/20 text-[#F6D44E]'
+  return 'border-[#737373]/70 bg-[#737373]/25 text-[#d4d4d4]'
 }
 
-function CharacterAutocomplete({
-  value,
-  onChange,
-  onSubmit,
-  disabled,
-  history,
-}: {
+function CharacterPortrait({ character, className, alt = '' }: { character: NarutodleCharacter; className?: string; alt?: string }) {
+  const [failed, setFailed] = useState(false)
+  const imageUrl = getNarutoCharacterImageUrl(character)
+
+  return (
+    <span className={cn('inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#2A4060] bg-[#0F1A2E] font-mono text-xs font-black text-[#FDBA74]', className)}>
+      {imageUrl && !failed ? (
+        <img src={imageUrl} alt={alt} className="h-full w-full object-cover object-top" loading="lazy" decoding="async" onError={() => setFailed(true)} />
+      ) : (
+        getNarutoCharacterInitials(character)
+      )}
+    </span>
+  )
+}
+
+function EyeClueImage({ character, guesses, revealed }: { character: NarutodleCharacter; guesses: number; revealed: boolean }) {
+  const [failed, setFailed] = useState(false)
+  const imageUrl = getNarutoCharacterImageUrl(character)
+  const blur = revealed ? 0 : Math.max(0, 10 - guesses * 2)
+  const scale = revealed ? 1.18 : 1.95
+
+  return (
+    <div className="relative flex h-28 w-56 items-center justify-center overflow-hidden rounded-[50%] border-4 border-[#C026D3] bg-gradient-to-r from-[#f7d4c7] via-[#fdf2e9] to-[#f7d4c7]">
+      {imageUrl && !failed ? (
+        <img
+          src={imageUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{ filter: `blur(${blur}px) saturate(${revealed ? 1 : 0.75})`, objectPosition: 'center 20%', transform: `scale(${scale})` }}
+          loading="eager"
+          decoding="async"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <div className="h-16 w-16 rounded-full bg-[#101827] ring-8 ring-[#D5369A]" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#181C20]/80 via-transparent to-[#181C20]/20" />
+      <span className="absolute bottom-2 rounded bg-[#181C20]/75 px-1.5 font-mono text-xs font-black text-[#f0abfc]">
+        {revealed ? character.name : character.name.split(' ').map((part) => part[0]).join('')}
+      </span>
+    </div>
+  )
+}
+
+function CharacterAutocomplete({ value, onChange, onSubmit, disabled, history }: {
   value: string
-  onChange: (v: string) => void
-  onSubmit: (id: string) => void
+  onChange: (value: string) => void
+  onSubmit: (value: string) => void
   disabled: boolean
   history: string[]
 }) {
   const [open, setOpen] = useState(false)
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const inputRef = useRef<HTMLInputElement | null>(null)
-
+  const ref = useRef<HTMLDivElement | null>(null)
   const matches = useMemo(() => {
-    const norm = normalizeString(value)
-    if (!norm) return []
-    return NARUTO_CHARACTERS.filter((c) => {
-      if (history.includes(c.id)) return false
-      return (
-        c.id.toLowerCase().includes(norm) ||
-        normalizeString(c.name).includes(norm)
-      )
-    }).slice(0, 8)
-  }, [value, history])
+    const normalized = normalizeString(value)
+    if (!normalized) return []
+    return NARUTO_CHARACTERS.filter((character) => {
+      if (history.includes(character.id)) return false
+      return character.id.includes(normalized) || normalizeString(character.name).includes(normalized)
+    }).slice(0, 10)
+  }, [history, value])
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+    function close(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false)
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
   }, [])
 
   return (
-    <div ref={containerRef} className="relative w-full">
-      <div
-        className="flex items-center gap-2 rounded-xl border-2 border-[#2A4060] bg-[#0F1A2E]/90 px-3 py-3 shadow-lg focus-within:border-[#FF601B] focus-within:ring-2 focus-within:ring-[#FF601B]/30"
-        onClick={() => inputRef.current?.focus()}
-      >
-        <Target className="h-5 w-5" style={{ color: '#FF601B' }} />
+    <div ref={ref} className="relative w-full">
+      <div className="flex min-h-[56px] items-center gap-2 rounded-xl border-2 border-[#2A4060] bg-[#0F1A2E]/95 px-3 focus-within:border-[#FF601B] focus-within:ring-2 focus-within:ring-[#FF601B]/30">
+        <Target className="h-5 w-5 text-[#FF601B]" />
         <input
-          ref={inputRef}
-          type="text"
           value={value}
-          onChange={(e) => {
-            onChange(e.target.value)
+          onChange={(event) => {
+            onChange(event.target.value)
             setOpen(true)
           }}
           onFocus={() => setOpen(true)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              if (value.trim()) onSubmit(value.trim())
-            }
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && value.trim()) onSubmit(value.trim())
           }}
           disabled={disabled}
-          placeholder="Digite o nome do personagem (ex: Naruto, Sasuke)..."
-          className="flex-1 bg-transparent text-base sm:text-lg text-white placeholder:text-[#cbd5e1] outline-none font-mono caret-[#FF601B] min-h-[32px] cursor-text"
-          aria-label="Chutar personagem"
+          placeholder="Type character name ..."
+          className="min-h-[40px] flex-1 bg-transparent font-mono text-base text-white outline-none placeholder:text-slate-400"
+          aria-label="Type character name"
         />
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => value.trim() && onSubmit(value.trim())}
-          disabled={disabled || !value.trim()}
-          className="h-8 w-8 text-[#FF601B] hover:text-[#FDBA74]"
-          aria-label="Enviar chute"
-        >
+        <Button size="icon" variant="ghost" disabled={disabled || !value.trim()} onClick={() => onSubmit(value.trim())} className="text-[#FF601B] hover:text-[#FDBA74]">
           <Send className="h-4 w-4" />
         </Button>
       </div>
-
-      <AnimatePresence>
-        {open && matches.length > 0 && (
-          <motion.ul
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.12 }}
-            className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-[#2A4060] bg-[#0F1A2E]/95 shadow-2xl backdrop-blur"
-          >
-            {matches.map((c) => (
-              <li key={c.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSubmit(c.id)
-                    onChange('')
-                    setOpen(false)
-                  }}
-                  className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-[#cbd5e1] hover:bg-[#1A2C40] hover:text-white font-mono"
-                >
-                  <span>{c.name}</span>
-                  <span className="text-[10px] uppercase tracking-wider text-slate-300">
-                    {c.clan === 'Nenhum' ? '—' : c.clan} · {c.vila}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </motion.ul>
-        )}
-      </AnimatePresence>
+      {open && matches.length > 0 && (
+        <ul className="absolute z-30 mt-1 max-h-72 w-full overflow-auto rounded-xl border border-[#2A4060] bg-[#0F1A2E] shadow-2xl">
+          {matches.map((character) => (
+            <li key={character.id}>
+              <button
+                type="button"
+                onClick={() => {
+                  onSubmit(character.name)
+                  onChange('')
+                  setOpen(false)
+                }}
+                className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left font-mono text-sm text-slate-200 hover:bg-[#1A2C40]"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <CharacterPortrait character={character} className="h-8 w-8 rounded-lg" />
+                  <span className="truncate">{character.name}</span>
+                </span>
+                <span className="text-[10px] uppercase tracking-wider text-slate-400">{character.gender} · {character.affiliations.join(', ')}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }
 
-function AttributeCell({
-  label,
-  value,
-  status,
-  index,
-  rowIndex,
-}: {
-  label: string
-  value: string
-  status: NarutodleFeedbackStatus
-  index: number
-  rowIndex: number
-}) {
-  const colors = feedbackClasses(status)
+function ModeClue({ mode, target, dateKey, guesses, revealed }: { mode: NarutodleMode; target?: NarutodleCharacter; dateKey: string; guesses: number; revealed: boolean }) {
+  if (!target) return null
+  if (mode === 'classic') {
+    return <div className="flex min-h-[172px] flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#FF601B]/40 bg-[#181C20]/80 p-5 text-center"><span className="text-7xl">?</span><p className="font-mono text-sm uppercase tracking-wider text-[#FDBA74]">Type any character to begin.</p></div>
+  }
+  if (mode === 'eye') {
+    return (
+      <div className="flex min-h-[172px] flex-col items-center justify-center gap-3 rounded-2xl border-2 border-[#C026D3]/70 bg-[#181C20]/80 p-5 text-center">
+        <EyeClueImage character={target} guesses={guesses} revealed={revealed} />
+        <p className="font-mono text-xs uppercase tracking-wider text-[#f0abfc]">{revealed ? target.name : guesses > 0 ? target.eyeHint : 'Eye clue becomes clearer after each try.'}</p>
+      </div>
+    )
+  }
+  const clue = clueForMode(target, mode, dateKey)
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, delay: rowIndex * 0.04 + index * 0.04 }}
-      className={cn(
-        'flex min-h-[68px] flex-col items-center justify-center gap-1 rounded-xl border p-2 shadow-md sm:min-h-[80px] sm:p-3',
-        colors.bg,
-        colors.border
-      )}
-      title={`${label}: ${value}`}
-    >
-      <span className="font-mono text-[8px] uppercase tracking-wider text-slate-300 sm:text-[9px]">
-        {label}
-      </span>
-      <span
-        className={cn(
-          'text-center font-mono text-[10px] font-bold leading-tight sm:text-xs',
-          colors.text
-        )}
-      >
-        {value}
-      </span>
-    </motion.div>
+    <div className="flex min-h-[172px] flex-col items-center justify-center gap-4 rounded-2xl border-2 border-[#FF601B]/50 bg-[#181C20]/80 p-5 text-center">
+      <span className="text-5xl">{mode === 'jutsu' ? '🌀' : '💬'}</span>
+      <blockquote className="max-w-xl font-mono text-xl font-black text-white">{mode === 'quote' ? `"${clue}"` : clue}</blockquote>
+    </div>
   )
 }
 
-function GuessRow({
-  guess,
-  guessedCharacter,
-  index,
-}: {
-  guess: NarutodleGuess
-  guessedCharacter: NarutodleCharacter | undefined
-  index: number
-}) {
+function AttributeCell({ attr, character, status }: { attr: NarutodleAttributeKey; character: NarutodleCharacter; status: NarutodleFeedbackStatus }) {
+  return (
+    <div className={cn('flex min-h-[76px] flex-col items-center justify-center gap-1 rounded-lg border p-2 text-center shadow-md', statusClasses(status))}>
+      <span className="font-mono text-[8px] uppercase tracking-wider text-slate-200/80">{ATTRIBUTE_LABELS[attr]}</span>
+      <span className="font-mono text-[10px] font-bold leading-tight sm:text-xs">{formatAttributeValue(character, attr)}</span>
+    </div>
+  )
+}
+
+function GuessRow({ guess, index }: { guess: NarutodleGuess; index: number }) {
+  const character = NARUTO_CHARACTERS.find((item) => item.id === guess.characterId)
+  if (!character) return null
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center gap-2 px-1">
-        <span className="rounded-md bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] font-bold text-white sm:text-xs">
-          #{index + 1}
-        </span>
-        <span className="font-mono text-xs font-bold text-white sm:text-sm">
-          {guess.characterName}
-        </span>
-      </div>
-      <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
-        {NARUTODLE_ATTRIBUTES.map((attr, i) => {
-          const status = guess.feedback[attr]
-          const value = guessedCharacter
-            ? String(guessedCharacter[attr])
-            : '?'
-          return (
-            <AttributeCell
-              key={attr}
-              label={ATTRIBUTE_LABELS[attr]}
-              value={value}
-              status={status}
-              index={i}
-              rowIndex={index}
-            />
-          )
-        })}
+      <div className="flex items-center gap-2 px-1 font-mono text-sm font-black text-white"><CharacterPortrait character={character} className="h-8 w-8 rounded-lg" /><span className="rounded bg-[#0F1A2E] px-2 py-0.5 text-xs">#{index + 1}</span>{guess.characterName}</div>
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:grid-cols-7">
+        {NARUTODLE_ATTRIBUTES.map((attr) => <AttributeCell key={attr} attr={attr} character={character} status={guess.feedback[attr]} />)}
       </div>
     </div>
   )
 }
 
-function GameOverCard({
-  state,
-  characters,
-  onBack,
-}: {
-  state: NarutodleState
-  characters: NarutodleCharacter[]
-  onBack: () => void
-}) {
-  const target = characters.find((c) => c.id === state.targetId)
-
+function GameOverCard({ state, target, mode, onBack }: { state: NarutodleState; target?: NarutodleCharacter; mode: NarutodleMode; onBack: () => void }) {
   useEffect(() => {
     if (!state.isWin) return
-    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
-    const t1 = setTimeout(
-      () =>
-        confetti({
-          particleCount: 50,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0 },
-        }),
-      250
-    )
-    const t2 = setTimeout(
-      () =>
-        confetti({
-          particleCount: 50,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1 },
-        }),
-      400
-    )
-    return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
-    }
+    confetti({ particleCount: 120, spread: 70, origin: { y: 0.65 } })
   }, [state.isWin])
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className={cn(
-        'rounded-2xl border-2 p-5 shadow-2xl sm:p-6',
-        state.isWin
-          ? 'border-[#FF601B] bg-[#FF601B]/10'
-          : 'border-[#737373]/60 bg-[#737373]/20'
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          {state.isWin ? (
-            <Trophy className="h-7 w-7 text-[#FF601B]" />
-          ) : (
-            <X className="h-7 w-7" style={{ color: THEME.wrongText }} />
-          )}
-          <div>
-            <h2 className="font-mono text-lg font-black text-white sm:text-xl">
-              {state.isWin ? 'BELA JOGADA, HOKAGE!' : 'FIM DE JOGO'}
-            </h2>
-            <p className="font-mono text-xs text-slate-300 sm:text-sm">
-              {state.isWin
-                ? `Voce descobriu o personagem em ${state.currentRow}/${state.maxAttempts} tentativas.`
-                : 'Amanha tem mais ninja pra adivinhar. Bora estudar a aldeia?'}
-            </p>
-          </div>
+    <div className={cn('rounded-2xl border-2 p-5 shadow-2xl', state.isWin ? 'border-[#FF601B] bg-[#FF601B]/10' : 'border-[#737373]/60 bg-[#737373]/20')}>
+      <div className="flex items-center gap-3">
+        {state.isWin ? <Trophy className="h-7 w-7 text-[#FF601B]" /> : <X className="h-7 w-7 text-[#A3A3A3]" />}
+        <div>
+          <h2 className="font-mono text-xl font-black text-white">{state.isWin ? 'You found it!' : 'Game over'}</h2>
+          <p className="font-mono text-xs text-slate-300">I found #Narutodle character #{state.dayNumber} {state.currentRow}/{state.maxAttempts} {MODE_COPY[mode].end}</p>
         </div>
       </div>
-
-      {target && (
-        <div className="mt-4 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/70 p-3">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-slate-300">
-            o ninja era
-          </p>
-          <div className="mt-1 flex items-center gap-3">
-            <span
-              className="rounded-lg px-2.5 py-1 font-mono text-base font-black"
-              style={{ background: 'rgba(245,158,11,0.2)', color: '#FCD34D' }}
-            >
-              {target.name}
-            </span>
-            <div className="flex flex-col">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300">
-                {target.clan === 'Nenhum' ? 'sem cla' : target.clan} · {target.vila} · {target.rank}
-              </span>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300">
-                {target.kekkeiGenkai === 'Nenhum' ? 'sem KG' : target.kekkeiGenkai} · {target.elemento}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="border-[#2A4060] bg-transparent font-mono text-xs text-slate-200"
-          size="lg"
-          style={{ minHeight: 44 }}
-        >
-          <ArrowLeft className="mr-2 h-3.5 w-3.5" /> voltar ao hall
-        </Button>
-      </div>
-    </motion.div>
+      {target && <div className="mt-4 flex items-center gap-3 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/80 p-3 font-mono text-sm text-slate-200"><CharacterPortrait character={target} className="h-14 w-14 rounded-2xl" alt={target.name} /><div>Answer: <strong className="text-[#F6D44E]">{target.name}</strong><div className="mt-1 text-xs text-slate-400">{target.gender} · {target.affiliations.join(', ')} · {target.debut}</div></div></div>}
+      <Button onClick={onBack} variant="outline" className="mt-4 border-[#2A4060] bg-transparent font-mono text-xs text-slate-200"><ArrowLeft className="mr-2 h-4 w-4" />hall</Button>
+    </div>
   )
 }
 
 export function NarutodleGame() {
   const navigate = useNavigate()
-  const location = useLocation()
   const dateKey = useMemo(() => getTodayDateKey(), [])
   const dayNumber = useMemo(() => getDayNumber(), [])
-
   const [mode, setModeState] = useState<NarutodleMode>(() => {
     const fromPath = parseNarutodleModeFromPathname(window.location.pathname)
-    if (fromPath !== 'classic') return fromPath
-    return parseNarutodleModeFromUrl(window.location.search)
+    return fromPath === DEFAULT_NARUTODLE_MODE ? parseNarutodleModeFromUrl(window.location.search) : fromPath
   })
-  const effectiveMode: 'classic' | 'silhouette' =
-    mode === 'silhouette' ? 'silhouette' : 'classic'
-
-  const [state, setState] = useState<NarutodleState>(() => {
-    const persisted = loadNarutodleState(dateKey, effectiveMode)
-    if (persisted) return persisted
-    return createInitialNarutodleState(dateKey, dayNumber, NARUTO_CHARACTERS, effectiveMode)
-  })
+  const [state, setState] = useState<NarutodleState>(() => loadNarutodleState(dateKey, mode) ?? createInitialNarutodleState(dateKey, dayNumber, NARUTO_CHARACTERS, mode))
   const [input, setInput] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const tentativasRef = useRef<HTMLDivElement | null>(null)
+  const attemptsRef = useRef<HTMLDivElement | null>(null)
+  const target = useMemo(() => NARUTO_CHARACTERS.find((character) => character.id === state.targetId), [state.targetId])
 
-  // Auto-save sempre que o state muda
+  useEffect(() => saveNarutodleState(dateKey, state, mode), [dateKey, mode, state])
   useEffect(() => {
-    saveNarutodleState(dateKey, state, effectiveMode)
-  }, [state, dateKey, effectiveMode])
-
-  useEffect(() => {
-    if (state.guesses.length > 0 && tentativasRef.current) {
-      tentativasRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
-    }
+    if (state.guesses.length > 0) attemptsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [state.guesses.length])
 
-  const attemptsLeft = state.maxAttempts - state.currentRow
-  const target = useMemo(
-    () => NARUTO_CHARACTERS.find((c) => c.id === state.targetId),
-    [state.targetId]
-  )
-
-  const setMode = (next: NarutodleMode) => {
+  function setMode(next: NarutodleMode) {
+    const meta = NARUTODLE_MODES.find((item) => item.id === next)
     setModeState(next)
-    const newMode: 'classic' | 'silhouette' =
-      next === 'silhouette' ? 'silhouette' : 'classic'
-    const persisted = loadNarutodleState(dateKey, newMode)
-    if (persisted) {
-      setState(persisted)
-    } else {
-      setState(createInitialNarutodleState(dateKey, dayNumber, NARUTO_CHARACTERS, newMode))
-    }
+    setState(loadNarutodleState(dateKey, next) ?? createInitialNarutodleState(dateKey, dayNumber, NARUTO_CHARACTERS, next))
     setInput('')
     setError(null)
-    const params = new URLSearchParams(location.search)
-    if (next === DEFAULT_NARUTODLE_MODE) {
-      params.delete('mode')
-    } else {
-      params.set('mode', next)
-    }
-    const qs = params.toString()
-    const newPath = `${location.pathname}${qs ? `?${qs}` : ''}`
-    window.history.replaceState(null, '', newPath)
+    if (meta) navigate(meta.path, { replace: true })
   }
 
   function handleSubmit(rawGuess: string) {
-    if (state.isGameOver) return
-    setError(null)
     const result = processNarutodleGuess(state, rawGuess, NARUTO_CHARACTERS)
     if (result.error) {
       setError(result.error)
@@ -475,327 +251,53 @@ export function NarutodleGame() {
     }
     setState(result.newState)
     setInput('')
+    setError(null)
   }
 
-  const guessedCount = state.guesses.length
-  const emptyRows = Math.max(0, state.maxAttempts - guessedCount)
-  const modeLabel = effectiveMode === 'silhouette' ? 'Eye' : 'Clássico'
+  const copy = MODE_COPY[mode]
+  const emptyRows = Math.max(0, state.maxAttempts - state.guesses.length)
 
   return (
-    <div
-      className="min-h-screen w-full"
-      style={{
-        background:
-          'linear-gradient(180deg, #78CED7 0%, #3A6B7A 12%, #181C20 28%, #181C20 100%)',
-      }}
-    >
-      <header
-        className="border-b border-[#2A4060]/40"
-        style={{ background: 'rgba(24,28,32,0.85)', backdropFilter: 'blur(8px)' }}
-      >
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-3 py-3 sm:px-4 sm:py-4">
-          <button
-            onClick={() => navigate('/')}
-            className="flex items-center gap-1.5 text-sm text-slate-300 hover:text-white font-mono"
-            aria-label="Voltar ao hall"
-          >
-            <ArrowLeft className="h-4 w-4" /> hall
-          </button>
-          <div className="flex items-center gap-2">
-            <span className="text-xl sm:text-2xl" aria-hidden="true">🍥</span>
-            <h1
-              className="font-mono text-base font-black tracking-tight sm:text-xl"
-              style={{ color: '#FF601B' }}
-            >
-              NARUTODLE
-              <span
-                className="ml-2 font-mono text-[9px] font-normal uppercase tracking-[0.25em] sm:text-[10px]"
-                style={{ color: '#FDBA74' }}
-              >
-                daily naruto game
-              </span>
-              <span
-                className="ml-2 text-[10px] sm:text-xs"
-                style={{ color: '#FF601B' }}
-              >
-                · {modeLabel}
-              </span>
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <NarutodleModeSelector current={mode} onSelect={setMode} />
-            <span
-              className={cn(
-                'rounded-full border bg-[#0F1A2E]/70 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider',
-                state.isWin
-                  ? 'border-[#FF601B] text-[#FDBA74]'
-                  : 'border-[#2A4060] text-slate-300'
-              )}
-              title={`Data: ${dateKey}`}
-            >
-              dia #{dayNumber}
-            </span>
-          </div>
+    <div className="min-h-screen w-full text-white" style={{ background: 'linear-gradient(180deg, #78CED7 0%, #3A6B7A 12%, #181C20 28%, #181C20 100%)' }}>
+      <header className="relative z-10 border-b border-[#2A4060]/50 bg-[#181C20]/90 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+          <button onClick={() => navigate('/')} className="flex items-center gap-2 font-mono text-sm text-slate-300 hover:text-white"><ArrowLeft className="h-4 w-4" />hall</button>
+          <div className="text-center"><h1 className="font-mono text-2xl font-black text-[#FF601B]">NARUTODLE</h1><p className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#FDBA74]">Daily Naruto Game · {copy.title}</p></div>
+          <NarutodleModeSelector current={mode} onSelect={setMode} />
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-3 py-4 sm:px-4 sm:py-6">
-        <div className="grid gap-4 md:grid-cols-2">
-          <section className="rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-4 shadow-2xl sm:p-5">
-            <div
-              className="mb-3 flex items-center gap-2 rounded-lg border px-3 py-1.5"
-              style={{
-                background:
-                  'linear-gradient(90deg, rgba(24,28,32,0.85) 0%, rgba(255,96,27,0.15) 100%)',
-                borderColor: 'rgba(255,96,27,0.4)',
-              }}
-            >
-              <Target className="h-4 w-4" style={{ color: '#FF601B' }} />
-              <h2 className="font-mono text-lg font-black uppercase tracking-wider sm:text-xl">
-                <span style={{ color: '#FF601B' }}>NINJA</span>
-                <span className="ml-1 text-[10px] sm:text-xs" style={{ color: '#FDBA74' }}>
-                  DO DIA
-                </span>
-              </h2>
-              <span className="ml-auto rounded-full bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] text-slate-300">
-                {state.isGameOver
-                  ? state.isWin
-                    ? `${state.currentRow}/${state.maxAttempts}`
-                    : 'acabou'
-                  : `${attemptsLeft} restantes`}
-              </span>
-            </div>
-            {effectiveMode === 'silhouette' && target ? (
-              <NarutodleSilhouettePanel
-                characterName={target.name}
-                revealed={state.isGameOver}
-              />
-            ) : (
-              <div
-                className="relative w-full overflow-hidden rounded-2xl border-2 border-dashed p-5 sm:p-6"
-                style={{
-                  borderColor: state.isGameOver ? 'rgba(255,96,27,0.55)' : 'rgba(255,96,27,0.35)',
-                  background:
-                    'linear-gradient(160deg, rgba(24,28,32,0.95) 0%, rgba(26,44,64,0.85) 50%, rgba(255,96,27,0.06) 100%)',
-                  minHeight: 180,
-                }}
-              >
-                <div className="flex flex-col items-center justify-center gap-2 text-center">
-                  <span
-                    className="font-mono text-6xl font-black leading-none sm:text-7xl"
-                    style={{ color: state.isGameOver ? '#F6D44E' : '#FF601B' }}
-                    aria-hidden="true"
-                  >
-                    {state.isGameOver ? '🍥' : '?'}
-                  </span>
-                  {state.isGameOver && target ? (
-                    <>
-                      <span
-                        className="font-mono text-lg font-black sm:text-xl"
-                        style={{ color: '#F6D44E' }}
-                      >
-                        {target.name}
-                      </span>
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300 sm:text-xs">
-                        {target.clan === 'Nenhum' ? 'sem cla' : target.clan} · {target.vila}
-                      </span>
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300 sm:text-xs">
-                        rank {target.rank} · {target.kekkeiGenkai === 'Nenhum' ? 'sem KG' : target.kekkeiGenkai}
-                      </span>
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300 sm:text-xs">
-                        elemento {target.elemento} · {target.afiliacao}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span
-                        className="font-mono text-sm font-bold uppercase tracking-wider sm:text-base"
-                        style={{ color: '#FF601B' }}
-                      >
-                        ninja oculto
-                      </span>
-                      <span
-                        className="font-mono text-[10px] uppercase tracking-wider sm:text-xs"
-                        style={{ color: '#F6D44E' }}
-                      >
-                        pool: {NARUTO_CHARACTERS.length} personagens
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-            <p className="mt-3 font-mono text-[10px] text-slate-300 sm:text-xs">
-              {state.isGameOver
-                ? state.isWin
-                  ? 'Voce descobriu o ninja antes de acabar as tentativas.'
-                  : 'O ninja acima era a resposta. Bora estudar a vila oculta!'
-                : 'Adivinhe o ninja do dia em ate 8 tentativas. Feedback colorido por atributo.'}
-            </p>
+      <main className="relative z-10 mx-auto max-w-6xl px-3 py-5 sm:px-4">
+        <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+          <section className="rounded-2xl border border-[#2A4060]/50 bg-[#1A2C40]/75 p-4 shadow-2xl">
+            <div className="mb-3 flex items-center gap-2 rounded-lg border border-[#FF601B]/40 bg-[#181C20]/80 px-3 py-2"><Sparkles className="h-4 w-4 text-[#FF601B]" /><h2 className="font-mono text-lg font-black uppercase text-[#FF601B]">{copy.title}</h2><span className="ml-auto font-mono text-xs text-slate-300">{state.maxAttempts - state.currentRow} tries left</span></div>
+            <ModeClue mode={mode} target={target} dateKey={dateKey} guesses={state.guesses.length} revealed={state.isGameOver} />
+            <p className="mt-3 font-mono text-xs text-slate-300">{copy.desc}</p>
           </section>
 
-          <section className="rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-4 shadow-2xl sm:p-5">
-            <div
-              className="mb-3 flex items-center gap-2 rounded-lg border px-3 py-1.5"
-              style={{
-                background:
-                  'linear-gradient(90deg, rgba(24,28,32,0.85) 0%, rgba(246,212,78,0.15) 100%)',
-                borderColor: 'rgba(246,212,78,0.4)',
-              }}
-            >
-              <Sparkles className="h-4 w-4" style={{ color: '#F6D44E' }} />
-              <h2 className="font-mono text-lg font-black uppercase tracking-wider sm:text-xl">
-                <span style={{ color: '#F6D44E' }}>CHUTE</span>
-              </h2>
-            </div>
-
-            {state.isGameOver ? (
-              <GameOverCard
-                state={state}
-                characters={NARUTO_CHARACTERS}
-                onBack={() => navigate('/')}
-              />
-            ) : (
-              <>
-                <CharacterAutocomplete
-                  value={input}
-                  onChange={setInput}
-                  onSubmit={handleSubmit}
-                  disabled={state.isGameOver}
-                  history={state.history}
-                />
-                {error && (
-                  <div className="mt-2 rounded-lg border border-[#737373]/50 bg-[#737373]/20 p-2 font-mono text-xs" style={{ color: THEME.wrongText }}>
-                    {error}
-                  </div>
-                )}
-
-                <div className="mt-3 space-y-1.5 font-mono text-base text-[#cbd5e1] sm:text-xs">
-                  <p>
-                    <Check className="mr-1 inline h-3 w-3 text-[#86efac]" />
-                    digite o <strong>nome do personagem</strong> (autocomplete aparece).
-                  </p>
-                  <p>
-                    <ChevronDown className="mr-1 inline h-3 w-3 text-[#F6D44E]" />
-                    feedback mostra 7 atributos: <strong className="text-[#86efac]">verde</strong> = certo, <strong style={{ color: '#F6D44E' }}>amarelo</strong> = perto (so no rank), cinza = errado.
-                  </p>
-                </div>
-              </>
-            )}
+          <section className="rounded-2xl border border-[#2A4060]/50 bg-[#1A2C40]/75 p-4 shadow-2xl">
+            <div className="mb-3 flex items-center gap-2 rounded-lg border border-[#F6D44E]/40 bg-[#181C20]/80 px-3 py-2"><Target className="h-4 w-4 text-[#F6D44E]" /><h2 className="font-mono text-lg font-black uppercase text-[#F6D44E]">Guess</h2></div>
+            {state.isGameOver ? <GameOverCard state={state} target={target} mode={mode} onBack={() => navigate('/')} /> : <><CharacterAutocomplete value={input} onChange={setInput} onSubmit={handleSubmit} disabled={state.isGameOver} history={state.history} />{error && <div className="mt-2 rounded-lg border border-[#737373]/60 bg-[#737373]/20 p-2 font-mono text-xs text-[#d4d4d4]">{error}</div>}<div className="mt-3 space-y-1.5 font-mono text-xs text-slate-300"><p><Check className="mr-1 inline h-3 w-3 text-[#86efac]" />Select a character and compare attributes.</p><p><ChevronDown className="mr-1 inline h-3 w-3 text-[#F6D44E]" />Yellow means partial match or nearby debut arc.</p></div></>}
           </section>
         </div>
 
         <section className="mt-5">
-          <h3 className="mb-2 flex items-center gap-2 font-mono text-base font-bold uppercase tracking-wider text-slate-300">
-            tentativas
-            <span className="text-slate-500">
-              ({guessedCount}/{state.maxAttempts})
-            </span>
-          </h3>
-          <div ref={tentativasRef} className="space-y-3">
-            {state.guesses.map((g, i) => {
-              const ch = NARUTO_CHARACTERS.find((c) => c.id === g.characterId)
-              return <GuessRow key={`${g.characterId}-${i}`} guess={g} guessedCharacter={ch} index={i} />
-            })}
-            {Array.from({ length: emptyRows }).map((_, i) => (
-              <div
-                key={`empty-${i}`}
-                className="grid grid-cols-7 gap-1 sm:gap-1.5"
-                aria-hidden="true"
-              >
-                {NARUTODLE_ATTRIBUTES.map((attr) => (
-                  <div
-                    key={attr}
-                    className="flex min-h-[68px] flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-[#2A4060]/60 bg-[#0F1A2E]/30 p-2 sm:min-h-[80px]"
-                  >
-                    <span className="font-mono text-[8px] uppercase tracking-wider text-slate-500 sm:text-[9px]">
-                      {ATTRIBUTE_LABELS[attr as NarutodleAttributeKey]}
-                    </span>
-                    <span className="font-mono text-[10px] text-slate-500 sm:text-xs">
-                      ?
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ))}
+          <h3 className="mb-2 flex items-center gap-2 font-mono text-base font-bold uppercase tracking-wider text-slate-300">Attempts <span className="text-slate-500">({state.guesses.length}/{state.maxAttempts})</span></h3>
+          <div ref={attemptsRef} className="space-y-3">
+            {state.guesses.map((guess, index) => <GuessRow key={`${guess.characterId}-${index}`} guess={guess} index={index} />)}
+            {Array.from({ length: emptyRows }).map((_, row) => <div key={row} className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:grid-cols-7" aria-hidden="true">{NARUTODLE_ATTRIBUTES.map((attr) => <div key={attr} className="flex min-h-[76px] flex-col items-center justify-center rounded-lg border border-dashed border-[#2A4060]/70 bg-[#0F1A2E]/35 p-2 text-center"><span className="font-mono text-[8px] uppercase tracking-wider text-slate-500">{ATTRIBUTE_LABELS[attr]}</span><span className="font-mono text-xs text-slate-500">?</span></div>)}</div>)}
           </div>
         </section>
 
-        <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4 text-xs text-slate-300 sm:text-sm">
-          <h4 className="mb-3 font-mono text-base font-bold uppercase tracking-wider text-slate-300">
-            legenda
-          </h4>
-          <div className="grid grid-cols-1 gap-2 font-mono sm:grid-cols-3">
-            <div
-              className="flex items-center gap-2 rounded-lg border-2 px-2.5 py-2"
-              style={{
-                background: 'rgba(36,212,117,0.15)',
-                borderColor: 'rgba(36,212,117,0.6)',
-              }}
-            >
-              <span
-                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-sm font-black"
-                style={{ background: '#24D475', color: '#0E1E25' }}
-                aria-hidden="true"
-              >
-                ✓
-              </span>
-              <span>
-                <strong className="text-[#86efac]">correto</strong>
-                <span className="block text-[10px] text-slate-400">atributo bate</span>
-              </span>
-            </div>
-            <div
-              className="flex items-center gap-2 rounded-lg border-2 px-2.5 py-2"
-              style={{
-                background: 'rgba(246,212,78,0.15)',
-                borderColor: 'rgba(246,212,78,0.6)',
-              }}
-            >
-              <span
-                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-sm font-black"
-                style={{ background: '#F6D44E', color: '#0E1E25' }}
-                aria-hidden="true"
-              >
-                <ArrowUp className="h-3.5 w-3.5" strokeWidth={3} />
-                <ArrowDown className="h-3.5 w-3.5" strokeWidth={3} />
-              </span>
-              <span>
-                <strong style={{ color: '#F6D44E' }}>perto</strong>
-                <span className="block text-[10px] text-slate-400">rank ±1 nivel</span>
-              </span>
-            </div>
-            <div
-              className="flex items-center gap-2 rounded-lg border-2 px-2.5 py-2"
-              style={{
-                background: 'rgba(115,115,115,0.15)',
-                borderColor: 'rgba(115,115,115,0.6)',
-              }}
-            >
-              <span
-                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-sm font-black"
-                style={{ background: '#737373', color: '#FFFFFF' }}
-                aria-hidden="true"
-              >
-                ✗
-              </span>
-              <span>
-                <strong className="text-[#A3A3A3]">errado</strong>
-                <span className="block text-[10px] text-slate-400">nao bate</span>
-              </span>
-            </div>
-          </div>
+        <section className="mt-6 grid gap-2 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/60 p-4 font-mono text-xs text-slate-300 sm:grid-cols-3">
+          <div className="rounded-lg border border-[#24D475]/60 bg-[#24D475]/15 p-3"><strong className="text-[#86efac]">Green</strong><span className="block">exact attribute match</span></div>
+          <div className="rounded-lg border border-[#F6D44E]/60 bg-[#F6D44E]/15 p-3"><strong className="text-[#F6D44E]">Yellow</strong><span className="block">partial match or adjacent debut arc</span></div>
+          <div className="rounded-lg border border-[#737373]/60 bg-[#737373]/15 p-3"><strong className="text-[#d4d4d4]">Gray</strong><span className="block">no match</span></div>
         </section>
       </main>
 
-      <StarsBackground
-        className="fixed inset-0 z-0 max-h-dvh max-w-full opacity-30"
-        pointerEvents={false}
-      />
-
-      <div className="fixed bottom-2 right-2 z-[5] pointer-events-none">
-        <span className="font-mono text-[8px] text-slate-500/50 md:text-xs">v{APP_VERSION}</span>
-      </div>
+      <StarsBackground className="fixed inset-0 z-0 max-h-dvh max-w-full opacity-30" pointerEvents={false} />
+      <div className="fixed bottom-2 right-2 z-[5] pointer-events-none"><span className="font-mono text-[8px] text-slate-500/50 md:text-xs">v{APP_VERSION}</span></div>
     </div>
   )
 }

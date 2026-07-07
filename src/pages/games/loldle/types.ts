@@ -154,8 +154,8 @@ export interface LoldleState {
   dateKey: string
   /** Historico de campeoes chutados (evita duplicata). */
   history: string[]
-  /** Modo de jogo. 'classic' e 'quote' sao persistidos (quote usa a mesma pool). */
-  mode?: 'classic' | 'quote'
+  /** Modo de jogo persistido. */
+  mode?: 'classic' | 'quote' | 'splash' | 'emoji' | 'ability'
   /** Quote index usada no modo Quote (deterministica por dateKey + targetId). */
   quoteIndex?: number
 }

@@ -2,7 +2,7 @@
 //
 // Landing page do Narutodle dentro do PITACO. Inspirada em narutodle.net:
 // header com botao "hall" + titulo "NARUTODLE" estilizado, 4 cards de
-// modo (Classico, Jutsu, Quote, Eye), secao de cross-promo com 5 jogos
+// modo (Classic, Jutsu, Quote, Eye), secao de cross-promo com 5 jogos
 // parceiros e footer com links sociais.
 //
 // Os 4 cards de modo navegam para as rotas do NarutodleGame existente:
@@ -35,8 +35,8 @@ interface ModeCard {
 const MODES: readonly ModeCard[] = [
   {
     id: 'classico',
-    label: 'Clássico',
-    description: 'Consiga pistas a cada tentativa',
+    label: 'Classic',
+    description: 'Get clues on every try',
     icon: '🔍',
     color: '#38B9FF',
     path: '/play/narutodle',
@@ -44,7 +44,7 @@ const MODES: readonly ModeCard[] = [
   {
     id: 'jutsu',
     label: 'Jutsu',
-    description: 'Adivinhe com uma animação de jutsu',
+    description: 'Guess with a jutsu clue',
     icon: '🌀',
     color: '#3DA75E',
     path: '/play/narutodle-jutsu',
@@ -52,7 +52,7 @@ const MODES: readonly ModeCard[] = [
   {
     id: 'quote',
     label: 'Quote',
-    description: 'Adivinhe com um diálogo',
+    description: 'Guess with a dialogue',
     icon: '💬',
     color: '#F6D44E',
     path: '/play/narutodle-quote',
@@ -60,7 +60,7 @@ const MODES: readonly ModeCard[] = [
   {
     id: 'eye',
     label: 'Eye',
-    description: 'Adivinhe com um olho',
+    description: 'Guess with an eye',
     icon: '👁',
     color: '#D5369A',
     path: '/play/narutodle-eye',
@@ -180,7 +180,7 @@ export function NarutodleLandingPage() {
             id="narutodle-modes-heading"
             className="mb-5 text-center font-mono text-xs uppercase tracking-[0.25em] text-slate-300 sm:text-sm"
           >
-            escolha o modo
+            choose a mode
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {MODES.map((mode) => (

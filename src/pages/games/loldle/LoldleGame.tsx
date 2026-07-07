@@ -55,8 +55,13 @@ import {
 import {
   getQuoteForChampionForDate,
 } from './quotes/quotes'
+import {
+  getChampionIconUrl,
+  getChampionSplashUrl,
+} from './lol-assets'
 
 type AttributeKey = 'region' | 'classe' | 'recurso' | 'alcance' | 'genero' | 'ano'
+type EffectiveLoldleMode = 'classic' | 'quote' | 'splash'
 
 const ATTRIBUTE_LABELS: Record<AttributeKey, string> = {
   region: 'Regiao',
@@ -106,6 +111,94 @@ function statusText(status: LoldleFeedbackStatus): string {
     default:
       return 'errado'
   }
+}
+
+function ChampionIcon({
+  champion,
+  className,
+}: {
+  champion: LoldleChampion
+  className?: string
+}) {
+  const [failed, setFailed] = useState(false)
+  const initials = champion.name
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+
+  return (
+    <span
+      className={cn(
+        'inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#2A4060] bg-[#0F1A2E] font-mono text-xs font-black text-[#5BE0D8]',
+        className
+      )}
+      aria-hidden="true"
+    >
+      {failed ? (
+        initials
+      ) : (
+        <img
+          src={getChampionIconUrl(champion)}
+          alt=""
+          className="h-full w-full object-cover"
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailed(true)}
+        />
+      )}
+    </span>
+  )
+}
+
+function SplashClue({
+  champion,
+  revealed,
+  guesses,
+}: {
+  champion: LoldleChampion
+  revealed: boolean
+  guesses: number
+}) {
+  const [failed, setFailed] = useState(false)
+  const blur = revealed ? 0 : Math.max(2, 18 - guesses * 2)
+  const scale = revealed ? 1 : 1.08 + Math.max(0, 5 - guesses) * 0.03
+
+  return (
+    <div className="relative min-h-[250px] overflow-hidden rounded-2xl border-2 border-[#2A4060] bg-[#0F1A2E] shadow-2xl">
+      {failed ? (
+        <div className="flex min-h-[250px] flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#0F1A2E] to-[#1A2C40] p-6 text-center">
+          <span className="font-mono text-7xl font-black text-[#fb923c]">?</span>
+          <span className="font-mono text-xs uppercase tracking-wider text-[#cbd5e1]">splash indisponivel</span>
+        </div>
+      ) : (
+        <img
+          src={getChampionSplashUrl(champion)}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{ filter: `blur(${blur}px) saturate(${revealed ? 1 : 0.55})`, transform: `scale(${scale})` }}
+          loading="eager"
+          decoding="async"
+          onError={() => setFailed(true)}
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#060b18]/95 via-[#060b18]/25 to-transparent" />
+      <div className="relative flex min-h-[250px] flex-col justify-end p-4">
+        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#cbd5e1]">
+          splash art clue
+        </p>
+        <h3 className="mt-1 font-mono text-xl font-black text-white">
+          {revealed ? champion.name : `${guesses}/8 tentativas usadas`}
+        </h3>
+        {!revealed && (
+          <p className="mt-1 font-mono text-xs text-[#5BE0D8]">
+            A imagem fica menos borrada a cada chute.
+          </p>
+        )}
+      </div>
+    </div>
+  )
 }
 
 function getAttributeValue(
@@ -258,6 +351,7 @@ function ChampionAutocomplete({
                   className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-[#cbd5e1] hover:bg-[#1A2C40] hover:text-white font-mono"
                 >
                   <span className="flex items-center gap-2">
+                    <ChampionIcon champion={c} className="h-8 w-8 rounded-lg" />
                     <span className="rounded-md bg-[#00B2A9]/15 px-1.5 py-0.5 text-[10px] font-bold text-[#5BE0D8]">
                       {c.classe}
                     </span>
@@ -299,7 +393,7 @@ function GuessRow({
 }) {
   const keys: AttributeKey[] = ['region', 'classe', 'recurso', 'alcance', 'genero', 'ano']
 
-  if (mode === 'quote') {
+  if (mode === 'quote' || mode === 'splash') {
     const isCorrect = feedback.ano === 'correct'
     return (
       <motion.div
@@ -313,6 +407,7 @@ function GuessRow({
             : 'border-[#2A4060]/60 bg-[#0F1A2E]/40'
         )}
       >
+        <ChampionIcon champion={champion} />
         <span className="rounded-md bg-[#0F1A2E]/80 px-2 py-0.5 font-mono text-[10px] font-black text-white">
           #{index + 1}
         </span>
@@ -321,7 +416,7 @@ function GuessRow({
         </span>
         <span className="ml-auto font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">
           {isCorrect ? (
-            <span className="text-[#5BE0D8]">autor correto</span>
+            <span className="text-[#5BE0D8]">campeao correto</span>
           ) : (
             'errado'
           )}
@@ -339,6 +434,7 @@ function GuessRow({
     >
       <div className="mb-2 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
+          <ChampionIcon champion={champion} />
           <span className="rounded-md bg-[#0F1A2E]/80 px-2 py-1 font-mono text-sm font-black text-white">
             #{index + 1}
           </span>
@@ -479,12 +575,25 @@ function GameOverCard({
       </div>
 
       {target && (
-        <div className="mt-4 rounded-xl border border-[#2A4060] bg-[#0F1A2E]/70 p-3">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">o campeao era</p>
-          <div className="mt-1 flex items-center gap-3">
-            <span className="rounded-lg bg-[#00B2A9]/20 px-2.5 py-1 font-mono text-base font-black text-[#5BE0D8]">
-              {target.name}
-            </span>
+        <div className="mt-4 overflow-hidden rounded-xl border border-[#2A4060] bg-[#0F1A2E]/70">
+          <div className="relative min-h-[120px]">
+            <img
+              src={getChampionSplashUrl(target)}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover opacity-70"
+              loading="lazy"
+              decoding="async"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0F1A2E] via-[#0F1A2E]/80 to-[#0F1A2E]/20" />
+            <div className="relative flex min-h-[120px] items-center gap-3 p-3">
+              <ChampionIcon champion={target} className="h-14 w-14 rounded-2xl" />
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-wider text-[#cbd5e1]">o campeao era</p>
+                <p className="font-mono text-lg font-black text-[#5BE0D8]">{target.name}</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 p-3">
             <div className="flex flex-col">
               <span className="font-mono text-sm font-bold text-white">
                 {target.classe} · {target.alcance}
@@ -530,7 +639,7 @@ export function LoldleGame() {
     if (fromPath !== 'classic') return fromPath
     return parseLoldleModeFromUrl(window.location.search)
   })
-  const effectiveMode: 'classic' | 'quote' = mode === 'quote' ? 'quote' : 'classic'
+  const effectiveMode: EffectiveLoldleMode = mode === 'quote' || mode === 'splash' ? mode : 'classic'
 
   const [state, setState] = useState<LoldleState>(() => {
     const initialKey = getTodayDateKey()
@@ -542,12 +651,8 @@ export function LoldleGame() {
   const [error, setError] = useState<string | null>(null)
   const tentativasRef = useRef<HTMLDivElement | null>(null)
 
-  const target = useMemo(() => {
-    if (state.isGameOver) {
-      return findChampionById(state.targetId) ?? null
-    }
-    return null
-  }, [state.isGameOver, state.targetId])
+  const targetChampion = useMemo(() => findChampionById(state.targetId) ?? null, [state.targetId])
+  const target = state.isGameOver ? targetChampion : null
 
   const targetQuote = useMemo(() => {
     if (effectiveMode !== 'quote') return ''
@@ -557,7 +662,7 @@ export function LoldleGame() {
   const setMode = useCallback(
     (next: LoldleMode) => {
       setModeState(next)
-      const newMode: 'classic' | 'quote' = next === 'quote' ? 'quote' : 'classic'
+      const newMode: EffectiveLoldleMode = next === 'quote' || next === 'splash' ? next : 'classic'
       const persisted = loadLoldleState(dateKey, newMode)
       if (persisted) {
         setState(persisted)
@@ -640,7 +745,7 @@ export function LoldleGame() {
 
   const guessedCount = state.guesses.length
   const emptyRows = Math.max(0, state.maxAttempts - guessedCount)
-  const modeLabel = effectiveMode === 'quote' ? 'Quote' : 'Classic'
+  const modeLabel = effectiveMode === 'quote' ? 'Quote' : effectiveMode === 'splash' ? 'Splash' : 'Classic'
 
   return (
     <div
@@ -721,7 +826,20 @@ export function LoldleGame() {
                   <p className="mt-3 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
                     {state.isGameOver && target
                       ? `o autor era: ${target.name}`
-                      : `descubra quem falou a frase acima em ate ${state.maxAttempts} tentativas.`}
+                    : `descubra quem falou a frase acima em ate ${state.maxAttempts} tentativas.`}
+                  </p>
+                </>
+              ) : effectiveMode === 'splash' && targetChampion ? (
+                <>
+                  <SplashClue
+                    champion={targetChampion}
+                    revealed={state.isGameOver}
+                    guesses={state.guesses.length}
+                  />
+                  <p className="mt-3 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
+                    {state.isGameOver && target
+                      ? `o campeao era: ${target.name}`
+                      : `adivinhe o campeao pela splash art em ate ${state.maxAttempts} tentativas.`}
                   </p>
                 </>
               ) : (
@@ -773,15 +891,15 @@ export function LoldleGame() {
                   />
 
                   <div className="mt-3 space-y-1.5 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
-                    {effectiveMode === 'quote' ? (
+                    {effectiveMode === 'quote' || effectiveMode === 'splash' ? (
                       <>
                         <p>
                           <Check className="mr-1 inline h-3 w-3 text-[#22c55e]" />
-                          digite o <strong>nome</strong> do campeao que falou a frase.
+                          digite o <strong>nome</strong> do campeao {effectiveMode === 'quote' ? 'que falou a frase' : 'da splash art'}.
                         </p>
                         <p>
                           <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#22c55e] align-middle" />
-                          <strong className="text-[#86efac]">verde</strong> = autor correto.
+                          <strong className="text-[#86efac]">verde</strong> = campeao correto.
                         </p>
                       </>
                     ) : (
@@ -828,7 +946,7 @@ export function LoldleGame() {
                     champion={champ}
                     feedback={g.feedback}
                     index={i}
-                    target={target}
+                    target={targetChampion}
                     yearDelta={g.yearDelta}
                     mode={effectiveMode}
                   />
@@ -844,12 +962,12 @@ export function LoldleGame() {
             <h4 className="mb-2 font-mono text-sm font-black uppercase tracking-wider text-white sm:text-base">
               legenda
             </h4>
-            {effectiveMode === 'quote' ? (
+            {effectiveMode === 'quote' || effectiveMode === 'splash' ? (
               <ul className="space-y-1.5 font-mono">
                 <li className="flex items-center gap-2">
                   <span className="inline-block h-3 w-3 rounded-sm bg-[#22c55e]" />
                   <span>
-                    <strong className="text-[#86efac]">verde</strong> · autor da frase
+                    <strong className="text-[#86efac]">verde</strong> · campeao correto
                   </span>
                 </li>
                 <li className="flex items-center gap-2">
