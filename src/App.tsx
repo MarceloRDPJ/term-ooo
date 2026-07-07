@@ -39,6 +39,7 @@ import { PitacoCruzadoGame } from './pages/games/pitaco-cruzado/PitacoCruzadoGam
 import { PitacoAtributosGame } from './pages/games/pitaco-atributos/PitacoAtributosGame'
 import { NarutodleGame } from './pages/games/narutodle/NarutodleGame'
 import { NarutodleLandingPage } from './pages/games/narutodle/NarutodleLandingPage'
+import { PokedleGame } from './pages/games/pokedle/PokedleGame'
 import { StarsBackground } from './components/animate-ui/components/backgrounds/stars'
 import { APP_VERSION } from './lib/version'
 import { useSoundEffects } from './lib/sounds/useSoundEffects'
@@ -513,6 +514,7 @@ function App() {
         <Route path="/play/loldle-splash" element={<LoldleGame />} />
         <Route path="/play/loldle-emoji" element={<LoldleGame />} />
         <Route path="/play/loldle-ability" element={<LoldleGame />} />
+        <Route path="/play/pokedle" element={<PokedleGame />} />
         <Route path="/play/pitaco-atributos" element={<PitacoAtributosGame />} />
         <Route path="/play/narutodle" element={<NarutodleGame />} />
         <Route path="/play/narutodle-silhouette" element={<NarutodleGame />} />

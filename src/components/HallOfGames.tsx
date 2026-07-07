@@ -30,13 +30,6 @@ const PARTNER_GAMES: readonly PartnerGame[] = [
     url: 'https://loldle.net',
   },
   {
-    slug: 'pokedle',
-    name: 'Pokedle',
-    description: 'descubra o pokemon do dia',
-    icon: '⚡',
-    url: 'https://pokedle.net',
-  },
-  {
     slug: 'smashdle',
     name: 'Smashdle',
     description: 'personagens de Super Smash Bros',
