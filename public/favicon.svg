@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">PITACO</title>
+  <desc id="desc">Square PITACO favicon mark</desc>
+  <defs>
+    <linearGradient id="bg" x1="10" y1="6" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F1A2E"/>
+      <stop offset="1" stop-color="#07111F"/>
+    </linearGradient>
+    <linearGradient id="tile" x1="16" y1="14" x2="48" y2="50" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00D7C8"/>
+      <stop offset="1" stop-color="#008B86"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#bg)"/>
+  <rect x="5.5" y="5.5" width="53" height="53" rx="12.5" fill="none" stroke="#00B2A9" stroke-width="3"/>
+  <rect x="13" y="13" width="38" height="38" rx="9" fill="#0B1628" stroke="#20364A" stroke-width="2"/>
+  <path d="M22 18h16.5C45.4 18 50 22.6 50 29.1c0 6.7-4.8 11.1-11.9 11.1H30V51h-8V18Zm8 7.1v8h7.5c2.7 0 4.3-1.6 4.3-4s-1.6-4-4.3-4H30Z" fill="#F8FAFC"/>
+  <path d="M30 33.1h7.5c2.7 0 4.3-1.6 4.3-4s-1.6-4-4.3-4H30v8Z" fill="url(#tile)"/>
+  <circle cx="48" cy="16" r="4" fill="#E3C275"/>
+  <path d="M47.3 15.5h-4.8l4.1-5.5h4.8l-4.1 5.5Z" fill="#FDE68A" opacity="0.95"/>
+</svg>
