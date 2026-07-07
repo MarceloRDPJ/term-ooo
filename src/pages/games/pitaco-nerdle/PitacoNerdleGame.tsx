@@ -553,7 +553,7 @@ export function PitacoNerdleGame() {
         </div>
 
         <StarsBackground
-          className="fixed inset-0 z-0 max-h-dvh max-w-full opacity-30"
+          className="fixed inset-0 z-0 max-h-dvh max-w-full opacity-10"
           pointerEvents={false}
         />
 

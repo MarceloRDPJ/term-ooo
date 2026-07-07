@@ -20,7 +20,6 @@ import { useNavigate } from 'react-router-dom'
 const NARUTO_ORANGE = '#FF601B'
 const NARUTO_ORANGE_DARK = '#D55E00'
 const NARUTO_BG = '#181C20'
-const NARUTO_TEAL = '#78CED7'
 const NARUTO_GOLD = '#AF9767'
 
 interface ModeCard {
@@ -114,15 +113,15 @@ export function NarutodleLandingPage() {
     <div
       className="min-h-screen text-white font-mono"
       style={{
-        background: `radial-gradient(ellipse at top, ${NARUTO_TEAL}22 0%, transparent 55%), linear-gradient(180deg, ${NARUTO_BG} 0%, #0E1E25 45%, #111A22 100%)`,
+        background: `radial-gradient(circle at top left, ${NARUTO_ORANGE}1f 0%, transparent 34%), linear-gradient(180deg, #111827 0%, #0B1220 48%, #070D18 100%)`,
       }}
     >
       <header
         className="border-b"
         style={{
-          background: 'rgba(24, 28, 32, 0.85)',
-          backdropFilter: 'blur(8px)',
-          borderColor: 'rgba(255, 96, 27, 0.3)',
+          background: 'rgba(11, 18, 32, 0.95)',
+          backdropFilter: 'blur(10px)',
+          borderColor: 'rgba(255, 96, 27, 0.22)',
         }}
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:py-4">
@@ -156,7 +155,7 @@ export function NarutodleLandingPage() {
               color: NARUTO_ORANGE,
               fontSize: 'clamp(3rem, 12vw, 7rem)',
               letterSpacing: '-0.04em',
-              textShadow: `0 0 24px rgba(255, 96, 27, 0.35), 3px 3px 0 ${NARUTO_ORANGE_DARK}`,
+              textShadow: `0 0 18px rgba(255, 96, 27, 0.22), 2px 2px 0 ${NARUTO_ORANGE_DARK}`,
             }}
             data-testid="narutodle-logo"
           >
@@ -189,7 +188,7 @@ export function NarutodleLandingPage() {
                 onClick={() => navigate(mode.path)}
                 className="group relative flex flex-col items-center gap-3 rounded-2xl border-2 p-5 text-center transition-all hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:hover:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
                 style={{
-                  background: 'rgba(0, 0, 0, 0.4)',
+                  background: 'rgba(16, 24, 39, 0.94)',
                   borderColor: mode.color,
                   ['--tw-ring-color' as string]: mode.color,
                   ['--tw-ring-offset-color' as string]: NARUTO_BG,
@@ -200,7 +199,7 @@ export function NarutodleLandingPage() {
                 <div
                   className="flex h-16 w-16 items-center justify-center rounded-xl text-3xl transition-transform group-hover:scale-110"
                   style={{
-                    background: 'rgba(24, 28, 32, 0.85)',
+                    background: 'rgba(7, 13, 24, 0.82)',
                     boxShadow: `0 0 0 2px ${mode.color}55 inset`,
                   }}
                   aria-hidden="true"
@@ -240,8 +239,8 @@ export function NarutodleLandingPage() {
           <div
             className="rounded-2xl border-2 p-4 shadow-2xl sm:p-5"
             style={{
-              background: 'rgba(0, 0, 0, 0.4)',
-              borderColor: NARUTO_ORANGE,
+              background: 'rgba(16, 24, 39, 0.94)',
+              borderColor: 'rgba(255, 96, 27, 0.55)',
             }}
           >
             <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
@@ -253,7 +252,7 @@ export function NarutodleLandingPage() {
                   rel="noopener noreferrer"
                   className="group flex flex-col gap-2 rounded-xl border p-3 transition-all hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:hover:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
                   style={{
-                    background: 'rgba(24, 28, 32, 0.7)',
+                    background: 'rgba(7, 13, 24, 0.72)',
                     borderColor: 'rgba(255, 96, 27, 0.35)',
                     ['--tw-ring-color' as string]: NARUTO_ORANGE,
                     ['--tw-ring-offset-color' as string]: NARUTO_BG,
@@ -288,8 +287,8 @@ export function NarutodleLandingPage() {
       <footer
         className="mt-6 border-t"
         style={{
-          background: 'rgba(0, 0, 0, 0.4)',
-          borderColor: 'rgba(255, 96, 27, 0.3)',
+          background: 'rgba(11, 18, 32, 0.95)',
+          borderColor: 'rgba(255, 96, 27, 0.22)',
         }}
       >
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 py-5 sm:flex-row sm:justify-between">

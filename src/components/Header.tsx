@@ -29,7 +29,7 @@ const LOGO_SRC = `${import.meta.env.BASE_URL}logo.png`
 
 function LogoImage({ className, onError }: { className: string; onError: () => void }) {
   return (
-    <span className={`inline-flex items-center justify-center rounded-xl border border-cyan-300/45 bg-gradient-to-br from-white via-slate-100 to-cyan-50 p-1.5 shadow-[0_0_24px_rgba(0,178,169,0.22)] ${className}`}>
+    <span className={`inline-flex items-center justify-center rounded-xl border border-cyan-300/25 bg-white/95 p-1.5 shadow-lg shadow-black/25 ${className}`}>
       <img
         src={LOGO_SRC}
         alt="PITACO"
@@ -62,7 +62,7 @@ export function Header({
   }
 
   return (
-    <header className="border-b flex-shrink-0 z-10" style={{ borderColor: 'rgba(0,178,169,0.35)', background: 'linear-gradient(90deg, rgba(15,26,46,0.94), rgba(26,44,64,0.9), rgba(15,26,46,0.94))', backdropFilter: 'blur(10px)' }}>
+    <header className="border-b flex-shrink-0 z-10" style={{ borderColor: 'rgba(45, 212, 191, 0.22)', background: 'rgba(7, 17, 31, 0.94)', backdropFilter: 'blur(10px)' }}>
       <div className="max-w-7xl mx-auto px-2 py-2 sm:px-4 sm:py-3 flex md:grid md:grid-cols-3 items-center justify-between">
         {/* Left section: Toggle + Logo (mobile) / Toggle + Buttons (desktop) */}
         <div className="flex items-center gap-1 sm:gap-2 md:justify-start">

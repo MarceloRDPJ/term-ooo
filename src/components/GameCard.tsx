@@ -49,10 +49,10 @@ export function GameCard({ game, pathOverride }: GameCardProps) {
 
   return (
     <div
-      className={`group relative flex flex-col gap-4 rounded-2xl border p-5 shadow-2xl transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00B2A9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F1A2E] ${
+      className={`group relative flex flex-col gap-4 rounded-2xl border p-5 shadow-lg shadow-black/20 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00B2A9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F1A2E] ${
         game.enabled
-          ? 'cursor-pointer border-[#2A4060]/40 bg-[#1A2C40]/70 hover:-translate-y-0.5 hover:border-[#00B2A9]/40 motion-reduce:transform-none motion-reduce:hover:translate-y-0'
-          : 'cursor-not-allowed border-[#2A4060]/20 bg-[#1A2C40]/40 opacity-60 grayscale'
+          ? 'cursor-pointer border-[#20364A] bg-[#101C2E] hover:-translate-y-0.5 hover:border-[#00B2A9]/50 hover:bg-[#132338] motion-reduce:transform-none motion-reduce:hover:translate-y-0'
+          : 'cursor-not-allowed border-[#20364A]/60 bg-[#0B1628]/80 opacity-60 grayscale'
       }`}
       onClick={handleClick}
       role="button"
@@ -70,7 +70,7 @@ export function GameCard({ game, pathOverride }: GameCardProps) {
       <div className="flex items-start justify-between gap-3">
         <div
           className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-3xl"
-          style={{ background: 'rgba(15,26,46,0.6)' }}
+          style={{ background: 'rgba(7,17,31,0.72)' }}
           aria-hidden="true"
         >
           {game.thumbnail}

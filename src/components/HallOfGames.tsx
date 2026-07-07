@@ -81,13 +81,12 @@ export function HallOfGames() {
   }
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ background: 'linear-gradient(to bottom, #0F1A2E, #1A2C40, #243447)' }}
-    >
+    <div className="relative min-h-screen overflow-hidden bg-[#07111F] text-slate-100">
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_top_left,_rgba(0,178,169,0.14),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(227,194,117,0.08),_transparent_30%)]" />
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-0 h-32 bg-gradient-to-b from-[#0F1A2E] to-transparent" />
       <header
-        className="border-b border-[#2A4060]/40"
-        style={{ background: 'rgba(15,26,46,0.85)', backdropFilter: 'blur(8px)' }}
+        className="relative z-10 border-b border-[#20364A]"
+        style={{ background: 'rgba(7,17,31,0.92)', backdropFilter: 'blur(10px)' }}
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:py-4">
           <button
@@ -126,8 +125,8 @@ export function HallOfGames() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:py-10">
-        <section className="mb-8 sm:mb-10">
+      <main className="relative z-10 mx-auto max-w-6xl px-4 py-6 sm:py-10">
+        <section className="mb-8 rounded-3xl border border-[#20364A] bg-[#0B1628]/95 p-5 shadow-xl shadow-black/25 sm:mb-10 sm:p-7">
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-mono">
             bem-vindo ao escritorio
           </h2>
@@ -195,14 +194,14 @@ export function HallOfGames() {
                 href={partner.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex flex-col gap-3 rounded-xl border border-[#2A4060]/40 bg-[#1A2C40]/60 p-4 transition-all hover:-translate-y-0.5 hover:border-[#00B2A9]/40 motion-reduce:transform-none motion-reduce:hover:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00B2A9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F1A2E]"
+                className="group flex flex-col gap-3 rounded-xl border border-[#20364A] bg-[#101C2E] p-4 shadow-lg shadow-black/15 transition-all hover:-translate-y-0.5 hover:border-[#00B2A9]/45 hover:bg-[#132338] motion-reduce:transform-none motion-reduce:hover:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00B2A9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F1A2E]"
                 aria-label={`${partner.name}, abre em nova aba`}
                 data-testid={`partner-card-${partner.slug}`}
               >
                 <div className="flex items-center justify-between">
                   <div
                     className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl"
-                    style={{ background: 'rgba(15,26,46,0.6)' }}
+                    style={{ background: 'rgba(7,17,31,0.72)' }}
                     aria-hidden="true"
                   >
                     {partner.icon}
@@ -223,7 +222,7 @@ export function HallOfGames() {
           </div>
         </section>
 
-        <section className="mt-12 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/70 p-5 shadow-2xl sm:p-6">
+        <section className="mt-12 rounded-2xl border border-[#20364A] bg-[#0B1628]/95 p-5 shadow-xl shadow-black/25 sm:p-6">
           <h2 className="text-lg font-mono font-bold text-white">acessar o escritorio</h2>
           <p className="mt-1 text-sm text-slate-300">
             faca login pra abrir pautas, jogar contra o time e homologar resultados.
@@ -298,19 +297,19 @@ export function HallOfGames() {
         </section>
 
         <section className="mt-12 grid gap-3 sm:grid-cols-3">
-          <article className="rounded-xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4">
+          <article className="rounded-xl border border-[#20364A] bg-[#0B1628]/90 p-4">
             <p className="text-[10px] font-mono uppercase tracking-wider text-slate-300">1 · jogue</p>
             <p className="mt-1 text-sm text-slate-300">
               escolha um jogo da lista, de seu palpite e ganhe crachas.
             </p>
           </article>
-          <article className="rounded-xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4">
+          <article className="rounded-xl border border-[#20364A] bg-[#0B1628]/90 p-4">
             <p className="text-[10px] font-mono uppercase tracking-wider text-slate-300">2 · abra pauta</p>
             <p className="mt-1 text-sm text-slate-300">
               convide o time, votem nos melhores pitacos e o dono envia pro tabuleiro.
             </p>
           </article>
-          <article className="rounded-xl border border-[#2A4060]/40 bg-[#1A2C40]/50 p-4">
+          <article className="rounded-xl border border-[#20364A] bg-[#0B1628]/90 p-4">
             <p className="text-[10px] font-mono uppercase tracking-wider text-slate-300">3 · homologue</p>
             <p className="mt-1 text-sm text-slate-300">
               pontue o cracha, suba no relatorio e compare com o escritorio.

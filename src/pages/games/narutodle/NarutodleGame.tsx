@@ -269,8 +269,8 @@ export function NarutodleGame() {
   const emptyRows = Math.max(0, state.maxAttempts - state.guesses.length)
 
   return (
-    <div className="min-h-screen w-full text-white" style={{ background: 'linear-gradient(180deg, #78CED7 0%, #3A6B7A 12%, #181C20 28%, #181C20 100%)' }}>
-      <header className="relative z-10 border-b border-[#2A4060]/50 bg-[#181C20]/90 backdrop-blur">
+    <div className="min-h-screen w-full text-white" style={{ background: 'radial-gradient(circle at top left, rgba(255, 96, 27, 0.12), transparent 34%), linear-gradient(180deg, #111827 0%, #0B1220 48%, #070D18 100%)' }}>
+      <header className="relative z-10 border-b border-[#2A4060]/60 bg-[#0B1220]/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <button onClick={() => navigate('/')} className="flex items-center gap-2 font-mono text-sm text-slate-300 hover:text-white"><ArrowLeft className="h-4 w-4" />hall</button>
           <div className="text-center"><h1 className="font-mono text-2xl font-black text-[#FF601B]">NARUTODLE</h1><p className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#FDBA74]">Daily Naruto Game · {copy.title}</p></div>
@@ -280,13 +280,13 @@ export function NarutodleGame() {
 
       <main className="relative z-10 mx-auto max-w-6xl px-3 py-5 sm:px-4">
         <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-          <section className="rounded-2xl border border-[#2A4060]/50 bg-[#1A2C40]/75 p-4 shadow-2xl">
+          <section className="rounded-2xl border border-[#2A4060]/70 bg-[#101827]/95 p-4 shadow-xl shadow-black/25">
             <div className="mb-3 flex items-center gap-2 rounded-lg border border-[#FF601B]/40 bg-[#181C20]/80 px-3 py-2"><Sparkles className="h-4 w-4 text-[#FF601B]" /><h2 className="font-mono text-lg font-black uppercase text-[#FF601B]">{copy.title}</h2><span className="ml-auto font-mono text-xs text-slate-300">{state.maxAttempts - state.currentRow} tries left</span></div>
             <ModeClue mode={mode} target={target} dateKey={dateKey} guesses={state.guesses.length} revealed={state.isGameOver} />
             <p className="mt-3 font-mono text-xs text-slate-300">{copy.desc}</p>
           </section>
 
-          <section className="rounded-2xl border border-[#2A4060]/50 bg-[#1A2C40]/75 p-4 shadow-2xl">
+          <section className="rounded-2xl border border-[#2A4060]/70 bg-[#101827]/95 p-4 shadow-xl shadow-black/25">
             <div className="mb-3 flex items-center gap-2 rounded-lg border border-[#F6D44E]/40 bg-[#181C20]/80 px-3 py-2"><Target className="h-4 w-4 text-[#F6D44E]" /><h2 className="font-mono text-lg font-black uppercase text-[#F6D44E]">Guess</h2></div>
             {state.isGameOver ? <GameOverCard state={state} target={target} mode={mode} onBack={() => navigate('/')} /> : <><CharacterAutocomplete value={input} onChange={setInput} onSubmit={handleSubmit} disabled={state.isGameOver} history={state.history} />{error && <div className="mt-2 rounded-lg border border-[#737373]/60 bg-[#737373]/20 p-2 font-mono text-xs text-[#d4d4d4]">{error}</div>}<div className="mt-3 space-y-1.5 font-mono text-xs text-slate-300"><p><Check className="mr-1 inline h-3 w-3 text-[#86efac]" />Select a character and compare attributes.</p><p><ChevronDown className="mr-1 inline h-3 w-3 text-[#F6D44E]" />Yellow means partial match or nearby debut arc.</p></div></>}
           </section>
@@ -300,14 +300,14 @@ export function NarutodleGame() {
           </div>
         </section>
 
-        <section className="mt-6 grid gap-2 rounded-2xl border border-[#2A4060]/40 bg-[#1A2C40]/60 p-4 font-mono text-xs text-slate-300 sm:grid-cols-3">
+        <section className="mt-6 grid gap-2 rounded-2xl border border-[#2A4060]/60 bg-[#101827]/90 p-4 font-mono text-xs text-slate-300 sm:grid-cols-3">
           <div className="rounded-lg border border-[#24D475]/60 bg-[#24D475]/15 p-3"><strong className="text-[#86efac]">Green</strong><span className="block">exact attribute match</span></div>
           <div className="rounded-lg border border-[#F6D44E]/60 bg-[#F6D44E]/15 p-3"><strong className="text-[#F6D44E]">Yellow</strong><span className="block">partial match or adjacent debut arc</span></div>
           <div className="rounded-lg border border-[#737373]/60 bg-[#737373]/15 p-3"><strong className="text-[#d4d4d4]">Gray</strong><span className="block">no match</span></div>
         </section>
       </main>
 
-      <StarsBackground className="fixed inset-0 z-0 max-h-dvh max-w-full opacity-30" pointerEvents={false} />
+      <StarsBackground className="fixed inset-0 z-0 max-h-dvh max-w-full opacity-10" pointerEvents={false} />
       <div className="fixed bottom-2 right-2 z-[5] pointer-events-none"><span className="font-mono text-[8px] text-slate-500/50 md:text-xs">v{APP_VERSION}</span></div>
     </div>
   )

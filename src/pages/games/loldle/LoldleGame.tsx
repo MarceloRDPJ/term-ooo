@@ -763,20 +763,20 @@ export function LoldleGame() {
   return (
     <div
       className="relative min-h-screen w-full overflow-hidden"
-      style={{ background: 'radial-gradient(ellipse at top, #0d1830 0%, #0a1224 45%, #060b18 100%)' }}
+      style={{ background: 'linear-gradient(180deg, #07111F 0%, #0B1424 52%, #070D18 100%)' }}
     >
       <StarsBackground
-        className="pointer-events-none fixed inset-0 z-0 h-full w-full opacity-80"
+        className="pointer-events-none fixed inset-0 z-0 h-full w-full opacity-10"
         starColor="#cbd5e1"
         pointerEvents={false}
       />
 
-      <div className="pointer-events-none fixed inset-0 z-0 h-full w-full bg-[radial-gradient(ellipse_at_center,_rgba(91,224,216,0.08)_0%,_transparent_55%)]" />
+      <div className="pointer-events-none fixed inset-0 z-0 h-full w-full bg-[radial-gradient(circle_at_top_left,_rgba(91,224,216,0.08)_0%,_transparent_34%)]" />
 
       <div className="relative z-10">
         <header
-          className="border-b border-[#2A4060]/40"
-          style={{ background: 'rgba(10,18,36,0.85)', backdropFilter: 'blur(10px)' }}
+          className="border-b border-[#20364A]"
+          style={{ background: 'rgba(7, 17, 31, 0.94)', backdropFilter: 'blur(10px)' }}
         >
           <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3">
             <button
@@ -813,7 +813,7 @@ export function LoldleGame() {
 
         <main className="mx-auto max-w-5xl px-3 py-4 sm:px-4 sm:py-6">
           <div className="grid gap-4 md:grid-cols-2">
-            <section className="rounded-2xl border border-[#2A4060]/40 bg-[#0F1A2E]/70 p-4 shadow-2xl backdrop-blur sm:p-5">
+            <section className="rounded-2xl border border-[#20364A] bg-[#0B1628]/95 p-4 shadow-xl shadow-black/25 sm:p-5">
               <div className="mb-3 flex items-center gap-2">
                 <span
                   className="flex h-5 w-5 items-center justify-center rounded-full border-2"
@@ -857,7 +857,7 @@ export function LoldleGame() {
                 </>
               ) : (
                 <>
-                  <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#2A4060]/80 bg-gradient-to-br from-[#0F1A2E]/80 to-[#1A2C40]/60 p-6 text-center">
+                  <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-[#31506A] bg-[#07111F]/90 p-6 text-center">
                     <span
                       className="font-mono text-6xl font-black leading-none sm:text-7xl"
                       style={{ color: '#fb923c' }}
@@ -883,7 +883,7 @@ export function LoldleGame() {
               )}
             </section>
 
-            <section className="rounded-2xl border border-[#2A4060]/40 bg-[#0F1A2E]/70 p-4 shadow-2xl backdrop-blur sm:p-5">
+            <section className="rounded-2xl border border-[#20364A] bg-[#0B1628]/95 p-4 shadow-xl shadow-black/25 sm:p-5">
               <div className="mb-3 flex items-center gap-2">
                 <Sparkles className="h-4 w-4" style={{ color: '#E3C275' }} />
                 <h2 className="font-mono text-sm font-black uppercase tracking-wider text-white sm:text-base">
@@ -972,7 +972,7 @@ export function LoldleGame() {
             </div>
           </section>
 
-          <section className="mt-6 rounded-2xl border border-[#2A4060]/40 bg-[#0F1A2E]/50 p-4 text-xs text-[#cbd5e1] backdrop-blur sm:text-sm">
+          <section className="mt-6 rounded-2xl border border-[#20364A] bg-[#0B1628]/92 p-4 text-xs text-[#cbd5e1] sm:text-sm">
             <h4 className="mb-2 font-mono text-sm font-black uppercase tracking-wider text-white sm:text-base">
               legenda
             </h4>
