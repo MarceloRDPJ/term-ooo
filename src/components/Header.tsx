@@ -27,6 +27,19 @@ interface HeaderProps {
 
 const LOGO_SRC = `${import.meta.env.BASE_URL}logo.png`
 
+function LogoImage({ className, onError }: { className: string; onError: () => void }) {
+  return (
+    <span className={`inline-flex items-center justify-center rounded-xl border border-cyan-300/45 bg-gradient-to-br from-white via-slate-100 to-cyan-50 p-1.5 shadow-[0_0_24px_rgba(0,178,169,0.22)] ${className}`}>
+      <img
+        src={LOGO_SRC}
+        alt="PITACO"
+        onError={onError}
+        className="block h-auto w-full"
+      />
+    </span>
+  )
+}
+
 export function Header({
   title,
   onHelp,
@@ -49,7 +62,7 @@ export function Header({
   }
 
   return (
-    <header className="border-b flex-shrink-0 z-10" style={{ borderColor: 'rgba(42,64,96,0.4)', background: 'rgba(15,26,46,0.85)', backdropFilter: 'blur(8px)' }}>
+    <header className="border-b flex-shrink-0 z-10" style={{ borderColor: 'rgba(0,178,169,0.35)', background: 'linear-gradient(90deg, rgba(15,26,46,0.94), rgba(26,44,64,0.9), rgba(15,26,46,0.94))', backdropFilter: 'blur(10px)' }}>
       <div className="max-w-7xl mx-auto px-2 py-2 sm:px-4 sm:py-3 flex md:grid md:grid-cols-3 items-center justify-between">
         {/* Left section: Toggle + Logo (mobile) / Toggle + Buttons (desktop) */}
         <div className="flex items-center gap-1 sm:gap-2 md:justify-start">
@@ -69,13 +82,7 @@ export function Header({
               {title}
             </h1>
           ) : (
-            <img
-              src={LOGO_SRC}
-              alt="PITACO"
-              onError={() => setLogoFailed(true)}
-              className="h-10 sm:h-11 w-auto max-h-16 md:hidden object-contain"
-              style={{ filter: 'invert(1) hue-rotate(180deg)' }}
-            />
+            <LogoImage className="w-[120px] sm:w-[132px] md:hidden" onError={() => setLogoFailed(true)} />
           )}
 
           {/* Help button (visible on all screens) */}
@@ -107,13 +114,7 @@ export function Header({
               {title}
             </h1>
           ) : (
-            <img
-              src={LOGO_SRC}
-              alt="PITACO"
-              onError={() => setLogoFailed(true)}
-              className="h-12 lg:h-14 w-auto max-w-[220px] max-h-16 object-contain"
-              style={{ filter: 'invert(1) hue-rotate(180deg)' }}
-            />
+            <LogoImage className="w-[180px] lg:w-[204px]" onError={() => setLogoFailed(true)} />
           )}
           {isArchive && archiveDayNumber && (
             <div className="text-xs bg-yellow-600/20 text-yellow-200 px-3 py-1 rounded-full flex items-center gap-1 font-mono">

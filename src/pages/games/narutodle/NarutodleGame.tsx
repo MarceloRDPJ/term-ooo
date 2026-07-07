@@ -37,7 +37,7 @@ function CharacterPortrait({ character, className, alt = '' }: { character: Naru
   return (
     <span className={cn('inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#2A4060] bg-[#0F1A2E] font-mono text-xs font-black text-[#FDBA74]', className)}>
       {imageUrl && !failed ? (
-        <img src={imageUrl} alt={alt} className="h-full w-full object-cover object-top" loading="lazy" decoding="async" onError={() => setFailed(true)} />
+        <img src={imageUrl} alt={alt} className="h-full w-full object-cover object-top" loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setFailed(true)} />
       ) : (
         getNarutoCharacterInitials(character)
       )}
@@ -61,6 +61,7 @@ function EyeClueImage({ character, guesses, revealed }: { character: NarutodleCh
           style={{ filter: `blur(${blur}px) saturate(${revealed ? 1 : 0.75})`, objectPosition: 'center 20%', transform: `scale(${scale})` }}
           loading="eager"
           decoding="async"
+          referrerPolicy="no-referrer"
           onError={() => setFailed(true)}
         />
       ) : (
@@ -70,6 +71,16 @@ function EyeClueImage({ character, guesses, revealed }: { character: NarutodleCh
       <span className="absolute bottom-2 rounded bg-[#181C20]/75 px-1.5 font-mono text-xs font-black text-[#f0abfc]">
         {revealed ? character.name : character.name.split(' ').map((part) => part[0]).join('')}
       </span>
+    </div>
+  )
+}
+
+function CharacterPreviewStrip() {
+  return (
+    <div className="flex flex-wrap justify-center gap-1.5" aria-hidden="true">
+      {NARUTO_CHARACTERS.slice(0, 6).map((character) => (
+        <CharacterPortrait key={character.id} character={character} className="h-9 w-9 rounded-lg opacity-90" />
+      ))}
     </div>
   )
 }
@@ -153,7 +164,7 @@ function CharacterAutocomplete({ value, onChange, onSubmit, disabled, history }:
 function ModeClue({ mode, target, dateKey, guesses, revealed }: { mode: NarutodleMode; target?: NarutodleCharacter; dateKey: string; guesses: number; revealed: boolean }) {
   if (!target) return null
   if (mode === 'classic') {
-    return <div className="flex min-h-[172px] flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#FF601B]/40 bg-[#181C20]/80 p-5 text-center"><span className="text-7xl">?</span><p className="font-mono text-sm uppercase tracking-wider text-[#FDBA74]">Type any character to begin.</p></div>
+    return <div className="flex min-h-[172px] flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#FF601B]/40 bg-[#181C20]/80 p-5 text-center"><span className="text-7xl">?</span><CharacterPreviewStrip /><p className="font-mono text-sm uppercase tracking-wider text-[#FDBA74]">Type any character to begin.</p></div>
   }
   if (mode === 'eye') {
     return (

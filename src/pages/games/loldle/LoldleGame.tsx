@@ -145,6 +145,7 @@ function ChampionIcon({
           className="h-full w-full object-cover"
           loading="lazy"
           decoding="async"
+          referrerPolicy="no-referrer"
           onError={() => setFailed(true)}
         />
       )}
@@ -180,6 +181,7 @@ function SplashClue({
           style={{ filter: `blur(${blur}px) saturate(${revealed ? 1 : 0.55})`, transform: `scale(${scale})` }}
           loading="eager"
           decoding="async"
+          referrerPolicy="no-referrer"
           onError={() => setFailed(true)}
         />
       )}
@@ -197,6 +199,16 @@ function SplashClue({
           </p>
         )}
       </div>
+    </div>
+  )
+}
+
+function ChampionPreviewStrip() {
+  return (
+    <div className="mt-1 flex flex-wrap justify-center gap-1.5" aria-hidden="true">
+      {CHAMPIONS.slice(0, 6).map((champion) => (
+        <ChampionIcon key={champion.id} champion={champion} className="h-9 w-9 rounded-lg opacity-90" />
+      ))}
     </div>
   )
 }
@@ -583,6 +595,7 @@ function GameOverCard({
               className="absolute inset-0 h-full w-full object-cover opacity-70"
               loading="lazy"
               decoding="async"
+              referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-[#0F1A2E] via-[#0F1A2E]/80 to-[#0F1A2E]/20" />
             <div className="relative flex min-h-[120px] items-center gap-3 p-3">
@@ -861,6 +874,7 @@ export function LoldleGame() {
                     >
                       pool: {CHAMPIONS.length} campeoes
                     </p>
+                    <ChampionPreviewStrip />
                   </div>
                   <p className="mt-3 font-mono text-[10px] text-[#cbd5e1] sm:text-xs">
                     Adivinhe o campeao pelos seus atributos. 6 atributos, 8 tentativas.
